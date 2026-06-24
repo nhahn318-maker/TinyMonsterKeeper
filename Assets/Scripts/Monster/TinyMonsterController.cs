@@ -16,7 +16,7 @@ public class TinyMonsterController : MonoBehaviour
     [SerializeField] private TinyMonsterEffects effects;
 
     [Header("State Timers")]
-    [SerializeField] private float happyDuration = 0.15f;
+    [SerializeField] private float happyDuration = 3.0f;
 
     private MonsterState currentState;
     private float stateTimer;
@@ -42,6 +42,7 @@ public class TinyMonsterController : MonoBehaviour
             case MonsterState.Happy:
                 if (stateTimer <= 0f)
                 {
+                    Debug.Log("Happy duration finished, triggering Idle");
                     EnterIdle();
                     
                     if (animController != null)
@@ -68,6 +69,7 @@ public class TinyMonsterController : MonoBehaviour
 
     public void PlayHappy()
     {
+        Debug.Log($"PlayHappy called, duration: {happyDuration}s");
         currentState = MonsterState.Happy;
         stateTimer = happyDuration;
 

@@ -1,19 +1,27 @@
-using TMPro;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
-public class ActionMenuUI : MonoBehaviour {
-    public static ActionMenuUI Instance { get; private set; }
+public class MonsterUIPanel : MonoBehaviour
+{
+    public static MonsterUIPanel Instance { get; private set; }
 
     [Header("References")]
     [SerializeField] private Canvas canvas;
+    [SerializeField] private RectTransform panelContainer;
+    [SerializeField] private RectTransform infoPanel;
     [SerializeField] private RectTransform actionMenuPanel;
-    [SerializeField] private TextMeshProUGUI infoLabel;
+
+    [Header("Info Panel Elements")]
+    [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private Image friendshipBarFill;
+    [SerializeField] private TextMeshProUGUI friendshipText;
 
     [Header("Position")]
-    [SerializeField] private Vector2 screenOffset = new Vector2(0f, 90f);
+    [SerializeField] private Vector2 screenOffset = new Vector2(0f, 100f);
 
-    private RectTransform canvasRect;
     private TinyMonsterTouch selectedMonster;
+    private RectTransform canvasRect;
     private Camera CanvasCamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
         ? canvas.worldCamera
         : null;
@@ -34,13 +42,12 @@ public class ActionMenuUI : MonoBehaviour {
         if (canvas != null)
             canvasRect = canvas.GetComponent<RectTransform>();
 
-        EnsureInfoLabel();
         Hide(false);
     }
 
     private void Update()
     {
-        if (selectedMonster == null || actionMenuPanel == null || !actionMenuPanel.gameObject.activeSelf)
+        if (selectedMonster == null || !panelContainer.gameObject.activeSelf)
             return;
 
         if (WasPointerPressedOutsidePanel())
@@ -51,12 +58,8 @@ public class ActionMenuUI : MonoBehaviour {
 
     public void Show(TinyMonsterTouch monster)
     {
-        if (monster == null) return;
-        if (canvas == null || canvasRect == null || actionMenuPanel == null)
-        {
-            Debug.LogWarning("ActionMenuUI is missing Canvas or ActionMenuPanel.");
+        if (monster == null || canvas == null || canvasRect == null || panelContainer == null)
             return;
-        }
 
         if (selectedMonster != null && selectedMonster != monster && selectedMonster.Controller != null)
         {
@@ -64,7 +67,7 @@ public class ActionMenuUI : MonoBehaviour {
         }
 
         selectedMonster = monster;
-        ShowInfo(monster);
+        UpdateInfo(monster);
 
         if (selectedMonster.Controller != null)
         {
@@ -81,14 +84,14 @@ public class ActionMenuUI : MonoBehaviour {
             out Vector2 localPoint
         );
 
-        actionMenuPanel.anchoredPosition = localPoint;
-        actionMenuPanel.gameObject.SetActive(true);
+        panelContainer.anchoredPosition = localPoint;
+        panelContainer.gameObject.SetActive(true);
     }
 
     public void Hide(bool resumeMonster = true)
     {
-        if (actionMenuPanel != null)
-            actionMenuPanel.gameObject.SetActive(false);
+        if (panelContainer != null)
+            panelContainer.gameObject.SetActive(false);
 
         if (resumeMonster && selectedMonster != null && selectedMonster.Controller != null)
         {
@@ -103,7 +106,6 @@ public class ActionMenuUI : MonoBehaviour {
         if (selectedMonster == null) return;
 
         TinyMonsterTouch monster = selectedMonster;
-
         Hide(false);
 
         if (monster.Controller != null)
@@ -120,7 +122,6 @@ public class ActionMenuUI : MonoBehaviour {
         if (selectedMonster == null) return;
 
         TinyMonsterTouch monster = selectedMonster;
-
         Hide(false);
 
         if (monster.Controller != null)
@@ -132,23 +133,23 @@ public class ActionMenuUI : MonoBehaviour {
         Debug.Log($"Play with {monster.MonsterName}");
     }
 
-    public void OnClickInfo()
+    private void UpdateInfo(TinyMonsterTouch monster)
     {
-        if (selectedMonster == null) return;
-
-        ShowInfo(selectedMonster);
-    }
-
-    private void ShowInfo(TinyMonsterTouch monster)
-    {
-        EnsureInfoLabel();
-
-        if (infoLabel != null)
+        if (nameText != null)
         {
-            infoLabel.text = monster.MonsterName;
+            nameText.text = monster.MonsterName;
         }
 
-        Debug.Log($"Info: {monster.MonsterName}");
+        // TODO: Lấy friendship từ monster data
+        if (friendshipBarFill != null)
+        {
+            friendshipBarFill.fillAmount = 0.7f; // Temporary value (0.0 - 1.0)
+        }
+
+        if (friendshipText != null)
+        {
+            friendshipText.text = "Friendship";
+        }
     }
 
     private bool WasPointerPressedOutsidePanel()
@@ -165,32 +166,18 @@ public class ActionMenuUI : MonoBehaviour {
 
     private bool IsScreenPointInsidePanel(Vector2 screenPoint)
     {
-        return RectTransformUtility.RectangleContainsScreenPoint(
-            actionMenuPanel,
-            screenPoint,
-            CanvasCamera
-        );
-    }
+        // Check nếu click vào panel container
+        if (RectTransformUtility.RectangleContainsScreenPoint(panelContainer, screenPoint, CanvasCamera))
+            return true;
 
-    private void EnsureInfoLabel()
-    {
-        if (infoLabel != null || actionMenuPanel == null)
-            return;
+        // Check nếu click vào info panel
+        if (infoPanel != null && RectTransformUtility.RectangleContainsScreenPoint(infoPanel, screenPoint, CanvasCamera))
+            return true;
 
-        GameObject labelObject = new GameObject("InfoLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
-        labelObject.transform.SetParent(actionMenuPanel, false);
+        // Check nếu click vào action menu panel
+        if (actionMenuPanel != null && RectTransformUtility.RectangleContainsScreenPoint(actionMenuPanel, screenPoint, CanvasCamera))
+            return true;
 
-        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-        labelRect.anchorMin = new Vector2(0.5f, 1f);
-        labelRect.anchorMax = new Vector2(0.5f, 1f);
-        labelRect.pivot = new Vector2(0.5f, 1f);
-        labelRect.anchoredPosition = new Vector2(0f, -12f);
-        labelRect.sizeDelta = new Vector2(260f, 36f);
-
-        infoLabel = labelObject.GetComponent<TextMeshProUGUI>();
-        infoLabel.alignment = TextAlignmentOptions.Center;
-        infoLabel.fontSize = 24f;
-        infoLabel.color = Color.white;
-        infoLabel.raycastTarget = false;
+        return false;
     }
 }

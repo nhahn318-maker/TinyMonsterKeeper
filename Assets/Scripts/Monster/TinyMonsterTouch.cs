@@ -17,6 +17,6 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        ActionMenuUI.Instance.Show(this);
+        MonsterUIPanel.Instance.Show(this);
     }
 }
