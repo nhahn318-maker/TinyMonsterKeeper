@@ -58,17 +58,17 @@ public class ActionMenuUI : MonoBehaviour {
             return;
         }
 
-        if (selectedMonster != null && selectedMonster != monster && selectedMonster.Roam != null)
+        if (selectedMonster != null && selectedMonster != monster && selectedMonster.Controller != null)
         {
-            selectedMonster.Roam.ResumeAfterMenu();
+            selectedMonster.Controller.ResumeAfterMenu();
         }
 
         selectedMonster = monster;
         ShowInfo(monster);
 
-        if (selectedMonster.Roam != null)
+        if (selectedMonster.Controller != null)
         {
-            selectedMonster.Roam.PauseForMenu();
+            selectedMonster.Controller.PauseForMenu();
         }
 
         Vector2 screenPosition = Camera.main.WorldToScreenPoint(monster.transform.position);
@@ -90,9 +90,9 @@ public class ActionMenuUI : MonoBehaviour {
         if (actionMenuPanel != null)
             actionMenuPanel.gameObject.SetActive(false);
 
-        if (resumeMonster && selectedMonster != null && selectedMonster.Roam != null)
+        if (resumeMonster && selectedMonster != null && selectedMonster.Controller != null)
         {
-            selectedMonster.Roam.ResumeAfterMenu();
+            selectedMonster.Controller.ResumeAfterMenu();
         }
 
         selectedMonster = null;
@@ -106,10 +106,10 @@ public class ActionMenuUI : MonoBehaviour {
 
         Hide(false);
 
-        if (monster.Roam != null)
+        if (monster.Controller != null)
         {
-            monster.Roam.ResumeAfterMenu();
-            monster.Roam.PlayHappy(1.2f);
+            monster.Controller.ResumeAfterMenu();
+            monster.Controller.PlayHappy();
         }
 
         Debug.Log($"Feed {monster.MonsterName}");
@@ -123,10 +123,10 @@ public class ActionMenuUI : MonoBehaviour {
 
         Hide(false);
 
-        if (monster.Roam != null)
+        if (monster.Controller != null)
         {
-            monster.Roam.ResumeAfterMenu();
-            monster.Roam.PlayHappy(1.2f);
+            monster.Controller.ResumeAfterMenu();
+            monster.Controller.PlayHappy();
         }
 
         Debug.Log($"Play with {monster.MonsterName}");

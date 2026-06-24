@@ -1,17 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
-public class TinyMonsterNavRoam : MonoBehaviour {
-    public enum MonsterState {
-        Idle,
-        Walk,
-        Happy,
-        Sleep
-    }
-
+public class TinyMonsterNavRoam : MonoBehaviour
+{
     [Header("References")]
     [SerializeField] private NavMeshAgent agent;
-    [SerializeField] private Animator animator;
     [SerializeField] private SpriteRenderer spriteRenderer;
 
     [Header("Roaming Area")]
@@ -26,24 +19,23 @@ public class TinyMonsterNavRoam : MonoBehaviour {
     [SerializeField] private Vector2 idleTimeRange = new Vector2(2f, 4f);
     [SerializeField] private Vector2 walkTimeRange = new Vector2(2f, 5f);
 
-
-    [SerializeField] private bool isPausedByMenu = false;
-
-    private MonsterState currentState;
+    private bool isRoaming = false;
+    private bool isPaused = false;
+    private bool isWalking = false;
     private float stateTimer;
     private Vector3 lastPosition;
+
+    public bool IsWalking => isWalking;
 
     private void Reset()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Awake()
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
-        if (animator == null) animator = GetComponent<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
 
         SetupAgent2D();
@@ -52,54 +44,39 @@ public class TinyMonsterNavRoam : MonoBehaviour {
     private void Start()
     {
         lastPosition = transform.position;
-        EnterIdle();
     }
 
     private void Update()
     {
         UpdateFlipDirection();
-        UpdateAnimator();
 
-        stateTimer -= Time.deltaTime;
-
-        if (isPausedByMenu)
+        if (isPaused || !isRoaming)
         {
-            UpdateAnimator();
             lastPosition = transform.position;
             return;
         }
 
-        switch (currentState)
+        stateTimer -= Time.deltaTime;
+
+        if (isWalking)
         {
-            case MonsterState.Idle:
-                if (stateTimer <= 0f)
-                {
-                    TryMoveToRandomPoint();
-                }
-                break;
+            bool reachedDestination =
+                !agent.pathPending &&
+                agent.remainingDistance <= agent.stoppingDistance;
 
-            case MonsterState.Walk:
-                bool reachedDestination =
-                    !agent.pathPending &&
-                    agent.remainingDistance <= agent.stoppingDistance;
+            bool walkTimeout = stateTimer <= 0f;
 
-                bool walkTimeout = stateTimer <= 0f;
-
-                if (reachedDestination || walkTimeout)
-                {
-                    EnterIdle();
-                }
-                break;
-
-            case MonsterState.Happy:
-                if (stateTimer <= 0f)
-                {
-                    EnterIdle();
-                }
-                break;
-
-            case MonsterState.Sleep:
-                break;
+            if (reachedDestination || walkTimeout)
+            {
+                EnterIdleState();
+            }
+        }
+        else
+        {
+            if (stateTimer <= 0f)
+            {
+                TryMoveToRandomPoint();
+            }
         }
 
         lastPosition = transform.position;
@@ -115,23 +92,39 @@ public class TinyMonsterNavRoam : MonoBehaviour {
         agent.autoBraking = true;
     }
 
-    public void PauseForMenu()
+    public void StartRoaming()
     {
-        isPausedByMenu = true;
+        isRoaming = true;
+        isPaused = false;
+        EnterIdleState();
+    }
+
+    public void StopMovement()
+    {
+        isRoaming = false;
+        isWalking = false;
 
         if (agent != null && agent.enabled)
         {
             agent.ResetPath();
             agent.isStopped = true;
         }
+    }
 
-        currentState = MonsterState.Idle;
+    public void PauseForMenu()
+    {
+        isPaused = true;
+
+        if (agent != null && agent.enabled)
+        {
+            agent.ResetPath();
+            agent.isStopped = true;
+        }
     }
 
     public void ResumeAfterMenu()
     {
-        isPausedByMenu = false;
-        EnterIdle();
+        isPaused = false;
     }
 
     private void TryMoveToRandomPoint()
@@ -139,7 +132,7 @@ public class TinyMonsterNavRoam : MonoBehaviour {
         if (gardenBounds == null)
         {
             Debug.LogWarning($"{name}: Chưa gán gardenBounds.");
-            EnterIdle();
+            EnterIdleState();
             return;
         }
 
@@ -161,18 +154,18 @@ public class TinyMonsterNavRoam : MonoBehaviour {
                 agent.isStopped = false;
                 agent.SetDestination(hit.position);
 
-                currentState = MonsterState.Walk;
+                isWalking = true;
                 stateTimer = Random.Range(walkTimeRange.x, walkTimeRange.y);
                 return;
             }
         }
 
-        EnterIdle();
+        EnterIdleState();
     }
 
-    private void EnterIdle()
+    private void EnterIdleState()
     {
-        currentState = MonsterState.Idle;
+        isWalking = false;
         stateTimer = Random.Range(idleTimeRange.x, idleTimeRange.y);
 
         if (agent.enabled)
@@ -180,34 +173,6 @@ public class TinyMonsterNavRoam : MonoBehaviour {
             agent.ResetPath();
             agent.isStopped = true;
         }
-    }
-
-    public void PlayHappy(float duration = 1.2f)
-    {
-        currentState = MonsterState.Happy;
-        stateTimer = duration;
-
-        if (agent.enabled)
-        {
-            agent.ResetPath();
-            agent.isStopped = true;
-        }
-    }
-
-    public void Sleep()
-    {
-        currentState = MonsterState.Sleep;
-
-        if (agent.enabled)
-        {
-            agent.ResetPath();
-            agent.isStopped = true;
-        }
-    }
-
-    public void WakeUp()
-    {
-        EnterIdle();
     }
 
     private void UpdateFlipDirection()
@@ -218,14 +183,5 @@ public class TinyMonsterNavRoam : MonoBehaviour {
         {
             spriteRenderer.flipX = delta.x < 0f;
         }
-    }
-
-    private void UpdateAnimator()
-    {
-        if (animator == null) return;
-
-        animator.SetBool("IsWalking", currentState == MonsterState.Walk);
-        animator.SetBool("IsSleeping", currentState == MonsterState.Sleep);
-        animator.SetBool("IsHappy", currentState == MonsterState.Happy);
     }
 }
