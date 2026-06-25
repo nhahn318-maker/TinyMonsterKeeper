@@ -106,6 +106,10 @@ public class MonsterUIPanel : MonoBehaviour
         if (selectedMonster == null) return;
 
         TinyMonsterTouch monster = selectedMonster;
+        
+        // Tăng điểm thân thiện khi cho ăn
+        monster.AddFriendship(10);
+        
         Hide(false);
 
         if (monster.Controller != null)
@@ -114,7 +118,7 @@ public class MonsterUIPanel : MonoBehaviour
             monster.Controller.PlayHappy();
         }
 
-        Debug.Log($"Feed {monster.MonsterName}");
+        Debug.Log($"Feed {monster.MonsterName}. Current Friendship: {monster.Friendship}");
     }
 
     public void OnClickPlay()
@@ -122,6 +126,10 @@ public class MonsterUIPanel : MonoBehaviour
         if (selectedMonster == null) return;
 
         TinyMonsterTouch monster = selectedMonster;
+        
+        // Tăng điểm thân thiện khi chơi
+        monster.AddFriendship(15);
+        
         Hide(false);
 
         if (monster.Controller != null)
@@ -130,7 +138,7 @@ public class MonsterUIPanel : MonoBehaviour
             monster.Controller.PlayHappy();
         }
 
-        Debug.Log($"Play with {monster.MonsterName}");
+        Debug.Log($"Play with {monster.MonsterName}. Current Friendship: {monster.Friendship}");
     }
 
     private void UpdateInfo(TinyMonsterTouch monster)
@@ -140,15 +148,14 @@ public class MonsterUIPanel : MonoBehaviour
             nameText.text = monster.MonsterName;
         }
 
-        // TODO: Lấy friendship từ monster data
         if (friendshipBarFill != null)
         {
-            friendshipBarFill.fillAmount = 0.7f; // Temporary value (0.0 - 1.0)
+            friendshipBarFill.fillAmount = (float)monster.Friendship / 100f;
         }
 
         if (friendshipText != null)
         {
-            friendshipText.text = "Friendship";
+            friendshipText.text = $"{monster.Friendship}/100";
         }
     }
 

@@ -15,13 +15,25 @@ public class TinyMonsterController : MonoBehaviour
     [SerializeField] private TinyMonsterAnimationController animController;
     [SerializeField] private TinyMonsterEffects effects;
 
+    [Header("Data")]
+    [SerializeField] private MonsterData monsterData;
+
     [Header("State Timers")]
     [SerializeField] private float happyDuration = 3.0f;
 
     private MonsterState currentState;
     private float stateTimer;
+    private int friendship = 50;
 
     public MonsterState CurrentState => currentState;
+    public MonsterData Data => monsterData;
+    public string MonsterName => monsterData != null ? monsterData.monsterName : "Unknown";
+    public int Friendship => friendship;
+
+    public void AddFriendship(int amount)
+    {
+        friendship = Mathf.Clamp(friendship + amount, 0, 100);
+    }
 
     private void Awake()
     {
