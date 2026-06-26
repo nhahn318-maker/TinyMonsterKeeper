@@ -1,1 +1,229 @@
-File not found: d:\Game\TinyMonsterKeeper\Assets\docs\Tiny_Monster_Keeper_GDD_v0.2.docx
+Tiny Monster Keeper
+Game Design Document v0.3
+Bản chỉnh sửa: food sinh từ map, coin dùng mở khu mới, visitor kết bạn để unlock monster.
+1. Tổng quan
+Tiny Monster Keeper là game mobile dọc thuộc thể loại pet collecting / idle care / cozy garden. Người chơi chăm các monster nhỏ trong vườn, thu tài nguyên, mở rộng map và kết bạn với những monster mới ghé thăm.
+Fantasy chính
+Càng chăm monster, khu vườn càng sống động; càng mở rộng khu vườn, càng có nhiều monster đáng yêu ghé thăm và ở lại.
+2. Core gameplay chính
+Chăm monster→ tăng Friendship / Happiness→ monster sinh coin theo thời gian→ thu coin→ dùng coin mở khu mới trên map→ khu mới sinh food / resource→ dùng food để Feed monster hoặc visitor→ visitor đủ thân sẽ ở lại→ unlock monster mới
+Điểm quan trọng: Feed và Play không cộng coin trực tiếp. Feed/Play là hành động chăm sóc để tăng tình cảm. Coin đến từ hệ thống idle của monster và dùng chủ yếu để mở rộng map.
+3. Điều thu hút người chơi
+Monster có cảm xúc rõ: idle, đi lại, ngủ, vui, tim/music note khi được chăm.
+Friendship tạo cảm giác gắn bó dài hạn.
+Coin idle tạo lý do quay lại game.
+Map mở dần giúp người chơi thấy khu vườn lớn lên.
+Monster mới ghé thăm như visitor và cần được kết bạn.
+Food sinh từ cây, bụi, ao, hang làm khu vườn có cảm giác sống thật.
+4. Core loop chi tiết
+Loop
+Diễn giải
+Care Loop
+Tap monster → Feed/Play → Happy animation → effect → Friendship tăng
+Idle Coin Loop
+Monster sinh pending coin theo thời gian → tap coin bubble để collect
+Resource Loop
+Cây/bụi sinh food → tap collect → food vào inventory → dùng để Feed
+Visitor Loop
+Đạt điều kiện → visitor xuất hiện → cho đúng food/toy → đủ thân thì ở lại
+5. Gameplay systems
+5.1 Monster Behavior
+Monster tự đi trong garden bằng NavMeshPlus.
+State chính: Idle, Walk, Sleep, Happy.
+Mở menu thì monster tạm dừng.
+Feed/Play thành công thì chuyển Happy rồi quay lại hành vi thường.
+Sleep là hành vi tự động, không cần nút Sleep.
+5.2 Interaction Menu
+Tap monster để mở panel.
+Action Menu chỉ có Feed và Play.
+Info Panel hiển thị tên monster và thanh friendship.
+Tên monster dùng TextMeshPro, không vẽ cứng lên UI.
+5.3 Friendship / Happiness
+Hành động
+Kết quả
+Feed đúng food yêu thích
++2 Friendship, +20 Happiness
+Feed food thường
++1 Friendship, +10 Happiness
+Play đúng toy yêu thích
++2 Friendship, +20 Happiness
+Play thường
++1 Friendship, +10 Happiness
+5.4 Food sinh từ map
+Resource Node
+Khu vực
+Sinh ra
+Timer MVP
+Max
+Apple Tree
+Main Garden
+Apple
+30 giây
+3
+Berry Bush
+Berry Area
+Candy Berry
+45 giây
+3
+Mushroom Patch
+Mushroom Corner
+Mushroom
+60 giây
+3
+Warm Cave
+Cave Area
+Warm Snack
+90 giây
+2
+5.5 Coin generation
+tickTime = 10 giâybaseCoin = 1friendshipBonus = friendship / 5coinPerTick = baseCoin + friendshipBonuspendingCoinMax = 20
+5.6 Map expansion
+Khu vực
+Giá mở
+Mở khóa gì
+Ý nghĩa
+Main Garden
+Có sẵn
+Leafy + Apple Tree
+Dạy care/resource loop
+Berry Area
+50 coin
+Berry Bush + Bloop visitor
+Dạy map unlock + visitor
+Mushroom Corner
+120 coin
+Mushroom Patch + Mimi
+Tăng food variety
+Pond Area
+200 coin
+Ao nhỏ + water visitor
+Mở nhóm nước
+Warm Cave
+300 coin
+Warm Snack + Flamy
+Mở nhóm lửa
+5.7 Visitor / Monster unlock
+Monster
+Điều kiện xuất hiện
+Cách kết bạn
+Unlock
+Leafy
+Có sẵn
+Không cần
+Monster đầu tiên
+Bloop
+Mở Berry Area
+Cho Candy Berry 2 lần
+Ở lại vĩnh viễn
+Puff
+Có Ball hoặc Play đủ lần
+Play với Ball 2 lần
+Ở lại vĩnh viễn
+Mimi
+Mở Mushroom Corner
+Cho Mushroom 2 lần
+Ở lại vĩnh viễn
+Flamy
+Mở Warm Cave
+Cho Warm Snack 3 lần
+Ở lại vĩnh viễn
+6. MVP đề xuất
+1 garden scene.
+1 monster đầu tiên: Leafy.
+Apple Tree sinh Apple mỗi 30 giây, tối đa 3 Apple.
+Feed Leafy bằng Apple tăng friendship.
+Leafy sinh coin theo thời gian.
+Tap coin bubble để collect coin.
+Dùng 50 coin mở Berry Area.
+Berry Bush sinh Candy Berry.
+Bloop xuất hiện như visitor.
+Cho Bloop Candy Berry 2 lần để Bloop ở lại.
+7. UI / UX
+UI
+Nội dung
+Ghi chú
+Top HUD
+Coin, food inventory shortcut
+Luôn hiện
+Action Menu
+Feed, Play
+Hiện khi tap monster
+Info Panel
+Monster name + Friendship bar
+Tên dùng TMP
+Food Select Panel
+Apple, Candy Berry, Mushroom, Snack
+Chỉ hiện food đang có
+Coin Bubble
+Pending coin
+Tap collect
+Resource Ready Bubble
+Food sẵn sàng
+Tap cây/bụi để thu
+Visitor Request Bubble
+Food/toy visitor muốn
+Giúp unlock monster mới
+Map Unlock Panel
+Tên khu, giá coin, preview reward
+Dùng mở khu mới
+8. UI asset size
+Asset
+Size gốc
+Size Unity x4
+Monster
+32x32
+128x128
+Action Button
+64x64
+256x256
+Action Menu Panel
+144x80
+576x320
+Food Icon
+16x16
+64x64
+Info Panel
+160x88
+640x352
+Friendship Bar Outer
+112x20
+448x80
+Friendship Fill Max
+108x16
+432x64
+Resource Node Icon
+32x32
+128x128
+9. Data design
+Data
+Fields chính
+MonsterData
+monsterId, monsterName, prefab, favoriteFoodId, favoriteToyId, icon, unlockConditionId, coinBaseRate
+FoodData
+foodId, foodName, icon, friendshipValue, happinessValue, sourceNodeId
+ResourceNodeData
+nodeId, nodeName, producedFoodId, produceTime, maxStorage, areaId
+MapAreaData
+areaId, areaName, unlockCost, resourceNodes, visitorMonsterIds, previewIcon
+SaveData
+coin, foodInventory, unlockedAreaIds, unlockedMonsterIds, friendshipById, visitorProgress, lastSaveTime
+10. Art direction
+Pixel art cozy, ít màu, rõ silhouette.
+Monster gameplay size 32x32.
+Food icon nên vẽ 16x16 và scale x4.
+UI nền kem, outline xanh đậm/nâu, highlight xanh lá.
+Text tên monster dùng TextMeshPro font Pixelify Sans hoặc Silkscreen.
+Texture Type: Sprite (2D and UI)Sprite Mode: SingleFilter Mode: Point (no filter)Compression: NoneGenerate Physics Shape: OffWrap Mode: Clamp
+11. MVP acceptance
+[ ] Vào GardenScene thấy Leafy tự idle/walk.
+[ ] Tap Leafy hiện Action Menu và Info Panel.
+[ ] Feed Leafy bằng Apple làm Leafy Happy và hiện heart effect.
+[ ] Feed tăng Friendship, không cộng coin trực tiếp.
+[ ] Apple Tree sinh Apple theo thời gian và có thể collect.
+[ ] Leafy sinh pending coin theo thời gian.
+[ ] Tap coin bubble để collect coin.
+[ ] Đủ coin mở Berry Area.
+[ ] Berry Bush sinh Candy Berry.
+[ ] Bloop xuất hiện như visitor.
+[ ] Cho Bloop Candy Berry đủ số lần để Bloop ở lại.
+[ ] Save/load lưu coin, food, friendship, area unlock và monster unlock.

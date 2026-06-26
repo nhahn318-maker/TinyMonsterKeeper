@@ -1,1 +1,194 @@
-File not found: d:\Game\TinyMonsterKeeper\Assets\docs\Tiny_Monster_Keeper_Production_Task_List_v0.2.docx
+Tiny Monster Keeper
+Production Task List v0.3
+Bản chỉnh sửa: food sinh từ map, coin dùng mở khu mới, visitor kết bạn để unlock monster.
+1. Trạng thái hiện tại
+Đã có Leafy idle / walk / happy / sleep animation.
+Đã import monster vào Unity và setup Animator.
+Đã setup NavMeshPlus cho monster 2D.
+Monster tự đi lại trong garden.
+Tap / click vào monster đã hiện Action Menu.
+Menu có Feed và Play.
+Bấm Feed làm monster chuyển sang Happy.
+Feed đã có heart effect.
+Định hướng mới: Feed/Play tăng Friendship, không cộng coin trực tiếp.
+Định hướng mới: Food sinh từ resource node trên map, coin dùng để mở khu mới.
+2. Folder Structure
+Assets/├── Art/Monsters, UI, Items, Effects, Decorations, ResourceNodes, Tiles├── Prefabs/Monsters, UI, Effects, ResourceNodes, MapAreas, Decorations├── Scripts/Core, Monster, UI, Interaction, Economy, Inventory│   └── ResourceNode, MapUnlock, Visitor, SaveLoad, Data├── ScriptableObjects/Monsters, Food, Toy, ResourceNodes, MapAreas└── Scenes/
+3. Dev Backlog
+3.1 Monster System
+[ ] Giữ TinyMonsterNavRoam dùng NavMeshPlus.
+[ ] Hoàn thiện state Idle / Walk / Happy / Sleep.
+[ ] Thêm Auto Sleep timer.
+[ ] Khi Sleep thì dừng random walk.
+[ ] Mở menu thì PauseForMenu, tắt menu thì ResumeAfterMenu.
+[ ] Tách runtime data khỏi MonsterData ScriptableObject.
+3.2 Interaction System
+[ ] Tap monster hiện ActionMenuUI.
+[ ] ActionMenuUI chỉ có Feed và Play.
+[ ] Tap monster đồng thời hiện MonsterInfoUI.
+[ ] MonsterInfoUI hiển thị tên monster bằng TextMeshPro.
+[ ] MonsterInfoUI hiển thị Friendship Bar.
+[ ] Bấm Feed mở FoodSelectPanel thay vì cộng coin.
+[ ] Bấm Play chạy Play flow riêng.
+3.3 Food / Inventory System
+[ ] Tạo FoodData ScriptableObject.
+[ ] Tạo InventoryManager lưu số lượng từng foodId.
+[ ] Tạo FoodSelectPanel chỉ hiện food đang có.
+[ ] Food số lượng = 0 thì disable button.
+[ ] Feed thành công trừ 1 food khỏi inventory.
+[ ] Feed đúng món yêu thích +2 Friendship.
+[ ] Feed sai món +1 Friendship.
+[ ] UI inventory cập nhật sau collect/feed.
+3.4 Resource Node System
+[ ] Tạo ResourceNodeData.
+[ ] Tạo ResourceNodeController.
+[ ] Apple Tree sinh Apple mỗi 30 giây.
+[ ] Resource node có max storage.
+[ ] Có food thì hiện ready bubble.
+[ ] Tap node để collect toàn bộ food.
+[ ] Collect xong inventory tăng.
+[ ] Node bị khóa nếu area chưa unlock.
+3.5 Friendship System
+[ ] Tạo TinyMonsterStats hoặc MonsterRuntimeData.
+[ ] Lưu friendship riêng theo monsterId.
+[ ] Feed/Play chỉ tăng friendship/happiness.
+[ ] Friendship bar cập nhật theo monster đang chọn.
+[ ] Friendship ảnh hưởng coin generation bonus.
+[ ] Friendship có thể kích hoạt visitor condition.
+3.6 Coin Economy
+[ ] Tạo CurrencyManager quản lý coin tổng.
+[ ] Tạo MonsterCoinGenerator trên mỗi monster.
+[ ] Monster tạo pending coin theo timer.
+[ ] Friendship cao tăng coinPerTick.
+[ ] Coin không tự cộng vào ví.
+[ ] Hiện CoinBubble khi có pending coin.
+[ ] Tap CoinBubble để collect.
+[ ] Coin dùng mở area, không mua food trực tiếp.
+3.7 Map Unlock System
+[ ] Tạo MapAreaData ScriptableObject.
+[ ] Tạo MapAreaUnlocker.
+[ ] Main Garden unlocked mặc định.
+[ ] Berry Area cần 50 coin để unlock.
+[ ] Unlock area thì active resource node mới.
+[ ] Unlock Berry Area thì Bloop visitor có thể xuất hiện.
+[ ] MapUnlockPanel hiển thị tên area, giá coin và reward preview.
+[ ] SpendCoin khi unlock thành công.
+3.8 Visitor / Unlock Monster System
+[ ] Tạo VisitorManager.
+[ ] Tạo VisitorProgress data.
+[ ] Visitor xuất hiện tạm thời khi đạt condition.
+[ ] Visitor có favoriteFoodId / favoriteToyId.
+[ ] Cho đúng food tăng visitor friendship.
+[ ] Đủ progress thì chuyển visitor thành unlocked monster.
+[ ] Hiện popup New Monster Joined.
+[ ] Spawn monster mới vào garden.
+Food MVP
+Nguồn
+Dùng cho
+Apple
+Apple Tree
+Leafy favorite food
+Candy Berry
+Berry Bush
+Bloop visitor
+Mushroom
+Mushroom Patch
+Mimi visitor
+Warm Snack
+Warm Cave
+Flamy visitor
+Area
+Cost
+Reward
+Main Garden
+0
+Leafy + Apple Tree
+Berry Area
+50
+Berry Bush + Bloop visitor
+Mushroom Corner
+120
+Mushroom Patch + Mimi visitor
+Pond Area
+200
+Pond node + water visitor
+Warm Cave
+300
+Warm Snack + Flamy visitor
+UI Prefab
+Trạng thái
+Ghi chú
+ActionMenuPanel
+Done basic
+Feed / Play
+MonsterInfoPanel
+Todo
+Tên + friendship bar
+FoodSelectPanel
+Todo
+Chọn food trong inventory
+CoinBubble
+Todo
+Collect pending coin
+ResourceReadyBubble
+Todo
+Hiện trên cây/bụi khi có food
+MapUnlockPanel
+Todo
+Mở area bằng coin
+VisitorRequestBubble
+Todo
+Hiện món visitor muốn
+NewMonsterPopup
+Todo
+Thông báo monster ở lại
+4. Sprint Plan gần nhất
+Sprint 1 - Friendship + Apple Tree
+[ ] Tạo FoodData Apple.
+[ ] Tạo InventoryManager.
+[ ] Tạo Apple Tree prefab.
+[ ] Apple Tree sinh Apple mỗi 30 giây.
+[ ] Tap Apple Tree collect Apple.
+[ ] FoodSelectPanel chọn Apple.
+[ ] Feed Leafy trừ Apple và tăng Friendship.
+[ ] MonsterInfoPanel cập nhật Friendship Bar.
+Sprint 2 - Idle Coin + Coin Bubble
+[ ] Tạo CurrencyManager.
+[ ] Tạo MonsterCoinGenerator.
+[ ] Tạo CoinBubble prefab.
+[ ] Leafy sinh pending coin mỗi 10 giây.
+[ ] Tap CoinBubble collect coin.
+[ ] Coin UI cập nhật.
+Sprint 3 - Map Unlock + Berry Area
+[ ] Tạo MapAreaData.
+[ ] Tạo MapUnlockPanel.
+[ ] Tạo Berry Area locked state.
+[ ] Dùng 50 coin mở Berry Area.
+[ ] Sau unlock active Berry Bush.
+[ ] Berry Bush sinh Candy Berry.
+Sprint 4 - Bloop Visitor Unlock
+[ ] Tạo Bloop visitor prefab tạm.
+[ ] Bloop xuất hiện khi Berry Area unlocked.
+[ ] Bloop yêu cầu Candy Berry.
+[ ] Cho Bloop Candy Berry 2 lần.
+[ ] Hiện popup Bloop joined.
+[ ] Bloop ở lại garden như monster chính.
+5. Definition of Done
+Chạy được trong Unity không có lỗi console nghiêm trọng.
+Test được bằng mouse và touch.
+Không code riêng cứng cho Leafy nếu có thể dùng monsterId.
+UI pixel không bị mờ.
+Không dùng scale lẻ cho pixel art.
+Data có thể mở rộng cho nhiều monster / food / area.
+Feed không cộng coin trực tiếp.
+Coin dùng để mở map hoặc upgrade, không mua food trực tiếp.
+6. Next Action
+Làm ngay tiếp theo
+Ưu tiên tạo Apple Tree + Inventory + Feed trừ Apple. Khi Feed đã tăng friendship ổn, mới làm coin bubble và map unlock.
+Tạo FoodData Apple.
+Tạo InventoryManager.
+Tạo Apple Tree sinh Apple mỗi 30 giây.
+Tap Apple Tree để collect Apple.
+FoodSelectPanel hiển thị Apple count.
+Feed Leafy trừ Apple và tăng Friendship.
+Info Panel cập nhật Friendship Bar.
