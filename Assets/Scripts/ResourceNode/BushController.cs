@@ -48,6 +48,8 @@ public class BushController : MonoBehaviour {
     [Header("Click Priority")]
     [SerializeField] private LayerMask pickupLayer;
 
+    [Header("Ready Bubble")]
+    [SerializeField] private GameObject readyBubbleObject;
 
     private BushState currentState = BushState.Normal;
     private float timer;
@@ -218,8 +220,16 @@ public class BushController : MonoBehaviour {
         timer = 0f;
 
         ReturnToStaticSprite();
+        UpdateReadyBubble();
 
         Debug.Log($"Bush State: {currentState}");
+    }
+    private void UpdateReadyBubble()
+    {
+        if (readyBubbleObject == null) return;
+
+        bool shouldShow = currentState == BushState.Fruiting;
+        readyBubbleObject.SetActive(shouldShow);
     }
 
     private void ReturnToStaticSprite()

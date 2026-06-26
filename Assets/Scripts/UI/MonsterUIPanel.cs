@@ -22,6 +22,7 @@ public class MonsterUIPanel : MonoBehaviour
 
     private TinyMonsterTouch selectedMonster;
     private RectTransform canvasRect;
+
     private Camera CanvasCamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
         ? canvas.worldCamera
         : null;
