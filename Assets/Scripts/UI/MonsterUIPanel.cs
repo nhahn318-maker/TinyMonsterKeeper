@@ -16,18 +16,21 @@ public class MonsterUIPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private Image friendshipBarFill;
     [SerializeField] private TextMeshProUGUI friendshipText;
+    [SerializeField] private TextMeshProUGUI feedCostText;
+
 
     [Header("Feed Settings")]
     [SerializeField] private ItemData berryItemData;
-    [SerializeField] private int berryCostPerFeed = 1;
-    [SerializeField] private int feedFriendshipGain = 10;
     [SerializeField] private int playFriendshipGain = 15;
+
+
 
     [Header("HUD Warning")]
     [SerializeField] private HUDItemCounterUI berryHUDCounter;
 
     [Header("Position")]
     [SerializeField] private Vector2 screenOffset = new Vector2(0f, 100f);
+
 
     private TinyMonsterTouch selectedMonster;
     private RectTransform canvasRect;
@@ -129,20 +132,23 @@ public class MonsterUIPanel : MonoBehaviour
 
         TinyMonsterTouch monster = selectedMonster;
 
+        int berryCost = monster.BerryCostPerFeed;
+        int friendshipGain = monster.FeedFriendshipGain;
+
         int currentBerry = InventoryManager.Instance.GetItemAmount(berryItemData);
 
-        if (currentBerry < berryCostPerFeed)
+        if (currentBerry < berryCost)
         {
             if (berryHUDCounter != null)
             {
                 berryHUDCounter.PlayWarningFlash();
             }
 
-            Debug.Log($"Không đủ berry! Cần {berryCostPerFeed}, hiện có {currentBerry}");
+            Debug.Log($"Không đủ berry! {monster.MonsterName} cần {berryCost}, hiện có {currentBerry}");
             return;
         }
 
-        bool removed = InventoryManager.Instance.RemoveItem(berryItemData, berryCostPerFeed);
+        bool removed = InventoryManager.Instance.RemoveItem(berryItemData, berryCost);
 
         if (!removed)
         {
@@ -155,7 +161,7 @@ public class MonsterUIPanel : MonoBehaviour
             return;
         }
 
-        monster.AddFriendship(feedFriendshipGain);
+        monster.AddFriendship(friendshipGain);
 
         UpdateInfo(monster);
 
@@ -167,7 +173,7 @@ public class MonsterUIPanel : MonoBehaviour
             monster.Controller.PlayHappy();
         }
 
-        Debug.Log($"Feed {monster.MonsterName}. Used {berryCostPerFeed} berry. Berry left: {InventoryManager.Instance.GetItemAmount(berryItemData)}. Current Friendship: {monster.Friendship}");
+        Debug.Log($"Feed {monster.MonsterName}. Used {berryCost} berry. Berry left: {InventoryManager.Instance.GetItemAmount(berryItemData)}. Current Friendship: {monster.Friendship}");
     }
 
     public void OnClickPlay()
@@ -208,8 +214,12 @@ public class MonsterUIPanel : MonoBehaviour
         {
             friendshipText.text = $"{monster.Friendship}/{monster.MaxFriendship}";
         }
-    } 
 
+        if (feedCostText != null)
+        {
+            feedCostText.text = $"x{monster.BerryCostPerFeed}";
+        }
+    }
     private bool WasPointerPressedOutsidePanel()
     {
         if (Input.GetMouseButtonDown(0))

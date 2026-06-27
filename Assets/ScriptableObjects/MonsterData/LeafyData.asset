@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: LeafyData
   m_EditorClassIdentifier: 
   id: 001
-  monsterName: LeafyData
+  monsterName: Leafy
   icon: {fileID: -682142402, guid: 866575b0e27e3e0418d87b9895315d2c, type: 3}
   prefab: {fileID: 242072064891303551, guid: a9f45997d79cb0f42bc25471c0f3a401, type: 3}
   favoriteFoodId: 
   favoriteToyId: 
+  berryCostPerFeed: 1
+  feedFriendshipGain: 10
   unlockAppealCost: 0
   unlockFriendshipCost: 0
   unlockRequiredItemId: 

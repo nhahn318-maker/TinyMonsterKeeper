@@ -12,8 +12,12 @@ public class MonsterData : ScriptableObject {
     public string favoriteFoodId; // ID món ăn ưa thích
     public string favoriteToyId;  // ID đồ chơi ưa thích
 
+    [Header("Feed Settings")]
+    public int berryCostPerFeed = 1;
+    public int feedFriendshipGain = 10;
+
     [Header("Unlock Conditions")]
-    public int unlockAppealCost;      // Điểm appeal cần thiết để mở khóa
-    public int unlockFriendshipCost;  // Tổng điểm friendship cần thiết (nếu có)
-    public string unlockRequiredItemId; // Item cụ thể cần sở hữu để mở (như Ao Nhỏ - D004)
+    public int unlockAppealCost;
+    public int unlockFriendshipCost;
+    public string unlockRequiredItemId;
 }

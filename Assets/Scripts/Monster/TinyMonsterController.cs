@@ -30,8 +30,11 @@ public class TinyMonsterController : MonoBehaviour {
     public MonsterData Data => monsterData;
     public string MonsterName => monsterData != null ? monsterData.monsterName : "Unknown";
 
+
     public int Friendship => friendship;
     public int MaxFriendship => maxFriendship;
+    public int BerryCostPerFeed => monsterData != null ? monsterData.berryCostPerFeed : 1;
+    public int FeedFriendshipGain => monsterData != null ? monsterData.feedFriendshipGain : 10;
 
     private void Start()
     {

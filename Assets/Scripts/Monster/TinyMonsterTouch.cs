@@ -10,6 +10,8 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
     public string MonsterName => controller != null ? controller.MonsterName : "Unknown";
     public int Friendship => controller != null ? controller.Friendship : 0;
     public int MaxFriendship => controller != null ? controller.MaxFriendship : 100;
+    public int BerryCostPerFeed => controller != null ? controller.BerryCostPerFeed : 1;
+    public int FeedFriendshipGain => controller != null ? controller.FeedFriendshipGain : 10;
 
     private void Awake()
     {
