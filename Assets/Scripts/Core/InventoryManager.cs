@@ -52,4 +52,26 @@ public class InventoryManager : MonoBehaviour {
 
         return 0;
     }
+
+    public bool RemoveItem(ItemData itemData, int amount)
+    {
+        if (itemData == null) return false;
+        if (amount <= 0) return false;
+
+        string id = itemData.itemId;
+
+        int currentAmount = GetItemAmount(itemData);
+
+        if (currentAmount < amount)
+        {
+            Debug.Log("Not enough item: " + itemData.itemName);
+            return false;
+        }
+
+        itemAmounts[id] = currentAmount - amount;
+
+        Debug.Log($"Removed {amount} {itemData.itemName}. Total: {itemAmounts[id]}");
+
+        return true;
+    }
 }

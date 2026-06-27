@@ -1440,6 +1440,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 902707e628a9ab941a10adff3fedc1a7, type: 2}
   countText: {fileID: 150095871}
+  panelImage: {fileID: 894723209}
+  normalPanelSprite: {fileID: 21300000, guid: 9fe2c4693b6c6b640bbad9efe34ade05, type: 3}
+  warningPanelSprite: {fileID: 21300000, guid: 9a0731099378d9c4db6c19cac32816c0, type: 3}
+  normalTextColor: {r: 0, g: 0, b: 0, a: 1}
+  warningTextColor: {r: 1, g: 0, b: 0.18120766, a: 1}
+  flashCount: 3
+  flashInterval: 0.12
 --- !u!114 &894723209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2449,6 +2456,11 @@ MonoBehaviour:
   nameText: {fileID: 910327632}
   friendshipBarFill: {fileID: 61070347}
   friendshipText: {fileID: 1268086042}
+  berryItemData: {fileID: 11400000, guid: 902707e628a9ab941a10adff3fedc1a7, type: 2}
+  berryCostPerFeed: 1
+  feedFriendshipGain: 10
+  playFriendshipGain: 15
+  berryHUDCounter: {fileID: 894723208}
   screenOffset: {x: -200, y: 1100}
 --- !u!1 &1962945509
 GameObject:

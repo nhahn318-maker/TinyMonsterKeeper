@@ -2,29 +2,47 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Collider2D))]
-public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler
-{
+public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private TinyMonsterController controller;
 
     public TinyMonsterController Controller => controller;
+
     public string MonsterName => controller != null ? controller.MonsterName : "Unknown";
     public int Friendship => controller != null ? controller.Friendship : 0;
+    public int MaxFriendship => controller != null ? controller.MaxFriendship : 100;
 
     private void Awake()
     {
-        // Không tự tìm - yêu cầu kéo thả trong Inspector
+        // Không tự tìm - kéo TinyMonsterController vào Inspector
     }
 
     public void AddFriendship(int amount)
     {
+        if (controller == null)
+        {
+            Debug.LogWarning("TinyMonsterController is missing on TinyMonsterTouch!");
+            return;
+        }
+
+        controller.AddFriendship(amount);
+    }
+
+    public void PlayHappy()
+    {
         if (controller != null)
         {
-            controller.AddFriendship(amount);
+            controller.PlayHappy();
         }
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (MonsterUIPanel.Instance == null)
+        {
+            Debug.LogWarning("MonsterUIPanel Instance is missing!");
+            return;
+        }
+
         MonsterUIPanel.Instance.Show(this);
     }
 }

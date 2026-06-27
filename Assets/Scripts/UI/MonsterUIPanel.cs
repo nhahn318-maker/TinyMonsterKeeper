@@ -17,6 +17,15 @@ public class MonsterUIPanel : MonoBehaviour
     [SerializeField] private Image friendshipBarFill;
     [SerializeField] private TextMeshProUGUI friendshipText;
 
+    [Header("Feed Settings")]
+    [SerializeField] private ItemData berryItemData;
+    [SerializeField] private int berryCostPerFeed = 1;
+    [SerializeField] private int feedFriendshipGain = 10;
+    [SerializeField] private int playFriendshipGain = 15;
+
+    [Header("HUD Warning")]
+    [SerializeField] private HUDItemCounterUI berryHUDCounter;
+
     [Header("Position")]
     [SerializeField] private Vector2 screenOffset = new Vector2(0f, 100f);
 
@@ -106,11 +115,50 @@ public class MonsterUIPanel : MonoBehaviour
     {
         if (selectedMonster == null) return;
 
+        if (InventoryManager.Instance == null)
+        {
+            Debug.LogWarning("InventoryManager is missing!");
+            return;
+        }
+
+        if (berryItemData == null)
+        {
+            Debug.LogWarning("Berry ItemData is missing on MonsterUIPanel!");
+            return;
+        }
+
         TinyMonsterTouch monster = selectedMonster;
-        
-        // Tăng điểm thân thiện khi cho ăn
-        monster.AddFriendship(10);
-        
+
+        int currentBerry = InventoryManager.Instance.GetItemAmount(berryItemData);
+
+        if (currentBerry < berryCostPerFeed)
+        {
+            if (berryHUDCounter != null)
+            {
+                berryHUDCounter.PlayWarningFlash();
+            }
+
+            Debug.Log($"Không đủ berry! Cần {berryCostPerFeed}, hiện có {currentBerry}");
+            return;
+        }
+
+        bool removed = InventoryManager.Instance.RemoveItem(berryItemData, berryCostPerFeed);
+
+        if (!removed)
+        {
+            if (berryHUDCounter != null)
+            {
+                berryHUDCounter.PlayWarningFlash();
+            }
+
+            Debug.Log("Remove berry failed!");
+            return;
+        }
+
+        monster.AddFriendship(feedFriendshipGain);
+
+        UpdateInfo(monster);
+
         Hide(false);
 
         if (monster.Controller != null)
@@ -119,7 +167,7 @@ public class MonsterUIPanel : MonoBehaviour
             monster.Controller.PlayHappy();
         }
 
-        Debug.Log($"Feed {monster.MonsterName}. Current Friendship: {monster.Friendship}");
+        Debug.Log($"Feed {monster.MonsterName}. Used {berryCostPerFeed} berry. Berry left: {InventoryManager.Instance.GetItemAmount(berryItemData)}. Current Friendship: {monster.Friendship}");
     }
 
     public void OnClickPlay()
@@ -127,10 +175,11 @@ public class MonsterUIPanel : MonoBehaviour
         if (selectedMonster == null) return;
 
         TinyMonsterTouch monster = selectedMonster;
-        
-        // Tăng điểm thân thiện khi chơi
-        monster.AddFriendship(15);
-        
+
+        monster.AddFriendship(playFriendshipGain);
+
+        UpdateInfo(monster);
+
         Hide(false);
 
         if (monster.Controller != null)
@@ -151,14 +200,15 @@ public class MonsterUIPanel : MonoBehaviour
 
         if (friendshipBarFill != null)
         {
-            friendshipBarFill.fillAmount = (float)monster.Friendship / 100f;
+            float fillAmount = (float)monster.Friendship / monster.MaxFriendship;
+            friendshipBarFill.fillAmount = fillAmount;
         }
 
         if (friendshipText != null)
         {
-            friendshipText.text = $"{monster.Friendship}/100";
+            friendshipText.text = $"{monster.Friendship}/{monster.MaxFriendship}";
         }
-    }
+    } 
 
     private bool WasPointerPressedOutsidePanel()
     {
