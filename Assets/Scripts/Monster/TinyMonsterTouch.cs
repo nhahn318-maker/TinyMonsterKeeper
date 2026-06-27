@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(Collider2D))]
 public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private TinyMonsterController controller;
+    [SerializeField] private TinyMonsterCoinProducer coinProducer;
 
     public TinyMonsterController Controller => controller;
 
@@ -15,7 +16,8 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
 
     private void Awake()
     {
-        // Không tự tìm - kéo TinyMonsterController vào Inspector
+        if (coinProducer == null)
+            coinProducer = GetComponent<TinyMonsterCoinProducer>();
     }
 
     public void AddFriendship(int amount)
@@ -39,6 +41,12 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (coinProducer != null && coinProducer.HasCoinToCollect)
+        {
+            coinProducer.CollectCoin();
+            return;
+        }
+
         if (MonsterUIPanel.Instance == null)
         {
             Debug.LogWarning("MonsterUIPanel Instance is missing!");

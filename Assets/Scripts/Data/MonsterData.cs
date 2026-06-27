@@ -16,8 +16,15 @@ public class MonsterData : ScriptableObject {
     public int berryCostPerFeed = 1;
     public int feedFriendshipGain = 10;
 
+    [Header("Coin Production")]
+    public int coinPerTick = 1;
+    public float coinTickInterval = 30f;
+    public int maxStoredCoin = 240;
+
     [Header("Unlock Conditions")]
     public int unlockAppealCost;
     public int unlockFriendshipCost;
     public string unlockRequiredItemId;
+
+
 }
