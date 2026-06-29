@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryManager : MonoBehaviour {
     public static InventoryManager Instance { get; private set; }
+
+    public event Action OnInventoryChanged;
 
     private Dictionary<string, int> itemAmounts = new Dictionary<string, int>();
 
@@ -38,6 +41,8 @@ public class InventoryManager : MonoBehaviour {
             itemAmounts.Add(id, amount);
         }
 
+        OnInventoryChanged?.Invoke();
+
         Debug.Log($"Added {amount} {itemData.itemName}. Total: {itemAmounts[id]}");
     }
 
@@ -69,6 +74,8 @@ public class InventoryManager : MonoBehaviour {
         }
 
         itemAmounts[id] = currentAmount - amount;
+
+        OnInventoryChanged?.Invoke();
 
         Debug.Log($"Removed {amount} {itemData.itemName}. Total: {itemAmounts[id]}");
 

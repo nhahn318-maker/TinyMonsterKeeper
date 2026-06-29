@@ -44,6 +44,18 @@ public class CookingPotPanelUI : MonoBehaviour {
         Hide();
     }
 
+    private void OnEnable()
+    {
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.OnInventoryChanged += HandleInventoryChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.OnInventoryChanged -= HandleInventoryChanged;
+    }
+
     public void Show(CookingPotController pot)
     {
         currentPot = pot;
@@ -190,5 +202,13 @@ public class CookingPotPanelUI : MonoBehaviour {
 
         if (cookButton != null)
             cookButton.interactable = CanCook();
+    }
+
+    private void HandleInventoryChanged()
+    {
+        if (panelRoot == null || !panelRoot.activeSelf)
+            return;
+
+        RefreshUI();
     }
 }
