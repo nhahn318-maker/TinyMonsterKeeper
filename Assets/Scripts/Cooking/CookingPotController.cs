@@ -4,26 +4,54 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class CookingPotController : MonoBehaviour, IPointerClickHandler {
+    [System.Serializable]
+    private struct CookingRecipe
+    {
+        public string resultName;
+        public string requiredItemId;
+        public int requiredCount;
+        public float cookDuration;
+    }
+
     [Header("Visual")]
     [SerializeField] private SpriteRenderer potRenderer;
     [SerializeField] private Sprite emptySprite;
     [SerializeField] private Sprite cookingSprite;
+    [SerializeField] private Sprite[] cookingAnimationFrames;
     [SerializeField] private Sprite doneSprite;
+    [SerializeField] private float cookingAnimationFps = 6f;
 
     [Header("Effects")]
     [SerializeField] private GameObject cookingBubblesObject;
     [SerializeField] private GameObject readyBubbleObject;
+    [SerializeField] private GameObject progressBarObject;
+    [SerializeField] private Transform progressFillTransform;
 
-    [Header("Cooking")]
-    [SerializeField] private float cookDuration = 30f;
+    [Header("Recipes")]
+    [SerializeField] private CookingRecipe berrySoupRecipe = new CookingRecipe
+    {
+        resultName = "Berry Soup",
+        requiredItemId = "berry",
+        requiredCount = 3,
+        cookDuration = 10f
+    };
 
     private bool isCooking;
     private bool isDone;
+    private Vector3 progressFillInitialScale;
+    private Vector3 progressFillInitialLocalPosition;
+    private float currentCookDuration;
 
     private void Awake()
     {
         if (potRenderer == null)
             potRenderer = GetComponent<SpriteRenderer>();
+
+        if (progressFillTransform != null)
+        {
+            progressFillInitialScale = progressFillTransform.localScale;
+            progressFillInitialLocalPosition = progressFillTransform.localPosition;
+        }
 
         SetEmptyVisual();
     }
@@ -72,27 +100,44 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return false;
         }
 
+        if (!TryResolveRecipe(ingredients, out CookingRecipe recipe))
+        {
+            Debug.LogWarning("No cooking recipe matched these ingredients.");
+            return false;
+        }
+
         ConsumeIngredients(ingredients);
-        StartCoroutine(CookingRoutine());
+        StartCoroutine(CookingRoutine(recipe));
 
         return true;
     }
 
-    private IEnumerator CookingRoutine()
+    private IEnumerator CookingRoutine(CookingRecipe recipe)
     {
         isCooking = true;
         isDone = false;
+        currentCookDuration = Mathf.Max(0.1f, recipe.cookDuration);
 
         SetCookingVisual();
 
-        yield return new WaitForSeconds(cookDuration);
+        float elapsed = 0f;
+        UpdateProgressBar(0f);
+
+        while (elapsed < currentCookDuration)
+        {
+            elapsed += Time.deltaTime;
+            UpdateCookingAnimation(elapsed);
+            UpdateProgressBar(elapsed / currentCookDuration);
+            yield return null;
+        }
 
         isCooking = false;
         isDone = true;
+        UpdateProgressBar(1f);
 
         SetDoneVisual();
 
-        Debug.Log("Cooking done! Tap pot to attract visitor.");
+        Debug.Log($"{recipe.resultName} is done! Tap pot to attract visitor.");
     }
 
     private bool CanConsumeIngredients(List<ItemData> ingredients)
@@ -151,6 +196,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private void CollectCookResult()
     {
         isDone = false;
+        currentCookDuration = 0f;
 
         SetEmptyVisual();
 
@@ -168,6 +214,11 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (readyBubbleObject != null)
             readyBubbleObject.SetActive(false);
+
+        if (progressBarObject != null)
+            progressBarObject.SetActive(false);
+
+        UpdateProgressBar(0f);
     }
 
     private void SetCookingVisual()
@@ -180,6 +231,11 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (readyBubbleObject != null)
             readyBubbleObject.SetActive(false);
+
+        if (progressBarObject != null)
+            progressBarObject.SetActive(true);
+
+        UpdateCookingAnimation(0f);
     }
 
     private void SetDoneVisual()
@@ -197,5 +253,61 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (readyBubbleObject != null)
             readyBubbleObject.SetActive(true);
+
+        if (progressBarObject != null)
+            progressBarObject.SetActive(false);
+    }
+
+    private bool TryResolveRecipe(List<ItemData> ingredients, out CookingRecipe recipe)
+    {
+        recipe = default;
+
+        if (ingredients == null || ingredients.Count != berrySoupRecipe.requiredCount)
+            return false;
+
+        for (int i = 0; i < ingredients.Count; i++)
+        {
+            if (ingredients[i] == null || ingredients[i].itemId != berrySoupRecipe.requiredItemId)
+                return false;
+        }
+
+        recipe = berrySoupRecipe;
+        return true;
+    }
+
+    private void UpdateProgressBar(float normalizedProgress)
+    {
+        if (progressFillTransform == null)
+            return;
+
+        float clamped = Mathf.Clamp01(normalizedProgress);
+        Vector3 scale = progressFillInitialScale;
+        scale.x *= clamped;
+        progressFillTransform.localScale = scale;
+
+        Vector3 position = progressFillInitialLocalPosition;
+        float offsetX = (progressFillInitialScale.x - scale.x) * 0.5f;
+        position.x -= offsetX;
+        progressFillTransform.localPosition = position;
+    }
+
+    private void UpdateCookingAnimation(float elapsedTime)
+    {
+        if (potRenderer == null)
+            return;
+
+        if (cookingAnimationFrames == null || cookingAnimationFrames.Length == 0)
+        {
+            if (cookingSprite != null)
+                potRenderer.sprite = cookingSprite;
+            return;
+        }
+
+        int frameIndex = Mathf.FloorToInt(elapsedTime * Mathf.Max(0.1f, cookingAnimationFps));
+        frameIndex %= cookingAnimationFrames.Length;
+
+        Sprite frameSprite = cookingAnimationFrames[frameIndex];
+        if (frameSprite != null)
+            potRenderer.sprite = frameSprite;
     }
 }
