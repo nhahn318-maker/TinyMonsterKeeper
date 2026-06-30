@@ -1,19 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
 
 public class CookingPotController : MonoBehaviour, IPointerClickHandler {
-    [System.Serializable]
-    private struct CookingRecipe
-    {
-        public string resultName;
-        public string requiredItemId;
-        public int requiredCount;
-        public float cookDuration;
-    }
-
     [Header("Visual")]
     [SerializeField] private SpriteRenderer potRenderer;
     [SerializeField] private Sprite emptySprite;
@@ -31,7 +23,6 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [Header("Attraction")]
     [SerializeField] private AromaAnimation aromaAnimation;
     [SerializeField] private float monsterSpawnDelay = 0.45f;
-    [SerializeField] private GameObject[] monsterPrefabs;
     [SerializeField] private Transform monsterSpawnPoint;
     [SerializeField] private Vector3 monsterSpawnOffset = new Vector3(1.2f, -0.6f, 0f);
     [SerializeField] private Collider2D monsterGardenBounds;
@@ -43,14 +34,13 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private Vector3 monsterFocusOffset = new Vector3(0f, 0.35f, 0f);
     [SerializeField] private float cameraFocusTransitionDuration = 0.45f;
 
+    [Header("Notice")]
+    [SerializeField] private GameObject noticeLayer;
+    [SerializeField] private TextMeshProUGUI noticeText;
+    [SerializeField] private string monsterNoticeFormat = "{0} joined your garden!";
+
     [Header("Recipes")]
-    [SerializeField] private CookingRecipe berrySoupRecipe = new CookingRecipe
-    {
-        resultName = "Berry Soup",
-        requiredItemId = "berry",
-        requiredCount = 3,
-        cookDuration = 10f
-    };
+    [SerializeField] private CookingRecipeData[] recipes;
 
     private bool isCooking;
     private bool isDone;
@@ -59,6 +49,8 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private float currentCookDuration;
     private bool isAttracting;
     private Coroutine cameraFocusRoutine;
+    private Coroutine noticeRoutine;
+    private CookingRecipeData activeRecipe;
 
     private void Awake()
     {
@@ -77,6 +69,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (focusCamera == null)
             focusCamera = Camera.main;
 
+        HideMonsterNotice();
         SetEmptyVisual();
     }
 
@@ -118,9 +111,15 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (isCooking || isDone)
             return false;
 
-        if (ingredients == null || ingredients.Count != 3)
+        if (ingredients == null || ingredients.Count == 0)
         {
-            Debug.LogWarning("Need exactly 3 foods to cook!");
+            Debug.LogWarning("Need foods to cook!");
+            return false;
+        }
+
+        if (!TryResolveRecipe(ingredients, out CookingRecipeData recipe))
+        {
+            Debug.LogWarning($"No cooking recipe matched these ingredients. Ingredients: {FormatIngredients(ingredients)}. Recipes: {FormatKnownRecipes()}");
             return false;
         }
 
@@ -130,22 +129,17 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return false;
         }
 
-        if (!TryResolveRecipe(ingredients, out CookingRecipe recipe))
-        {
-            Debug.LogWarning("No cooking recipe matched these ingredients.");
-            return false;
-        }
-
         ConsumeIngredients(ingredients);
         StartCoroutine(CookingRoutine(recipe));
 
         return true;
     }
 
-    private IEnumerator CookingRoutine(CookingRecipe recipe)
+    private IEnumerator CookingRoutine(CookingRecipeData recipe)
     {
         isCooking = true;
         isDone = false;
+        activeRecipe = recipe;
         currentCookDuration = Mathf.Max(0.1f, recipe.cookDuration);
 
         SetCookingVisual();
@@ -247,21 +241,30 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (remainingAromaTime > 0f)
             yield return new WaitForSeconds(remainingAromaTime);
 
+        activeRecipe = null;
         isAttracting = false;
     }
 
     private void SpawnRandomMonster()
     {
-        if (monsterPrefabs == null || monsterPrefabs.Length == 0)
+        if (activeRecipe == null)
         {
-            Debug.LogWarning("No monster prefab assigned for cooking attraction.");
+            Debug.LogWarning("No active cooking recipe to attract monster.");
             return;
         }
 
-        GameObject prefab = monsterPrefabs[Random.Range(0, monsterPrefabs.Length)];
+        GameObject prefab = activeRecipe.GetRandomAttractedMonsterPrefab();
         if (prefab == null)
         {
-            Debug.LogWarning("Selected monster prefab is missing.");
+            Debug.LogWarning($"No attracted monster prefab assigned for recipe: {activeRecipe.resultName}");
+            return;
+        }
+
+        if (!activeRecipe.allowDuplicateMonsters && IsMonsterAlreadyInGarden(prefab))
+        {
+            string existingName = GetPrefabMonsterName(prefab);
+            ShowTemporaryNotice($"{existingName} is already in your garden!", 2f);
+            Debug.Log($"{existingName} is already in garden. Spawn skipped.");
             return;
         }
 
@@ -269,9 +272,50 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         GameObject monster = Instantiate(prefab, spawnPosition, Quaternion.identity);
         ConfigureSpawnedMonster(monster);
-        FocusCameraOnMonster(monster.transform);
+        string monsterName = GetMonsterName(monster);
+        FocusCameraOnMonster(monster.transform, monsterName);
 
         Debug.Log($"Spawned attracted monster: {monster.name}");
+    }
+
+    private bool IsMonsterAlreadyInGarden(GameObject prefab)
+    {
+        TinyMonsterController prefabController = prefab.GetComponent<TinyMonsterController>();
+        string prefabId = prefabController != null && prefabController.Data != null
+            ? prefabController.Data.id
+            : prefab.name;
+
+        TinyMonsterController[] monsters = FindObjectsOfType<TinyMonsterController>();
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            TinyMonsterController monster = monsters[i];
+            if (monster == null)
+                continue;
+
+            if (prefabController != null && prefabController.Data != null)
+            {
+                if (monster.Data != null && monster.Data.id == prefabId)
+                    return true;
+            }
+            else if (monster.name.Replace("(Clone)", string.Empty).Trim() == prefabId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private string GetPrefabMonsterName(GameObject prefab)
+    {
+        if (prefab == null)
+            return "Monster";
+
+        TinyMonsterController controller = prefab.GetComponent<TinyMonsterController>();
+        if (controller != null)
+            return controller.MonsterName;
+
+        return prefab.name;
     }
 
     private void ConfigureSpawnedMonster(GameObject monster)
@@ -284,18 +328,33 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             navRoam.SetGardenBounds(monsterGardenBounds);
     }
 
-    private void FocusCameraOnMonster(Transform target)
+    private string GetMonsterName(GameObject monster)
+    {
+        if (monster == null)
+            return "Monster";
+
+        TinyMonsterController controller = monster.GetComponent<TinyMonsterController>();
+        if (controller != null)
+            return controller.MonsterName;
+
+        return monster.name.Replace("(Clone)", string.Empty).Trim();
+    }
+
+    private void FocusCameraOnMonster(Transform target, string monsterName)
     {
         if (focusCamera == null || target == null)
             return;
 
         if (cameraFocusRoutine != null)
+        {
             StopCoroutine(cameraFocusRoutine);
+            HideMonsterNotice();
+        }
 
-        cameraFocusRoutine = StartCoroutine(FocusCameraRoutine(target));
+        cameraFocusRoutine = StartCoroutine(FocusCameraRoutine(target, monsterName));
     }
 
-    private IEnumerator FocusCameraRoutine(Transform target)
+    private IEnumerator FocusCameraRoutine(Transform target, string monsterName)
     {
         Vector3 originalPosition = focusCamera.transform.position;
         float originalOrthographicSize = focusCamera.orthographicSize;
@@ -303,11 +362,55 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         Vector3 focusPosition = target.position + monsterFocusOffset;
         focusPosition.z = originalPosition.z;
 
+        ShowMonsterNotice(monsterName);
         yield return MoveCameraRoutine(originalPosition, focusPosition, originalOrthographicSize, monsterFocusOrthographicSize);
         yield return new WaitForSeconds(monsterFocusDuration);
         yield return MoveCameraRoutine(focusCamera.transform.position, originalPosition, focusCamera.orthographicSize, originalOrthographicSize);
+        HideMonsterNotice();
 
         cameraFocusRoutine = null;
+    }
+
+    private void ShowMonsterNotice(string monsterName)
+    {
+        ShowNoticeMessage(string.Format(monsterNoticeFormat, monsterName));
+    }
+
+    private void ShowNoticeMessage(string message)
+    {
+        if (noticeText != null)
+            noticeText.text = message;
+
+        if (noticeLayer != null)
+            noticeLayer.SetActive(true);
+    }
+
+    private void ShowTemporaryNotice(string message, float duration)
+    {
+        if (noticeRoutine != null)
+            StopCoroutine(noticeRoutine);
+
+        noticeRoutine = StartCoroutine(TemporaryNoticeRoutine(message, duration));
+    }
+
+    private IEnumerator TemporaryNoticeRoutine(string message, float duration)
+    {
+        ShowNoticeMessage(message);
+        yield return new WaitForSeconds(duration);
+        HideMonsterNotice();
+        noticeRoutine = null;
+    }
+
+    private void HideMonsterNotice()
+    {
+        if (noticeRoutine != null)
+        {
+            StopCoroutine(noticeRoutine);
+            noticeRoutine = null;
+        }
+
+        if (noticeLayer != null)
+            noticeLayer.SetActive(false);
     }
 
     private IEnumerator MoveCameraRoutine(Vector3 fromPosition, Vector3 toPosition, float fromSize, float toSize)
@@ -397,21 +500,68 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             progressBarObject.SetActive(false);
     }
 
-    private bool TryResolveRecipe(List<ItemData> ingredients, out CookingRecipe recipe)
+    private bool TryResolveRecipe(List<ItemData> ingredients, out CookingRecipeData recipe)
     {
-        recipe = default;
+        recipe = null;
 
-        if (ingredients == null || ingredients.Count != berrySoupRecipe.requiredCount)
+        if (recipes == null)
             return false;
+
+        for (int i = 0; i < recipes.Length; i++)
+        {
+            CookingRecipeData candidate = recipes[i];
+            if (candidate == null)
+                continue;
+
+            if (!candidate.Matches(ingredients))
+                continue;
+
+            recipe = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    private string FormatIngredients(List<ItemData> ingredients)
+    {
+        if (ingredients == null || ingredients.Count == 0)
+            return "none";
+
+        List<string> ids = new List<string>();
 
         for (int i = 0; i < ingredients.Count; i++)
         {
-            if (ingredients[i] == null || ingredients[i].itemId != berrySoupRecipe.requiredItemId)
-                return false;
+            ItemData item = ingredients[i];
+            ids.Add(item != null ? $"{item.itemName}({item.itemId})" : "null");
         }
 
-        recipe = berrySoupRecipe;
-        return true;
+        return string.Join(", ", ids);
+    }
+
+    private string FormatKnownRecipes()
+    {
+        List<string> recipeNames = new List<string>();
+        AddRecipeNames(recipeNames, recipes);
+
+        return recipeNames.Count > 0 ? string.Join(", ", recipeNames) : "none";
+    }
+
+    private void AddRecipeNames(List<string> recipeNames, CookingRecipeData[] recipeList)
+    {
+        if (recipeList == null)
+            return;
+
+        for (int i = 0; i < recipeList.Length; i++)
+        {
+            CookingRecipeData recipe = recipeList[i];
+            if (recipe == null)
+                continue;
+
+            string recipeSummary = $"{recipe.resultName}: {recipe.GetRequirementSummary()}";
+            if (!recipeNames.Contains(recipeSummary))
+                recipeNames.Add(recipeSummary);
+        }
     }
 
     private void UpdateProgressBar(float normalizedProgress)

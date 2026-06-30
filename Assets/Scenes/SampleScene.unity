@@ -1568,8 +1568,6 @@ MonoBehaviour:
   progressFillTransform: {fileID: 300000111}
   aromaAnimation: {fileID: 910000003}
   monsterSpawnDelay: 0.45
-  monsterPrefabs:
-  - {fileID: 242072064891303551, guid: a9f45997d79cb0f42bc25471c0f3a401, type: 3}
   monsterSpawnPoint: {fileID: 0}
   monsterSpawnOffset: {x: 1.2, y: -0.6, z: 0}
   monsterGardenBounds: {fileID: 2109454461}
@@ -1578,11 +1576,11 @@ MonoBehaviour:
   monsterFocusOrthographicSize: 2.4
   monsterFocusOffset: {x: 0, y: 0.35, z: 0}
   cameraFocusTransitionDuration: 0.45
-  berrySoupRecipe:
-    resultName: Berry Soup
-    requiredItemId: berry
-    requiredCount: 3
-    cookDuration: 10
+  noticeLayer: {fileID: 582786125}
+  noticeText: {fileID: 1714902513}
+  monsterNoticeFormat: '{0} joined your garden!'
+  recipes:
+  - {fileID: 11400000, guid: 023140beee67fda4c99c9de9e7f57eeb, type: 2}
 --- !u!1 &441165989
 GameObject:
   m_ObjectHideFlags: 0
@@ -2034,7 +2032,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &582786126
 RectTransform:
   m_ObjectHideFlags: 0

@@ -22,12 +22,18 @@ public class CookingPotPanelUI : MonoBehaviour {
 
     private readonly ItemData[] selectedFoods = new ItemData[3];
     private CookingPotController currentPot;
+    private Canvas rootCanvas;
+    private RectTransform panelRootRect;
+    private RectTransform[] panelHitAreas;
 
     public RectTransform DragLayer => dragLayer;
 
     private void Awake()
     {
         Instance = this;
+        rootCanvas = GetComponentInParent<Canvas>();
+        panelRootRect = panelRoot != null ? panelRoot.GetComponent<RectTransform>() : null;
+        RefreshPanelHitAreas();
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -42,6 +48,22 @@ public class CookingPotPanelUI : MonoBehaviour {
         }
 
         Hide();
+    }
+
+    private void Update()
+    {
+        if (panelRoot == null || !panelRoot.activeSelf)
+            return;
+
+        if (Input.GetMouseButtonDown(0))
+            HideIfOutsidePanel(Input.mousePosition);
+
+        for (int i = 0; i < Input.touchCount; i++)
+        {
+            Touch touch = Input.GetTouch(i);
+            if (touch.phase == TouchPhase.Began)
+                HideIfOutsidePanel(touch.position);
+        }
     }
 
     private void OnEnable()
@@ -64,6 +86,7 @@ public class CookingPotPanelUI : MonoBehaviour {
         if (panelRoot != null)
             panelRoot.SetActive(true);
 
+        RefreshPanelHitAreas();
         RefreshUI();
     }
 
@@ -71,6 +94,44 @@ public class CookingPotPanelUI : MonoBehaviour {
     {
         if (panelRoot != null)
             panelRoot.SetActive(false);
+    }
+
+    private void HideIfOutsidePanel(Vector2 screenPosition)
+    {
+        if (IsPointerInsidePanel(screenPosition))
+            return;
+
+        Hide();
+    }
+
+    private bool IsPointerInsidePanel(Vector2 screenPosition)
+    {
+        if (panelHitAreas == null || panelHitAreas.Length == 0)
+            return false;
+
+        Camera eventCamera = null;
+        if (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            eventCamera = rootCanvas.worldCamera;
+
+        for (int i = 0; i < panelHitAreas.Length; i++)
+        {
+            RectTransform hitArea = panelHitAreas[i];
+
+            if (hitArea == null || !hitArea.gameObject.activeInHierarchy)
+                continue;
+
+            if (RectTransformUtility.RectangleContainsScreenPoint(hitArea, screenPosition, eventCamera))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RefreshPanelHitAreas()
+    {
+        panelHitAreas = panelRootRect != null
+            ? panelRootRect.GetComponentsInChildren<RectTransform>(true)
+            : null;
     }
 
     public void OnClickCook()
