@@ -99,6 +99,11 @@ public class TinyMonsterNavRoam : MonoBehaviour
         EnterIdleState();
     }
 
+    public void SetGardenBounds(Collider2D bounds)
+    {
+        gardenBounds = bounds;
+    }
+
     public void StopMovement()
     {
         isRoaming = false;

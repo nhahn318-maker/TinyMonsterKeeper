@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.EventSystems;
 
 public class CookingPotController : MonoBehaviour, IPointerClickHandler {
@@ -27,6 +28,21 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private GameObject progressBarObject;
     [SerializeField] private Transform progressFillTransform;
 
+    [Header("Attraction")]
+    [SerializeField] private AromaAnimation aromaAnimation;
+    [SerializeField] private float monsterSpawnDelay = 0.45f;
+    [SerializeField] private GameObject[] monsterPrefabs;
+    [SerializeField] private Transform monsterSpawnPoint;
+    [SerializeField] private Vector3 monsterSpawnOffset = new Vector3(1.2f, -0.6f, 0f);
+    [SerializeField] private Collider2D monsterGardenBounds;
+
+    [Header("Camera Focus")]
+    [SerializeField] private Camera focusCamera;
+    [SerializeField] private float monsterFocusDuration = 5f;
+    [SerializeField] private float monsterFocusOrthographicSize = 2.4f;
+    [SerializeField] private Vector3 monsterFocusOffset = new Vector3(0f, 0.35f, 0f);
+    [SerializeField] private float cameraFocusTransitionDuration = 0.45f;
+
     [Header("Recipes")]
     [SerializeField] private CookingRecipe berrySoupRecipe = new CookingRecipe
     {
@@ -41,6 +57,8 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private Vector3 progressFillInitialScale;
     private Vector3 progressFillInitialLocalPosition;
     private float currentCookDuration;
+    private bool isAttracting;
+    private Coroutine cameraFocusRoutine;
 
     private void Awake()
     {
@@ -53,6 +71,12 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             progressFillInitialLocalPosition = progressFillTransform.localPosition;
         }
 
+        if (aromaAnimation == null)
+            aromaAnimation = GetComponentInChildren<AromaAnimation>(true);
+
+        if (focusCamera == null)
+            focusCamera = Camera.main;
+
         SetEmptyVisual();
     }
 
@@ -64,6 +88,12 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (isCooking)
         {
             Debug.Log("Pot is cooking...");
+            return;
+        }
+
+        if (isAttracting)
+        {
+            Debug.Log("Aroma is attracting a monster...");
             return;
         }
 
@@ -199,9 +229,118 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         currentCookDuration = 0f;
 
         SetEmptyVisual();
+        StartCoroutine(AttractMonsterRoutine());
+    }
 
-        // Sau này chỗ này sẽ gọi VisitorManager.
-        Debug.Log("Visitor should appear here!");
+    private IEnumerator AttractMonsterRoutine()
+    {
+        isAttracting = true;
+
+        if (aromaAnimation != null)
+            aromaAnimation.Play();
+
+        yield return new WaitForSeconds(monsterSpawnDelay);
+
+        SpawnRandomMonster();
+
+        float remainingAromaTime = aromaAnimation != null ? Mathf.Max(0f, aromaAnimation.Duration - monsterSpawnDelay) : 0f;
+        if (remainingAromaTime > 0f)
+            yield return new WaitForSeconds(remainingAromaTime);
+
+        isAttracting = false;
+    }
+
+    private void SpawnRandomMonster()
+    {
+        if (monsterPrefabs == null || monsterPrefabs.Length == 0)
+        {
+            Debug.LogWarning("No monster prefab assigned for cooking attraction.");
+            return;
+        }
+
+        GameObject prefab = monsterPrefabs[Random.Range(0, monsterPrefabs.Length)];
+        if (prefab == null)
+        {
+            Debug.LogWarning("Selected monster prefab is missing.");
+            return;
+        }
+
+        Vector3 spawnPosition = ResolveMonsterSpawnPosition();
+
+        GameObject monster = Instantiate(prefab, spawnPosition, Quaternion.identity);
+        ConfigureSpawnedMonster(monster);
+        FocusCameraOnMonster(monster.transform);
+
+        Debug.Log($"Spawned attracted monster: {monster.name}");
+    }
+
+    private void ConfigureSpawnedMonster(GameObject monster)
+    {
+        if (monster == null)
+            return;
+
+        TinyMonsterNavRoam navRoam = monster.GetComponent<TinyMonsterNavRoam>();
+        if (navRoam != null && monsterGardenBounds != null)
+            navRoam.SetGardenBounds(monsterGardenBounds);
+    }
+
+    private void FocusCameraOnMonster(Transform target)
+    {
+        if (focusCamera == null || target == null)
+            return;
+
+        if (cameraFocusRoutine != null)
+            StopCoroutine(cameraFocusRoutine);
+
+        cameraFocusRoutine = StartCoroutine(FocusCameraRoutine(target));
+    }
+
+    private IEnumerator FocusCameraRoutine(Transform target)
+    {
+        Vector3 originalPosition = focusCamera.transform.position;
+        float originalOrthographicSize = focusCamera.orthographicSize;
+
+        Vector3 focusPosition = target.position + monsterFocusOffset;
+        focusPosition.z = originalPosition.z;
+
+        yield return MoveCameraRoutine(originalPosition, focusPosition, originalOrthographicSize, monsterFocusOrthographicSize);
+        yield return new WaitForSeconds(monsterFocusDuration);
+        yield return MoveCameraRoutine(focusCamera.transform.position, originalPosition, focusCamera.orthographicSize, originalOrthographicSize);
+
+        cameraFocusRoutine = null;
+    }
+
+    private IEnumerator MoveCameraRoutine(Vector3 fromPosition, Vector3 toPosition, float fromSize, float toSize)
+    {
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.01f, cameraFocusTransitionDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = t * t * (3f - 2f * t);
+
+            focusCamera.transform.position = Vector3.Lerp(fromPosition, toPosition, eased);
+            focusCamera.orthographicSize = Mathf.Lerp(fromSize, toSize, eased);
+
+            yield return null;
+        }
+
+        focusCamera.transform.position = toPosition;
+        focusCamera.orthographicSize = toSize;
+    }
+
+    private Vector3 ResolveMonsterSpawnPosition()
+    {
+        Vector3 desiredPosition = monsterSpawnPoint != null
+            ? monsterSpawnPoint.position
+            : transform.position + monsterSpawnOffset;
+
+        if (NavMesh.SamplePosition(desiredPosition, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+            return hit.position;
+
+        return desiredPosition;
     }
 
     private void SetEmptyVisual()
@@ -227,7 +366,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             potRenderer.sprite = cookingSprite;
 
         if (cookingBubblesObject != null)
-            cookingBubblesObject.SetActive(true);
+            cookingBubblesObject.SetActive(false);
 
         if (readyBubbleObject != null)
             readyBubbleObject.SetActive(false);
