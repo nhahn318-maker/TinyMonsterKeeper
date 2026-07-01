@@ -7,6 +7,10 @@ public class TinyMonsterNavRoam : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private SpriteRenderer spriteRenderer;
 
+    [Header("Facing")]
+    [SerializeField] private bool flipWhenMovingLeft = true;
+    [SerializeField] private bool invertMovementFlip;
+
     [Header("Roaming Area")]
     [SerializeField] private Collider2D gardenBounds;
     [SerializeField] private float sampleDistance = 1.5f;
@@ -182,11 +186,20 @@ public class TinyMonsterNavRoam : MonoBehaviour
 
     private void UpdateFlipDirection()
     {
+        if (spriteRenderer == null)
+            return;
+
         Vector3 delta = transform.position - lastPosition;
 
         if (Mathf.Abs(delta.x) > 0.001f)
         {
-            spriteRenderer.flipX = delta.x < 0f;
+            bool movingLeft = delta.x < 0f;
+            bool shouldFlip = movingLeft == flipWhenMovingLeft;
+
+            if (invertMovementFlip)
+                shouldFlip = !shouldFlip;
+
+            spriteRenderer.flipX = shouldFlip;
         }
     }
 }

@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 6160976938671397554}
   - component: {fileID: 8120998613548016147}
   m_Layer: 0
-  m_Name: MonNo1_Leafy
+  m_Name: MonNo2_Mushy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -97,7 +97,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.003839463, y: -0.17491007}
+  m_Offset: {x: 0.10231203, y: -0.28902304}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -108,7 +108,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.60069436, y: 0.65017986}
+  m_Size: {x: 0.7811519, y: 0.70856357}
   m_EdgeRadius: 0
 --- !u!114 &2558321327269125675
 MonoBehaviour:
@@ -189,7 +189,7 @@ MonoBehaviour:
   navRoam: {fileID: 4050858762988213088}
   animController: {fileID: 2558321327269125675}
   effects: {fileID: 2488875915296754353}
-  monsterData: {fileID: 11400000, guid: 25c19f7f8f2d9a84c8a043c801c4a493, type: 2}
+  monsterData: {fileID: 11400000, guid: 1f9abd34b720a474a90c6c522115f032, type: 2}
   friendship: 50
   maxFriendship: 100
   happyDuration: 1
@@ -268,7 +268,7 @@ Transform:
   m_GameObject: {fileID: 1244941160251965291}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.013, y: 0.21, z: 0}
+  m_LocalPosition: {x: -0.006, y: 0.437, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -382,7 +382,7 @@ GameObject:
   - component: {fileID: 7052050855113049169}
   - component: {fileID: 7742080169306710406}
   m_Layer: 0
-  m_Name: MonNo1_Leafy_Visual
+  m_Name: MonNo2_Mushy_Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -444,12 +444,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -381268738, guid: cf725b1325c57a647b6b99bb804e1d01, type: 3}
+  m_Sprite: {fileID: -1921809941, guid: 542d5dbb8f078fc40868374fe4d1f844, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.3333334, y: 1.3333334}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -465,7 +465,7 @@ Animator:
   m_GameObject: {fileID: 3316512280879362858}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: eddcee490592c9742ad97cdabf6581b2, type: 2}
+  m_Controller: {fileID: 9100000, guid: 6b4fb290b8d94db2922c34430d964044, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
