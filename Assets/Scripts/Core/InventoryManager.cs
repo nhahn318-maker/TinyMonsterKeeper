@@ -3,7 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryManager : MonoBehaviour {
+    [Serializable]
+    private class StartingItemStack
+    {
+        public ItemData itemData;
+        public int amount;
+    }
+
     public static InventoryManager Instance { get; private set; }
+
+    [SerializeField] private List<StartingItemStack> startingItems = new List<StartingItemStack>();
 
     public event Action OnInventoryChanged;
 
@@ -18,6 +27,22 @@ public class InventoryManager : MonoBehaviour {
         }
 
         Instance = this;
+        ApplyStartingItems();
+    }
+
+    private void ApplyStartingItems()
+    {
+        for (int i = 0; i < startingItems.Count; i++)
+        {
+            StartingItemStack stack = startingItems[i];
+            if (stack == null || stack.itemData == null || stack.amount <= 0)
+                continue;
+
+            itemAmounts[stack.itemData.itemId] = stack.amount;
+        }
+
+        if (startingItems.Count > 0)
+            OnInventoryChanged?.Invoke();
     }
 
     public void AddItem(ItemData itemData, int amount)

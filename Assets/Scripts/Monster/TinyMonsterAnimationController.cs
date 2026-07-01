@@ -3,25 +3,28 @@ using UnityEngine;
 public class TinyMonsterAnimationController : MonoBehaviour
 {
     [SerializeField] private Animator animator;
-    private TinyMonsterController controller;
+
     private TinyMonsterNavRoam navRoam;
+    private bool supportsNorthWalk;
+
+    private static readonly int IsNorthWalkingHash = Animator.StringToHash("IsNorthWalking");
 
     private void Awake()
     {
-        // Không tự tìm - yêu cầu kéo thả trong Inspector
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+
+        navRoam = GetComponent<TinyMonsterNavRoam>();
+        supportsNorthWalk = HasAnimatorParameter(IsNorthWalkingHash);
     }
 
     private void Update()
     {
-        if (animator == null || navRoam == null) return;
+        if (animator == null || navRoam == null)
+            return;
 
-        UpdateAnimationState();
-    }
-
-    private void UpdateAnimationState()
-    {
-        // Sync IsWalking với NavRoam
-        animator.SetBool("IsWalking", navRoam.IsWalking);
+        if (supportsNorthWalk)
+            animator.SetBool(IsNorthWalkingHash, navRoam.IsMovingNorth);
     }
 
     public void TriggerHappy()
@@ -51,5 +54,20 @@ public class TinyMonsterAnimationController : MonoBehaviour
         {
             Debug.LogWarning("Animator is null in TriggerIdle!");
         }
+    }
+
+    private bool HasAnimatorParameter(int parameterHash)
+    {
+        if (animator == null)
+            return false;
+
+        AnimatorControllerParameter[] parameters = animator.parameters;
+        for (int i = 0; i < parameters.Length; i++)
+        {
+            if (parameters[i].nameHash == parameterHash)
+                return true;
+        }
+
+        return false;
     }
 }

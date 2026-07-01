@@ -1446,7 +1446,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.0434783, y: 1.0434783}
+    oldSize: {x: 1, y: 1}
     newSize: {x: 0.48, y: 0.48}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -1496,7 +1496,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: cca2899d4d131a14482ef3a7fa01bc01, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8e094bd9899b3f041a5230412476e201, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1554,13 +1554,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   potRenderer: {fileID: 331509546}
-  emptySprite: {fileID: 21300000, guid: cca2899d4d131a14482ef3a7fa01bc01, type: 3}
-  cookingSprite: {fileID: -1527077274, guid: ca4bdc092f7998b419fe0d276957b599, type: 3}
+  emptySprite: {fileID: 21300000, guid: 8e094bd9899b3f041a5230412476e201, type: 3}
+  cookingSprite: {fileID: 1419944743, guid: 66a633934f5ac4c488c672347ec9e0e2, type: 3}
   cookingAnimationFrames:
-  - {fileID: -1527077274, guid: ca4bdc092f7998b419fe0d276957b599, type: 3}
-  - {fileID: 1194430450, guid: ca4bdc092f7998b419fe0d276957b599, type: 3}
-  - {fileID: -1560721263, guid: ca4bdc092f7998b419fe0d276957b599, type: 3}
-  doneSprite: {fileID: -1560721263, guid: ca4bdc092f7998b419fe0d276957b599, type: 3}
+  - {fileID: 1419944743, guid: 66a633934f5ac4c488c672347ec9e0e2, type: 3}
+  - {fileID: 1773302191, guid: 66a633934f5ac4c488c672347ec9e0e2, type: 3}
+  - {fileID: -1360809161, guid: 66a633934f5ac4c488c672347ec9e0e2, type: 3}
+  doneSprite: {fileID: 1419944743, guid: 66a633934f5ac4c488c672347ec9e0e2, type: 3}
   cookingAnimationFps: 6
   cookingBubblesObject: {fileID: 0}
   readyBubbleObject: {fileID: 744947120}
@@ -3731,6 +3731,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0fe0123c8be3254c8b0da65860dc9c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startingItems: []
 --- !u!1 &1193772392
 GameObject:
   m_ObjectHideFlags: 0

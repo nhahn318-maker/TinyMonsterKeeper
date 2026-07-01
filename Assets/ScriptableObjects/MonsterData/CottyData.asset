@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03a47f182d388d4397dd0823884877e, type: 3}
+  m_Name: CottyData
+  m_EditorClassIdentifier: 
+  id: 004
+  monsterName: Cotty
+  icon: {fileID: -779252916, guid: b60e7f15e1566e641a26b0cfec8971ed, type: 3}
+  prefab: {fileID: 242072064891303551, guid: 2a65046400da49c2ac127c4d34121aee, type: 3}
+  favoriteFoodId: 
+  favoriteToyId: 
+  berryCostPerFeed: 1
+  feedFriendshipGain: 10
+  coinPerTick: 1
+  coinTickInterval: 8
+  maxStoredCoin: 5
+  unlockAppealCost: 0
+  unlockFriendshipCost: 0
+  unlockRequiredItemId: 

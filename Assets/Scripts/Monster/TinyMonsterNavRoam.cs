@@ -28,8 +28,10 @@ public class TinyMonsterNavRoam : MonoBehaviour
     private bool isWalking = false;
     private float stateTimer;
     private Vector3 lastPosition;
+    private Vector3 movementDelta;
 
     public bool IsWalking => isWalking;
+    public bool IsMovingNorth => isWalking && movementDelta.y > 0.001f;
 
     private void Reset()
     {
@@ -52,10 +54,12 @@ public class TinyMonsterNavRoam : MonoBehaviour
 
     private void Update()
     {
+        movementDelta = transform.position - lastPosition;
         UpdateFlipDirection();
 
         if (isPaused || !isRoaming)
         {
+            movementDelta = Vector3.zero;
             lastPosition = transform.position;
             return;
         }
@@ -112,6 +116,7 @@ public class TinyMonsterNavRoam : MonoBehaviour
     {
         isRoaming = false;
         isWalking = false;
+        movementDelta = Vector3.zero;
 
         if (agent != null && agent.enabled)
         {
@@ -189,11 +194,9 @@ public class TinyMonsterNavRoam : MonoBehaviour
         if (spriteRenderer == null)
             return;
 
-        Vector3 delta = transform.position - lastPosition;
-
-        if (Mathf.Abs(delta.x) > 0.001f)
+        if (Mathf.Abs(movementDelta.x) > 0.001f)
         {
-            bool movingLeft = delta.x < 0f;
+            bool movingLeft = movementDelta.x < 0f;
             bool shouldFlip = movingLeft == flipWhenMovingLeft;
 
             if (invertMovementFlip)
