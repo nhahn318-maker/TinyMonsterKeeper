@@ -16,6 +16,7 @@ public class CookingPotPanelUI : MonoBehaviour {
 
     [Header("Food Items")]
     [SerializeField] private DraggableFoodItemUI[] foodItems;
+    [SerializeField] private Transform foodItemContainer;
 
     [Header("Buttons")]
     [SerializeField] private Button cookButton;
@@ -25,8 +26,10 @@ public class CookingPotPanelUI : MonoBehaviour {
     private Canvas rootCanvas;
     private RectTransform panelRootRect;
     private RectTransform[] panelHitAreas;
+    private int openedFrame = -1;
 
     public RectTransform DragLayer => dragLayer;
+    public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
 
     private void Awake()
     {
@@ -34,17 +37,12 @@ public class CookingPotPanelUI : MonoBehaviour {
         rootCanvas = GetComponentInParent<Canvas>();
         panelRootRect = panelRoot != null ? panelRoot.GetComponent<RectTransform>() : null;
         RefreshPanelHitAreas();
+        ResolveFoodItemSlots();
 
         for (int i = 0; i < slots.Length; i++)
         {
             if (slots[i] != null)
                 slots[i].Init(this, i);
-        }
-
-        foreach (DraggableFoodItemUI foodItem in foodItems)
-        {
-            if (foodItem != null)
-                foodItem.Init(this);
         }
 
         Hide();
@@ -53,6 +51,9 @@ public class CookingPotPanelUI : MonoBehaviour {
     private void Update()
     {
         if (panelRoot == null || !panelRoot.activeSelf)
+            return;
+
+        if (openedFrame == Time.frameCount)
             return;
 
         if (Input.GetMouseButtonDown(0))
@@ -86,6 +87,9 @@ public class CookingPotPanelUI : MonoBehaviour {
         if (panelRoot != null)
             panelRoot.SetActive(true);
 
+        openedFrame = Time.frameCount;
+
+        RebuildFoodItems();
         RefreshPanelHitAreas();
         RefreshUI();
     }
@@ -255,10 +259,15 @@ public class CookingPotPanelUI : MonoBehaviour {
                 slots[i].SetFood(selectedFoods[i]);
         }
 
-        foreach (DraggableFoodItemUI foodItem in foodItems)
+        if (foodItems != null)
         {
-            if (foodItem != null)
-                foodItem.Refresh();
+            for (int i = 0; i < foodItems.Length; i++)
+            {
+                DraggableFoodItemUI foodItem = foodItems[i];
+
+                if (foodItem != null)
+                    foodItem.Refresh();
+            }
         }
 
         if (cookButton != null)
@@ -270,6 +279,53 @@ public class CookingPotPanelUI : MonoBehaviour {
         if (panelRoot == null || !panelRoot.activeSelf)
             return;
 
+        RebuildFoodItems();
         RefreshUI();
+    }
+
+    private void ResolveFoodItemSlots()
+    {
+        if (foodItemContainer == null && foodItems != null && foodItems.Length > 0 && foodItems[0] != null)
+            foodItemContainer = foodItems[0].transform.parent;
+
+        if (foodItemContainer != null)
+        {
+            DraggableFoodItemUI[] discoveredFoodItems = foodItemContainer.GetComponentsInChildren<DraggableFoodItemUI>(true);
+
+            if (foodItems == null || discoveredFoodItems.Length > foodItems.Length)
+                foodItems = discoveredFoodItems;
+        }
+
+        if (foodItems == null)
+            return;
+
+        for (int i = 0; i < foodItems.Length; i++)
+        {
+            if (foodItems[i] == null)
+                continue;
+
+            foodItems[i].Init(this);
+            foodItems[i].SetItemData(null);
+            foodItems[i].gameObject.SetActive(true);
+        }
+    }
+
+    private void RebuildFoodItems()
+    {
+        if (InventoryManager.Instance == null || foodItems == null || foodItems.Length == 0)
+            return;
+
+        List<ItemData> inventoryItems = InventoryManager.Instance.GetItemsWithAmount();
+
+        for (int i = 0; i < foodItems.Length; i++)
+        {
+            DraggableFoodItemUI foodItem = foodItems[i];
+
+            if (foodItem == null)
+                continue;
+
+            ItemData itemData = i < inventoryItems.Count ? inventoryItems[i] : null;
+            foodItem.SetItemData(itemData);
+        }
     }
 }

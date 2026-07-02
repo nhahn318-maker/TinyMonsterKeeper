@@ -31,8 +31,7 @@ public class DraggableFoodItemUI : MonoBehaviour,
         if (button == null)
             button = GetComponent<Button>();
 
-        if (iconImage != null && itemData != null)
-            iconImage.sprite = itemData.icon;
+        ApplyItemVisuals();
     }
 
     public void Init(CookingPotPanelUI panel)
@@ -41,10 +40,27 @@ public class DraggableFoodItemUI : MonoBehaviour,
         Refresh();
     }
 
+    public void SetItemData(ItemData newItemData)
+    {
+        itemData = newItemData;
+
+        ApplyItemVisuals();
+
+        Refresh();
+    }
+
     public void Refresh()
     {
         if (itemData == null)
+        {
+            if (countText != null)
+                countText.text = string.Empty;
+
+            if (button != null)
+                button.interactable = false;
+
             return;
+        }
 
         int amount = 0;
 
@@ -58,6 +74,26 @@ public class DraggableFoodItemUI : MonoBehaviour,
 
         if (button != null)
             button.interactable = amount > 0;
+    }
+
+    private void ApplyItemVisuals()
+    {
+        bool hasItem = itemData != null;
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = hasItem ? itemData.icon : null;
+            iconImage.enabled = hasItem;
+
+            if (hasItem && itemData.HasCustomCookingIconSize())
+                iconImage.rectTransform.sizeDelta = itemData.cookingIconSize;
+        }
+
+        if (countText != null)
+            countText.enabled = hasItem;
+
+        if (button != null && !hasItem)
+            button.interactable = false;
     }
 
     public void OnBeginDrag(PointerEventData eventData)

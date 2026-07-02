@@ -15,4 +15,5 @@ MonoBehaviour:
   itemId: berry
   itemName: Berry
   icon: {fileID: 21300000, guid: 13683841ab195684a88038f70a222308, type: 3}
+  cookingIconSize: {x: 150, y: 100}
   friendshipValue: 1

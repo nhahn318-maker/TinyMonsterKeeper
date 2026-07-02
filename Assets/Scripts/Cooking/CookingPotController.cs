@@ -42,6 +42,9 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [Header("Recipes")]
     [SerializeField] private CookingRecipeData[] recipes;
 
+    [Header("Click")]
+    [SerializeField] private Collider2D clickCollider;
+
     private bool isCooking;
     private bool isDone;
     private Vector3 progressFillInitialScale;
@@ -51,11 +54,15 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private Coroutine cameraFocusRoutine;
     private Coroutine noticeRoutine;
     private CookingRecipeData activeRecipe;
+    private int lastHandledClickFrame = -1;
 
     private void Awake()
     {
         if (potRenderer == null)
             potRenderer = GetComponent<SpriteRenderer>();
+
+        if (clickCollider == null)
+            clickCollider = GetComponent<Collider2D>();
 
         if (progressFillTransform != null)
         {
@@ -73,10 +80,58 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         SetEmptyVisual();
     }
 
+    private void Update()
+    {
+        HandleDirectWorldClick();
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
-  /*      if (CameraDragPan2D.LastDragEndFrame == Time.frameCount)
-            return;*/
+        HandlePotClick();
+    }
+
+    private void HandleDirectWorldClick()
+    {
+#if UNITY_EDITOR
+        if (Input.GetMouseButtonDown(0))
+            TryHandleDirectWorldClick(Input.mousePosition);
+#else
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+                TryHandleDirectWorldClick(touch.position);
+        }
+#endif
+    }
+
+    private void TryHandleDirectWorldClick(Vector2 screenPosition)
+    {
+        if (lastHandledClickFrame == Time.frameCount)
+            return;
+
+        if (CookingPotPanelUI.Instance != null && CookingPotPanelUI.Instance.IsOpen)
+            return;
+
+        if (focusCamera == null || clickCollider == null)
+            return;
+
+        Vector3 worldPosition = focusCamera.ScreenToWorldPoint(screenPosition);
+        Vector2 clickPoint = new Vector2(worldPosition.x, worldPosition.y);
+
+        if (!clickCollider.OverlapPoint(clickPoint))
+            return;
+
+        HandlePotClick();
+    }
+
+    private void HandlePotClick()
+    {
+        if (lastHandledClickFrame == Time.frameCount)
+            return;
+
+        lastHandledClickFrame = Time.frameCount;
 
         if (isCooking)
         {

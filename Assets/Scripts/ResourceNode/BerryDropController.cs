@@ -15,11 +15,13 @@ public class BerryDropController : MonoBehaviour {
 
     [Header("Pickup")]
     [SerializeField] private Collider2D pickupCollider;
+    [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Camera mainCamera;
 
     [Header("Pickup Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] private string pickupAnim = "Berry_Pickup";
+    [SerializeField] private Sprite pickupClickSprite;
     [SerializeField] private float pickupAnimDuration = 0.25f;
     [SerializeField] private bool addToInventoryBeforeAnimation = true;
 
@@ -36,6 +38,9 @@ public class BerryDropController : MonoBehaviour {
 
         if (pickupCollider == null)
             pickupCollider = GetComponent<Collider2D>();
+
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
 
         if (mainCamera == null)
             mainCamera = Camera.main;
@@ -178,6 +183,10 @@ public class BerryDropController : MonoBehaviour {
         if (animator != null && !string.IsNullOrEmpty(pickupAnim))
         {
             animator.Play(pickupAnim, 0, 0f);
+        }
+        else if (spriteRenderer != null && pickupClickSprite != null)
+        {
+            spriteRenderer.sprite = pickupClickSprite;
         }
 
         yield return new WaitForSeconds(pickupAnimDuration);

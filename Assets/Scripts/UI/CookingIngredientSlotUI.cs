@@ -27,6 +27,9 @@ public class CookingIngredientSlotUI : MonoBehaviour, IDropHandler, IPointerClic
         {
             foodIcon.enabled = itemData != null;
             foodIcon.sprite = itemData != null ? itemData.icon : null;
+
+            if (itemData != null && itemData.HasCustomCookingIconSize())
+                foodIcon.rectTransform.sizeDelta = itemData.cookingIconSize;
         }
 
         if (plusIcon != null)

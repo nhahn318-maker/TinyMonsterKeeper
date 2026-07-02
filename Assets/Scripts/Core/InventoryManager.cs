@@ -17,6 +17,8 @@ public class InventoryManager : MonoBehaviour {
     public event Action OnInventoryChanged;
 
     private Dictionary<string, int> itemAmounts = new Dictionary<string, int>();
+    private Dictionary<string, ItemData> itemDataById = new Dictionary<string, ItemData>();
+    private List<ItemData> knownItems = new List<ItemData>();
 
     private void Awake()
     {
@@ -38,6 +40,7 @@ public class InventoryManager : MonoBehaviour {
             if (stack == null || stack.itemData == null || stack.amount <= 0)
                 continue;
 
+            RegisterItem(stack.itemData);
             itemAmounts[stack.itemData.itemId] = stack.amount;
         }
 
@@ -56,6 +59,7 @@ public class InventoryManager : MonoBehaviour {
         if (amount <= 0) return;
 
         string id = itemData.itemId;
+        RegisterItem(itemData);
 
         if (itemAmounts.ContainsKey(id))
         {
@@ -83,6 +87,21 @@ public class InventoryManager : MonoBehaviour {
         return 0;
     }
 
+    public List<ItemData> GetItemsWithAmount()
+    {
+        List<ItemData> items = new List<ItemData>();
+
+        for (int i = 0; i < knownItems.Count; i++)
+        {
+            ItemData itemData = knownItems[i];
+
+            if (itemData != null && GetItemAmount(itemData) > 0)
+                items.Add(itemData);
+        }
+
+        return items;
+    }
+
     public bool RemoveItem(ItemData itemData, int amount)
     {
         if (itemData == null) return false;
@@ -105,5 +124,16 @@ public class InventoryManager : MonoBehaviour {
         Debug.Log($"Removed {amount} {itemData.itemName}. Total: {itemAmounts[id]}");
 
         return true;
+    }
+
+    private void RegisterItem(ItemData itemData)
+    {
+        if (itemData == null || string.IsNullOrEmpty(itemData.itemId))
+            return;
+
+        if (!itemDataById.ContainsKey(itemData.itemId))
+            knownItems.Add(itemData);
+
+        itemDataById[itemData.itemId] = itemData;
     }
 }

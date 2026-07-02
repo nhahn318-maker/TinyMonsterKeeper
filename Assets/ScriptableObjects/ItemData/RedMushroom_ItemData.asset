@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0beb82bf2590af34f9c637d61d1ed8d7, type: 3}
-  m_Name: Apple_ItemData
+  m_Name: RedMushroom_ItemData
   m_EditorClassIdentifier: 
-  itemId: apple
-  itemName: Apple
-  icon: {fileID: 21300000, guid: 06f763f8eec7ca842add739aeabba4c5, type: 3}
-  cookingIconSize: {x: 90, y: 86}
+  itemId: red_mushroom_harvest
+  itemName: Red Mushroom
+  icon: {fileID: 21300000, guid: 9116389727c40f64087e264831bf22f8, type: 3}
+  cookingIconSize: {x: 24, y: 24}
   friendshipValue: 1
