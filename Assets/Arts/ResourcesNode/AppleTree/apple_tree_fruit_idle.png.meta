@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 866575b0e27e3e0418d87b9895315d2c
+guid: 4ca7177fcdc4ea04aa32fc540de49590
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 48
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Leafy_Happy_Sheet_0
+      name: apple_tree_fruit_idle_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 96
+        height: 96
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -111,20 +111,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2b09f82fb7391a449856b3d5a1fb3c26
-      internalID: -682142402
+      spriteID: 794b8c7b683e8e3408b7aa00103109a8
+      internalID: -1609802060
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leafy_Happy_Sheet_1
+      name: apple_tree_fruit_idle_1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 96
         y: 0
-        width: 32
-        height: 32
+        width: 96
+        height: 96
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -132,8 +132,29 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6af0f1f8fa35c4048b7f1d1893ea1ed3
-      internalID: -586479928
+      spriteID: 2de94c858324fa247991282e0e3b2e7d
+      internalID: -385135175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: apple_tree_fruit_idle_2
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 96
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20ddd6dd0893de74a8920d4dbc33b0cd
+      internalID: -973740621
       vertices: []
       indices: 
       edges: []
@@ -149,8 +170,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Leafy_Happy_Sheet_0: -682142402
-      Leafy_Happy_Sheet_1: -586479928
+      apple_tree_fruit_idle_0: -1609802060
+      apple_tree_fruit_idle_1: -385135175
+      apple_tree_fruit_idle_2: -973740621
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

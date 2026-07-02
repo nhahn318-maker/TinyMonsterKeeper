@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Happy
+  m_Name: AppleTree_Normal_Click
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -21,7 +21,11 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: 21300000, guid: 8e4ff88c48b846445af722efd12ef14c, type: 3}
+      value: {fileID: -1162356256, guid: 039a7c6f7d9cc3f44a1c22d5e2ad7629, type: 3}
+    - time: 0.083333336
+      value: {fileID: -627478883, guid: 039a7c6f7d9cc3f44a1c22d5e2ad7629, type: 3}
+    - time: 0.16666667
+      value: {fileID: 93854718, guid: 039a7c6f7d9cc3f44a1c22d5e2ad7629, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -44,13 +48,15 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: 21300000, guid: 8e4ff88c48b846445af722efd12ef14c, type: 3}
+    - {fileID: -1162356256, guid: 039a7c6f7d9cc3f44a1c22d5e2ad7629, type: 3}
+    - {fileID: -627478883, guid: 039a7c6f7d9cc3f44a1c22d5e2ad7629, type: 3}
+    - {fileID: 93854718, guid: 039a7c6f7d9cc3f44a1c22d5e2ad7629, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.083333336
+    m_StopTime: 0.25
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: cf725b1325c57a647b6b99bb804e1d01
+guid: 653003aa504c59d45a7925ea11c5d46d
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 48
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Leafy_Idle_Sheet_0
+      name: apple_tree_flower_idle_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 96
+        height: 96
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -111,20 +111,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 27fbddb15c73ff246b0708ddf06e6491
-      internalID: -381268738
+      spriteID: 59a6b9020689948479b76e576c302464
+      internalID: 455725412
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Leafy_Idle_Sheet_1
+      name: apple_tree_flower_idle_1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 96
         y: 0
-        width: 32
-        height: 32
+        width: 96
+        height: 96
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -132,8 +132,29 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3b13af3ae2d7f174eb0786ff02787d5c
-      internalID: 188353855
+      spriteID: ea390835d88f1994a9ac054f1dec7b3a
+      internalID: 257166224
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: apple_tree_flower_idle_2
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 96
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc354d922eb45fc4892ba85874f68c57
+      internalID: 2099251052
       vertices: []
       indices: 
       edges: []
@@ -149,8 +170,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Leafy_Idle_Sheet_0: -381268738
-      Leafy_Idle_Sheet_1: 188353855
+      apple_tree_flower_idle_0: 455725412
+      apple_tree_flower_idle_1: 257166224
+      apple_tree_flower_idle_2: 2099251052
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
