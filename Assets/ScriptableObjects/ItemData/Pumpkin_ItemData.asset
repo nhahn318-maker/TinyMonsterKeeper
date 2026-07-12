@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0beb82bf2590af34f9c637d61d1ed8d7, type: 3}
-  m_Name: RedMushroom_ItemData
+  m_Name: Pumpkin_ItemData
   m_EditorClassIdentifier: 
-  itemId: red_mushroom_harvest
-  itemName: Red Mushroom
-  icon: {fileID: 21300000, guid: 9116389727c40f64087e264831bf22f8, type: 3}
-  cookingIconSize: {x: 100, y: 100}
+  itemId: pumpkin_harvest
+  itemName: Pumpkin
+  icon: {fileID: -1554266861, guid: 90893eb38f840f04c9105e605b3ee1af, type: 3}
+  cookingIconSize: {x: 150, y: 150}
   friendshipValue: 1

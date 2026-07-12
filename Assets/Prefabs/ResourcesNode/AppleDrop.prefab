@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -149,9 +149,11 @@ MonoBehaviour:
   jumpHeight: 0.25
   duration: 0.3
   pickupCollider: {fileID: 3340045895896741429}
+  spriteRenderer: {fileID: 0}
   mainCamera: {fileID: 0}
   animator: {fileID: 3975162659607459817}
   pickupAnim: Apple_Pickup
+  pickupClickSprite: {fileID: 0}
   pickupAnimDuration: 0.35
   addToInventoryBeforeAnimation: 1
   ignoreUIWhileTesting: 1

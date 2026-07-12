@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0beb82bf2590af34f9c637d61d1ed8d7, type: 3}
-  m_Name: RedMushroom_ItemData
+  m_Name: EggPlant_ItemData
   m_EditorClassIdentifier: 
-  itemId: red_mushroom_harvest
-  itemName: Red Mushroom
-  icon: {fileID: 21300000, guid: 9116389727c40f64087e264831bf22f8, type: 3}
+  itemId: eggplant_harvest
+  itemName: Eggplant
+  icon: {fileID: -1376765571, guid: 7adef43de28bed74e88ca65b5d7f41b6, type: 3}
   cookingIconSize: {x: 100, y: 100}
   friendshipValue: 1

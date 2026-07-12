@@ -82,6 +82,7 @@ public class DraggableFoodItemUI : MonoBehaviour,
 
         if (iconImage != null)
         {
+            iconImage.gameObject.SetActive(hasItem);
             iconImage.sprite = hasItem ? itemData.icon : null;
             iconImage.enabled = hasItem;
 
@@ -90,7 +91,10 @@ public class DraggableFoodItemUI : MonoBehaviour,
         }
 
         if (countText != null)
+        {
+            countText.gameObject.SetActive(hasItem);
             countText.enabled = hasItem;
+        }
 
         if (button != null && !hasItem)
             button.interactable = false;

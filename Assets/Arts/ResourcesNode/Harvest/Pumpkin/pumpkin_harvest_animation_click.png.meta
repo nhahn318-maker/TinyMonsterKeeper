@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 9964511d63330d8449ad9c01f87a9893
+guid: 90893eb38f840f04c9105e605b3ee1af
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 112
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: red_mushroom_harvest_animation_click_0
+      name: pumpkin_harvest_animation_click_0
       rect:
         serializedVersion: 2
         x: 0
@@ -111,14 +111,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c483fd61726c6274ebeabc1c18adad70
-      internalID: 85844108
+      spriteID: dda77625db2c7f8418b91a9e2aa0d220
+      internalID: -1554266861
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: red_mushroom_harvest_animation_click_1
+      name: pumpkin_harvest_animation_click_1
       rect:
         serializedVersion: 2
         x: 32
@@ -132,14 +132,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 035ecea96910dd044914192e30c6e0a5
-      internalID: -441853711
+      spriteID: 2399eec9022dbd34cb697491881c97ef
+      internalID: 911903246
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: red_mushroom_harvest_animation_click_2
+      name: pumpkin_harvest_animation_click_2
       rect:
         serializedVersion: 2
         x: 64
@@ -153,14 +153,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2c1bbdfce963ec441b95900ab641dbb1
-      internalID: 921503466
+      spriteID: de7b30f534ac65c4cba83c58be0de095
+      internalID: 2143502349
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: red_mushroom_harvest_animation_click_3
+      name: pumpkin_harvest_animation_click_3
       rect:
         serializedVersion: 2
         x: 96
@@ -174,8 +174,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5bbcfea64ed03a64f8eb7e4f1b1ea09b
-      internalID: 1293013367
+      spriteID: ce638944159b8644a92328c1e0bb384e
+      internalID: -163905479
       vertices: []
       indices: 
       edges: []
@@ -191,10 +191,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      red_mushroom_harvest_animation_click_0: 85844108
-      red_mushroom_harvest_animation_click_1: -441853711
-      red_mushroom_harvest_animation_click_2: 921503466
-      red_mushroom_harvest_animation_click_3: 1293013367
+      pumpkin_harvest_animation_click_0: -1554266861
+      pumpkin_harvest_animation_click_1: 911903246
+      pumpkin_harvest_animation_click_2: 2143502349
+      pumpkin_harvest_animation_click_3: -163905479
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
