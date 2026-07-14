@@ -411,6 +411,10 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
     private IEnumerator FocusCameraRoutine(Transform target, string monsterName)
     {
+        CameraMapDragController cameraDrag = focusCamera.GetComponent<CameraMapDragController>();
+        if (cameraDrag != null)
+            cameraDrag.SetInputLocked(true);
+
         Vector3 originalPosition = focusCamera.transform.position;
         float originalOrthographicSize = focusCamera.orthographicSize;
 
@@ -422,6 +426,12 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         yield return new WaitForSeconds(monsterFocusDuration);
         yield return MoveCameraRoutine(focusCamera.transform.position, originalPosition, focusCamera.orthographicSize, originalOrthographicSize);
         HideMonsterNotice();
+
+        if (cameraDrag != null)
+        {
+            cameraDrag.SnapInsideBounds();
+            cameraDrag.SetInputLocked(false);
+        }
 
         cameraFocusRoutine = null;
     }

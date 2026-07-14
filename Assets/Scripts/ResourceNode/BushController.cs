@@ -4,32 +4,26 @@ using System.Collections;
 public class BushController : MonoBehaviour {
     public enum BushState {
         Normal,
-        Flowering,
         Fruiting
     }
 
     [Header("Growth Settings")]
-    [SerializeField] private float timeToFlower = 10f;
     [SerializeField] private float timeToFruit = 10f;
 
     [Header("Static Sprites")]
     [SerializeField] private Sprite spriteNormal;
-    [SerializeField] private Sprite spriteFlowering;
     [SerializeField] private Sprite spriteFruiting;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
     [SerializeField] private string normalIdleAnim = "Bush_Normal_Idle";
-    [SerializeField] private string floweringIdleAnim = "Bush_Flowering_Idle";
     [SerializeField] private string fruitingIdleAnim = "Bush_Fruiting_Idle";
 
     [SerializeField] private string normalClickAnim = "Bush_Normal_Click";
-    [SerializeField] private string floweringClickAnim = "Bush_Flowering_Click";
     [SerializeField] private string fruitingClickAnim = "Bush_Fruiting_Click";
 
     [SerializeField] private float normalClickDuration = 0.25f;
-    [SerializeField] private float floweringClickDuration = 0.25f;
     [SerializeField] private float fruitingClickDuration = 0.35f;
 
     [Header("References")]
@@ -84,11 +78,7 @@ public class BushController : MonoBehaviour {
 
         timer += Time.deltaTime;
 
-        if (currentState == BushState.Normal && timer >= timeToFlower)
-        {
-            SetState(BushState.Flowering);
-        }
-        else if (currentState == BushState.Flowering && timer >= timeToFruit)
+        if (currentState == BushState.Normal && timer >= timeToFruit)
         {
             SetState(BushState.Fruiting);
         }
@@ -242,10 +232,6 @@ public class BushController : MonoBehaviour {
                 animator.Play(normalIdleAnim, 0, 0f);
                 break;
 
-            case BushState.Flowering:
-                animator.Play(floweringIdleAnim, 0, 0f);
-                break;
-
             case BushState.Fruiting:
                 animator.Play(fruitingIdleAnim, 0, 0f);
                 break;
@@ -258,9 +244,6 @@ public class BushController : MonoBehaviour {
         {
             case BushState.Normal:
                 return normalClickAnim;
-
-            case BushState.Flowering:
-                return floweringClickAnim;
 
             case BushState.Fruiting:
                 return fruitingClickAnim;
@@ -276,9 +259,6 @@ public class BushController : MonoBehaviour {
         {
             case BushState.Normal:
                 return normalClickDuration;
-
-            case BushState.Flowering:
-                return floweringClickDuration;
 
             case BushState.Fruiting:
                 return fruitingClickDuration;
