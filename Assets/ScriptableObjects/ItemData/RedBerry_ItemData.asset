@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0beb82bf2590af34f9c637d61d1ed8d7, type: 3}
-  m_Name: PurpleBerry_ItemData
+  m_Name: RedBerry_ItemData
   m_EditorClassIdentifier: 
-  itemId: purple_berry
-  itemName: Purple Berry
-  icon: {fileID: 966385758, guid: 29b491f3d3179b845a8075a06d7f953d, type: 3}
+  itemId: berry
+  itemName: Berry
+  icon: {fileID: 1021905255, guid: 551361fea6a95b3458cde707872152e1, type: 3}
   cookingIconSize: {x: 170, y: 170}
   friendshipValue: 1
