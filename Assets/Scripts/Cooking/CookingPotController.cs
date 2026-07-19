@@ -111,6 +111,9 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (lastHandledClickFrame == Time.frameCount)
             return;
 
+        if (BookOpenUI.IsOpen)
+            return;
+
         if (CookingPotPanelUI.Instance != null && CookingPotPanelUI.Instance.IsOpen)
             return;
 
@@ -327,6 +330,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         GameObject monster = Instantiate(prefab, spawnPosition, Quaternion.identity);
         ConfigureSpawnedMonster(monster);
+        UnlockSpawnedMonster(monster);
         string monsterName = GetMonsterName(monster);
         FocusCameraOnMonster(monster.transform, monsterName);
 
@@ -381,6 +385,19 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         TinyMonsterNavRoam navRoam = monster.GetComponent<TinyMonsterNavRoam>();
         if (navRoam != null && monsterGardenBounds != null)
             navRoam.SetGardenBounds(monsterGardenBounds);
+    }
+
+    private void UnlockSpawnedMonster(GameObject monster)
+    {
+        if (monster == null)
+            return;
+
+        TinyMonsterController controller = monster.GetComponent<TinyMonsterController>();
+        if (controller == null || controller.Data == null)
+            return;
+
+        if (MonsterCollectionManager.Unlock(controller.Data))
+            Debug.Log($"Unlocked monster card: {controller.MonsterName}");
     }
 
     private string GetMonsterName(GameObject monster)

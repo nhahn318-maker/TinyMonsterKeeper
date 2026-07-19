@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 196df049d58ab2d42b8c4c65821e3fbe
+guid: 0f11752912cce7344b5c781b06caf40e
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Book_Animation_Open_0
+      name: book_swipe_back_0
       rect:
         serializedVersion: 2
         x: 0
@@ -111,14 +111,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e47f0b6cd83f09b429c4592bee6888ad
-      internalID: 382761255
+      spriteID: dcd1e530696f5a64aac567955d347c98
+      internalID: -1525956144
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_1
+      name: book_swipe_back_1
       rect:
         serializedVersion: 2
         x: 256
@@ -132,14 +132,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 559976c862deae54ab4ef858af9313cd
-      internalID: 64454535
+      spriteID: 526d56ecc5c4dc94c9d865d9f9c9eda6
+      internalID: -1343378594
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_2
+      name: book_swipe_back_2
       rect:
         serializedVersion: 2
         x: 512
@@ -153,14 +153,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3d1f3071d18a23a4681fb2afffe5e844
-      internalID: 1267909803
+      spriteID: fa108a0839b092b40b0e48ab459125fb
+      internalID: 2043781332
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_3
+      name: book_swipe_back_3
       rect:
         serializedVersion: 2
         x: 768
@@ -174,14 +174,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d5e98adcf1c590e4680e6433940d4ddb
-      internalID: -2117772031
+      spriteID: 58c68046aed58824b91a61bb58d0a697
+      internalID: -1760975455
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_4
+      name: book_swipe_back_4
       rect:
         serializedVersion: 2
         x: 1024
@@ -195,14 +195,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7cdc95a707cb9324892f8654d4e7dd2c
-      internalID: 371494982
+      spriteID: 229a4710e4522f24ab901c3073c022a1
+      internalID: 765183857
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_5
+      name: book_swipe_back_5
       rect:
         serializedVersion: 2
         x: 1280
@@ -216,14 +216,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 652ba2ab83d979045bd6cd032dada2cb
-      internalID: -1763718259
+      spriteID: a7fb079ceb62cfb49ac11c6414532d96
+      internalID: 1361408752
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_6
+      name: book_swipe_back_6
       rect:
         serializedVersion: 2
         x: 1536
@@ -237,14 +237,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5761f9f43533f2a43a0eeb32805f0333
-      internalID: -1952710707
+      spriteID: 0c50a44324644924e8c3b096ca8ada7c
+      internalID: 1100786856
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_7
+      name: book_swipe_back_7
       rect:
         serializedVersion: 2
         x: 1792
@@ -258,14 +258,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a667028c5687c1547876bc544957b645
-      internalID: -632670152
+      spriteID: 707c39fddc266d44f880a45d2bc0b880
+      internalID: -1119904401
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Book_Animation_Open_8
+      name: book_swipe_back_8
       rect:
         serializedVersion: 2
         x: 2048
@@ -279,29 +279,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e36fc56f1bf99a141bd622d9bad2795d
-      internalID: 746139001
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Book_Animation_Open_9
-      rect:
-        serializedVersion: 2
-        x: 2304
-        y: 0
-        width: 256
-        height: 256
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 56f538cfd50b53b40b7e2253de5b312a
-      internalID: -893234271
+      spriteID: 3041db5f61b25e747863d66225e60920
+      internalID: 1203161312
       vertices: []
       indices: 
       edges: []
@@ -317,19 +296,17 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Book_Animation_Open_0: 382761255
-      Book_Animation_Open_1: 64454535
-      Book_Animation_Open_2: 1267909803
-      Book_Animation_Open_3: -2117772031
-      Book_Animation_Open_4: 371494982
-      Book_Animation_Open_5: -1763718259
-      Book_Animation_Open_6: -1952710707
-      Book_Animation_Open_7: -632670152
-      Book_Animation_Open_8: 746139001
-      Book_Animation_Open_9: -893234271
+      book_swipe_back_0: -1525956144
+      book_swipe_back_1: -1343378594
+      book_swipe_back_2: 2043781332
+      book_swipe_back_3: -1760975455
+      book_swipe_back_4: 765183857
+      book_swipe_back_5: 1361408752
+      book_swipe_back_6: 1100786856
+      book_swipe_back_7: -1119904401
+      book_swipe_back_8: 1203161312
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-

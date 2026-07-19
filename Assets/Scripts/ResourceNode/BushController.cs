@@ -86,6 +86,9 @@ public class BushController : MonoBehaviour {
 
     private void HandleInput()
     {
+        if (BookOpenUI.IsOpen)
+            return;
+
 #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {

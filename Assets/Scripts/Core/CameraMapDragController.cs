@@ -58,7 +58,7 @@ public class CameraMapDragController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (targetCamera == null || inputLocked || !allowDrag)
+        if (targetCamera == null || inputLocked || !allowDrag || BookOpenUI.IsOpen)
         {
             velocity = Vector3.zero;
             return;

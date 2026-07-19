@@ -41,6 +41,9 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (BookOpenUI.IsOpen)
+            return;
+
         if (coinProducer != null && coinProducer.HasCoinToCollect)
         {
             coinProducer.CollectCoin();
