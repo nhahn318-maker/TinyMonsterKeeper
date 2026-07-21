@@ -12,14 +12,28 @@ public class BookOpenUI : MonoBehaviour
     [SerializeField] private Sprite[] pageTurnBackFrames;
     [SerializeField] private RectTransform sourceTransform;
     [SerializeField] private GameObject[] cardsRoots;
-    [SerializeField] private int totalPages = 10;
+    [SerializeField] private GameObject detailRoot;
+    [SerializeField] private Image detailCardImage;
+    [SerializeField] private Image detailBadgeImage;
+    [SerializeField] private Image[] detailStarImages;
+    [SerializeField] private Sprite bronzeBadgeSprite;
+    [SerializeField] private Sprite silverBadgeSprite;
+    [SerializeField] private Sprite goldBadgeSprite;
+    [SerializeField] private Sprite bronzeStarSprite;
+    [SerializeField] private Sprite silverStarSprite;
+    [SerializeField] private Sprite goldStarSprite;
+    [SerializeField] private int totalPages = 2;
     [SerializeField] private MonsterData[] monsters;
+    [SerializeField] private MonsterData defaultSelectedMonster;
+    [SerializeField] private bool showDefaultDetailOnOpen = true;
     [SerializeField] private Sprite lockedCardSprite;
     [SerializeField] private Sprite unlockedCardSprite;
     [SerializeField] private CameraMapDragController cameraDragController;
     [SerializeField] private bool lockCameraDragWhileOpen = true;
     [SerializeField] private Vector2 monsterIconSize = new Vector2(96f, 96f);
     [SerializeField] private Vector2 monsterIconOffset = new Vector2(0f, 10f);
+    [SerializeField] private Vector2 detailMonsterIconSize = new Vector2(288f, 288f);
+    [SerializeField] private Vector2 detailMonsterIconOffset = new Vector2(0f, 10f);
     [SerializeField] private float flyDuration = 0.28f;
     [SerializeField] private float openDuration = 0.45f;
     [SerializeField] private float pageTurnDuration = 0.35f;
@@ -37,6 +51,7 @@ public class BookOpenUI : MonoBehaviour
     private readonly List<CardView> cardViews = new List<CardView>();
     private int currentPage;
     private bool lockedCameraDrag;
+    private DetailView detailView;
 
     public static bool IsOpen { get; private set; }
 
@@ -51,17 +66,18 @@ public class BookOpenUI : MonoBehaviour
         }
 
         CacheCardViews();
+        CacheDetailView();
         Hide();
     }
 
     private void OnEnable()
     {
-        MonsterCollectionManager.MonsterUnlocked += HandleMonsterUnlocked;
+        MonsterCollectionManager.MonsterCollectionChanged += HandleMonsterCollectionChanged;
     }
 
     private void OnDisable()
     {
-        MonsterCollectionManager.MonsterUnlocked -= HandleMonsterUnlocked;
+        MonsterCollectionManager.MonsterCollectionChanged -= HandleMonsterCollectionChanged;
         IsOpen = false;
         UnlockCameraDragIfNeeded();
     }
@@ -83,7 +99,10 @@ public class BookOpenUI : MonoBehaviour
         if (openRoutine != null)
             StopCoroutine(openRoutine);
 
-        currentPage = Mathf.Clamp(currentPage, 0, GetLastPageIndex());
+        currentPage = showDefaultDetailOnOpen && defaultSelectedMonster != null
+            ? GetPageIndexForMonster(defaultSelectedMonster)
+            : Mathf.Clamp(currentPage, 0, GetLastPageIndex());
+
         openRoutine = StartCoroutine(OpenRoutine());
     }
 
@@ -107,6 +126,7 @@ public class BookOpenUI : MonoBehaviour
         IsOpen = false;
         isTrackingSwipe = false;
         SetCardsRootsActive(false);
+        SetDetailRootActive(false);
         UnlockCameraDragIfNeeded();
     }
 
@@ -199,7 +219,9 @@ public class BookOpenUI : MonoBehaviour
         yield return PlayOpenAnimation();
 
         SetCardsRootsActive(true);
+        SetDetailRootActive(true);
         RefreshCards();
+        ShowInitialDetail();
 
         openRoutine = null;
     }
@@ -284,6 +306,7 @@ public class BookOpenUI : MonoBehaviour
         currentPage = Mathf.Clamp(pageIndex, 0, GetLastPageIndex());
         RefreshCards();
         SetCardsRootsActive(true);
+        ShowInitialDetail();
 
         pageRoutine = null;
     }
@@ -303,6 +326,12 @@ public class BookOpenUI : MonoBehaviour
             if (cardsRoots[i] != null)
                 cardsRoots[i].SetActive(isActive);
         }
+    }
+
+    private void SetDetailRootActive(bool isActive)
+    {
+        if (detailRoot != null)
+            detailRoot.SetActive(isActive);
     }
 
     private void LockCameraDragIfNeeded()
@@ -331,10 +360,15 @@ public class BookOpenUI : MonoBehaviour
         lockedCameraDrag = false;
     }
 
-    private void HandleMonsterUnlocked(MonsterData monsterData)
+    private void HandleMonsterCollectionChanged(MonsterData monsterData, int count)
     {
         if (panelRoot != null && panelRoot.activeInHierarchy)
+        {
             RefreshCards();
+
+            if (detailView != null && detailView.MonsterData == monsterData)
+                ShowDetail(monsterData);
+        }
     }
 
     private void RefreshCards()
@@ -342,16 +376,18 @@ public class BookOpenUI : MonoBehaviour
         if (cardViews.Count == 0)
             CacheCardViews();
 
-        int pageCapacity = Mathf.Max(1, cardViews.Count);
+        int pageCapacity = GetPageCapacity();
         int startIndex = currentPage * pageCapacity;
 
         for (int i = 0; i < cardViews.Count; i++)
         {
             int monsterIndex = startIndex + i;
             MonsterData monsterData = monsters != null && monsterIndex < monsters.Length ? monsters[monsterIndex] : null;
-            bool isUnlocked = MonsterCollectionManager.IsUnlocked(monsterData);
+            int unlockCount = GetDisplayUnlockCount(monsterData);
+            bool isUnlocked = unlockCount > 0;
 
-            cardViews[i].Set(monsterData, isUnlocked, lockedCardSprite, unlockedCardSprite, monsterIconSize, monsterIconOffset);
+            cardViews[i].SetVisible(true);
+            cardViews[i].Set(monsterData, monsterIndex, isUnlocked, lockedCardSprite, unlockedCardSprite, monsterIconSize, monsterIconOffset, OnClickCard);
         }
     }
 
@@ -367,19 +403,130 @@ public class BookOpenUI : MonoBehaviour
             if (cardsRoots[i] == null)
                 continue;
 
-            Image[] images = cardsRoots[i].GetComponentsInChildren<Image>(true);
-            for (int imageIndex = 0; imageIndex < images.Length; imageIndex++)
+            Transform root = cardsRoots[i].transform;
+            for (int childIndex = 0; childIndex < root.childCount; childIndex++)
             {
-                Image image = images[imageIndex];
-                if (image == null || image.gameObject == cardsRoots[i])
+                Transform child = root.GetChild(childIndex);
+                if (IsInsideDetailRoot(child))
                     continue;
 
-                cardViews.Add(new CardView(image));
+                Image image = child.GetComponent<Image>();
+                if (image == null)
+                    continue;
+
+                CardView cardView = new CardView(image);
+                cardViews.Add(cardView);
             }
         }
 
         if (lockedCardSprite == null && cardViews.Count > 0)
             lockedCardSprite = cardViews[0].Background.sprite;
+    }
+
+    private void CacheDetailView()
+    {
+        if (detailCardImage == null && detailRoot != null)
+        {
+            Image[] images = detailRoot.GetComponentsInChildren<Image>(true);
+            for (int i = 0; i < images.Length; i++)
+            {
+                if (images[i] != null && images[i].gameObject != detailRoot)
+                {
+                    detailCardImage = images[i];
+                    break;
+                }
+            }
+        }
+
+        if (detailView == null && detailCardImage != null)
+            detailView = new DetailView(detailCardImage);
+
+        if ((detailStarImages == null || detailStarImages.Length == 0) && detailRoot != null)
+        {
+            Transform starsRoot = detailRoot.transform.Find("Stars");
+            if (starsRoot != null)
+                detailStarImages = starsRoot.GetComponentsInChildren<Image>(true);
+        }
+    }
+
+    private bool IsInsideDetailRoot(Transform target)
+    {
+        return detailRoot != null && target != null && target.IsChildOf(detailRoot.transform);
+    }
+
+    private void OnClickCard(CardView cardView)
+    {
+        if (cardView == null || !cardView.IsUnlocked)
+            return;
+
+        ShowDetail(cardView.MonsterData);
+    }
+
+    private void ShowDetail(MonsterData monsterData)
+    {
+        if (monsterData == null)
+        {
+            HideDetail();
+            return;
+        }
+
+        if (detailView == null)
+            CacheDetailView();
+
+        int unlockCount = GetDisplayUnlockCount(monsterData);
+        if (unlockCount <= 0)
+        {
+            HideDetail();
+            return;
+        }
+
+        BadgeTier tier = GetBadgeTier(unlockCount);
+        int activeStars = GetActiveStarsInTier(unlockCount);
+
+        if (detailView != null)
+            detailView.Set(monsterData, unlockedCardSprite, detailMonsterIconSize, detailMonsterIconOffset);
+
+        if (detailBadgeImage != null)
+        {
+            detailBadgeImage.sprite = GetBadgeSprite(tier);
+            detailBadgeImage.enabled = detailBadgeImage.sprite != null;
+        }
+
+        if (detailStarImages != null)
+        {
+            Sprite starSprite = GetStarSprite(tier);
+            for (int i = 0; i < detailStarImages.Length; i++)
+            {
+                if (detailStarImages[i] == null)
+                    continue;
+
+                bool isActive = i < activeStars && starSprite != null;
+                detailStarImages[i].gameObject.SetActive(isActive);
+                detailStarImages[i].sprite = starSprite;
+                detailStarImages[i].enabled = isActive;
+            }
+        }
+    }
+
+    private void HideDetail()
+    {
+        if (detailView == null)
+            CacheDetailView();
+
+        if (detailView != null)
+            detailView.Hide();
+
+        if (detailBadgeImage != null)
+            detailBadgeImage.enabled = false;
+
+        if (detailStarImages == null)
+            return;
+
+        for (int i = 0; i < detailStarImages.Length; i++)
+        {
+            if (detailStarImages[i] != null)
+                detailStarImages[i].gameObject.SetActive(false);
+        }
     }
 
     private int GetLastPageIndex()
@@ -388,10 +535,131 @@ public class BookOpenUI : MonoBehaviour
         return configuredPageCount - 1;
     }
 
+    private int GetPageCapacity()
+    {
+        return Mathf.Max(1, cardViews.Count);
+    }
+
+    private int GetPageIndexForMonster(MonsterData monsterData)
+    {
+        if (monsterData == null || monsters == null)
+            return 0;
+
+        int pageCapacity = GetPageCapacity();
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (IsSameMonster(monsters[i], monsterData))
+                return Mathf.Clamp(i / pageCapacity, 0, GetLastPageIndex());
+        }
+
+        Debug.LogWarning($"Default book monster is not in the BookOpenUI monster list: {monsterData.name}");
+        return 0;
+    }
+
+    private void ShowInitialDetail()
+    {
+        if (!showDefaultDetailOnOpen)
+        {
+            HideDetail();
+            return;
+        }
+
+        MonsterData monsterData = defaultSelectedMonster != null ? defaultSelectedMonster : GetFirstUnlockedMonsterOnCurrentPage();
+        if (monsterData != null && GetDisplayUnlockCount(monsterData) > 0)
+            ShowDetail(monsterData);
+        else
+            HideDetail();
+    }
+
+    private MonsterData GetFirstUnlockedMonsterOnCurrentPage()
+    {
+        int pageCapacity = GetPageCapacity();
+        int startIndex = currentPage * pageCapacity;
+
+        for (int i = 0; i < pageCapacity; i++)
+        {
+            int monsterIndex = startIndex + i;
+            MonsterData monsterData = monsters != null && monsterIndex < monsters.Length ? monsters[monsterIndex] : null;
+            if (GetDisplayUnlockCount(monsterData) > 0)
+                return monsterData;
+        }
+
+        return null;
+    }
+
+    private int GetDisplayUnlockCount(MonsterData monsterData)
+    {
+        int count = MonsterCollectionManager.GetUnlockCount(monsterData);
+        if (IsSameMonster(monsterData, defaultSelectedMonster))
+            return Mathf.Max(1, count);
+
+        return count;
+    }
+
+    private static bool IsSameMonster(MonsterData left, MonsterData right)
+    {
+        if (left == null || right == null)
+            return false;
+
+        string leftId = MonsterCollectionManager.GetMonsterId(left);
+        string rightId = MonsterCollectionManager.GetMonsterId(right);
+        return !string.IsNullOrEmpty(leftId) && leftId == rightId;
+    }
+
+    private static BadgeTier GetBadgeTier(int unlockCount)
+    {
+        if (unlockCount >= 7)
+            return BadgeTier.Gold;
+
+        if (unlockCount >= 4)
+            return BadgeTier.Silver;
+
+        return BadgeTier.Bronze;
+    }
+
+    private static int GetActiveStarsInTier(int unlockCount)
+    {
+        return Mathf.Clamp(((Mathf.Max(1, unlockCount) - 1) % 3) + 1, 1, 3);
+    }
+
+    private Sprite GetBadgeSprite(BadgeTier tier)
+    {
+        switch (tier)
+        {
+            case BadgeTier.Silver:
+                return silverBadgeSprite != null ? silverBadgeSprite : bronzeBadgeSprite;
+            case BadgeTier.Gold:
+                return goldBadgeSprite != null ? goldBadgeSprite : silverBadgeSprite;
+            default:
+                return bronzeBadgeSprite;
+        }
+    }
+
+    private Sprite GetStarSprite(BadgeTier tier)
+    {
+        switch (tier)
+        {
+            case BadgeTier.Silver:
+                return silverStarSprite != null ? silverStarSprite : bronzeStarSprite;
+            case BadgeTier.Gold:
+                return goldStarSprite != null ? goldStarSprite : silverStarSprite;
+            default:
+                return bronzeStarSprite;
+        }
+    }
+
+    private enum BadgeTier
+    {
+        Bronze,
+        Silver,
+        Gold
+    }
+
     private sealed class CardView
     {
         private readonly Image background;
         private Image monsterIcon;
+        private Button button;
 
         public CardView(Image background)
         {
@@ -399,14 +667,33 @@ public class BookOpenUI : MonoBehaviour
         }
 
         public Image Background => background;
+        public MonsterData MonsterData { get; private set; }
+        public bool IsUnlocked { get; private set; }
 
-        public void Set(MonsterData monsterData, bool isUnlocked, Sprite lockedSprite, Sprite unlockedSprite, Vector2 iconSize, Vector2 iconOffset)
+        public void SetVisible(bool isVisible)
+        {
+            if (background != null)
+                background.gameObject.SetActive(isVisible);
+        }
+
+        public void Set(MonsterData monsterData, int monsterIndex, bool isUnlocked, Sprite lockedSprite, Sprite unlockedSprite, Vector2 iconSize, Vector2 iconOffset, System.Action<CardView> onClick)
         {
             if (background == null)
                 return;
 
+            MonsterData = monsterData;
+            IsUnlocked = isUnlocked;
             background.sprite = isUnlocked && unlockedSprite != null ? unlockedSprite : lockedSprite;
             background.enabled = true;
+            background.raycastTarget = true;
+
+            Button cardButton = GetOrCreateButton();
+            if (cardButton != null)
+            {
+                cardButton.interactable = isUnlocked;
+                cardButton.onClick.RemoveAllListeners();
+                cardButton.onClick.AddListener(() => onClick?.Invoke(this));
+            }
 
             Image icon = GetOrCreateIcon();
             if (icon == null)
@@ -415,10 +702,95 @@ public class BookOpenUI : MonoBehaviour
             icon.sprite = isUnlocked && monsterData != null ? monsterData.icon : null;
             icon.enabled = isUnlocked && monsterData != null && monsterData.icon != null;
             icon.raycastTarget = false;
+            icon.transform.SetAsLastSibling();
 
             RectTransform iconTransform = icon.rectTransform;
             iconTransform.sizeDelta = BookOpenUI.RoundVector2(iconSize);
             iconTransform.anchoredPosition = BookOpenUI.RoundVector2(iconOffset);
+        }
+
+        private Image GetOrCreateIcon()
+        {
+            if (monsterIcon != null)
+                return monsterIcon;
+
+            Transform existing = background.transform.Find("MonsterIcon");
+            if (existing != null)
+            {
+                monsterIcon = existing.GetComponent<Image>();
+                if (monsterIcon != null)
+                    return monsterIcon;
+            }
+
+            GameObject iconObject = new GameObject("MonsterIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            iconObject.transform.SetParent(background.transform, false);
+
+            monsterIcon = iconObject.GetComponent<Image>();
+            monsterIcon.preserveAspect = true;
+
+            RectTransform iconTransform = monsterIcon.rectTransform;
+            iconTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            iconTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            iconTransform.pivot = new Vector2(0.5f, 0.5f);
+
+            return monsterIcon;
+        }
+
+        private Button GetOrCreateButton()
+        {
+            if (button != null)
+                return button;
+
+            button = background.GetComponent<Button>();
+            if (button == null)
+                button = background.gameObject.AddComponent<Button>();
+
+            button.transition = Selectable.Transition.None;
+            return button;
+        }
+    }
+
+    private sealed class DetailView
+    {
+        private readonly Image background;
+        private Image monsterIcon;
+
+        public DetailView(Image background)
+        {
+            this.background = background;
+        }
+
+        public MonsterData MonsterData { get; private set; }
+
+        public void Set(MonsterData monsterData, Sprite cardSprite, Vector2 iconSize, Vector2 iconOffset)
+        {
+            if (background == null)
+                return;
+
+            MonsterData = monsterData;
+            background.gameObject.SetActive(true);
+            background.enabled = true;
+            background.sprite = cardSprite != null ? cardSprite : background.sprite;
+
+            Image icon = GetOrCreateIcon();
+            if (icon == null)
+                return;
+
+            icon.sprite = monsterData != null ? monsterData.icon : null;
+            icon.enabled = monsterData != null && monsterData.icon != null;
+            icon.raycastTarget = false;
+
+            RectTransform iconTransform = icon.rectTransform;
+            iconTransform.sizeDelta = BookOpenUI.RoundVector2(iconSize);
+            iconTransform.anchoredPosition = BookOpenUI.RoundVector2(iconOffset);
+        }
+
+        public void Hide()
+        {
+            MonsterData = null;
+
+            if (background != null)
+                background.gameObject.SetActive(false);
         }
 
         private Image GetOrCreateIcon()

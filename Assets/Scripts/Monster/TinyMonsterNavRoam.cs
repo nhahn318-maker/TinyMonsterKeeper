@@ -163,6 +163,12 @@ public class TinyMonsterNavRoam : MonoBehaviour
             if (!gardenBounds.OverlapPoint(randomPoint))
                 continue;
 
+            if (FogAreaBlocker.BlocksPoint(randomPoint) ||
+                FogAreaBlocker.BlocksPath(transform.position, randomPoint))
+            {
+                continue;
+            }
+
             if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, sampleDistance, NavMesh.AllAreas))
             {
                 agent.isStopped = false;

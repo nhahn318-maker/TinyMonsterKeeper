@@ -37,7 +37,11 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [Header("Notice")]
     [SerializeField] private GameObject noticeLayer;
     [SerializeField] private TextMeshProUGUI noticeText;
+    [SerializeField] private GameTextDatabase textDatabase;
+    [SerializeField] private GameTextKey monsterNoticeKey = GameTextKey.MonsterJoined;
+    [SerializeField] private GameTextKey monsterAlreadyInGardenKey = GameTextKey.MonsterAlreadyInGarden;
     [SerializeField] private string monsterNoticeFormat = "{0} joined your garden!";
+    [SerializeField] private string monsterAlreadyInGardenFallback = "{0} is already in your garden!";
 
     [Header("Recipes")]
     [SerializeField] private CookingRecipeData[] recipes;
@@ -321,7 +325,11 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (!activeRecipe.allowDuplicateMonsters && IsMonsterAlreadyInGarden(prefab))
         {
             string existingName = GetPrefabMonsterName(prefab);
-            ShowTemporaryNotice($"{existingName} is already in your garden!", 2f);
+            MonsterData existingData = GetPrefabMonsterData(prefab);
+            if (existingData != null && MonsterCollectionManager.Unlock(existingData))
+                Debug.Log($"Increased monster card stars: {existingName}");
+
+            ShowTemporaryNotice(GetText(monsterAlreadyInGardenKey, monsterAlreadyInGardenFallback, existingName), 2f);
             Debug.Log($"{existingName} is already in garden. Spawn skipped.");
             return;
         }
@@ -331,6 +339,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         GameObject monster = Instantiate(prefab, spawnPosition, Quaternion.identity);
         ConfigureSpawnedMonster(monster);
         UnlockSpawnedMonster(monster);
+        SaveSpawnedMonster(monster);
         string monsterName = GetMonsterName(monster);
         FocusCameraOnMonster(monster.transform, monsterName);
 
@@ -377,6 +386,15 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         return prefab.name;
     }
 
+    private MonsterData GetPrefabMonsterData(GameObject prefab)
+    {
+        if (prefab == null)
+            return null;
+
+        TinyMonsterController controller = prefab.GetComponent<TinyMonsterController>();
+        return controller != null ? controller.Data : null;
+    }
+
     private void ConfigureSpawnedMonster(GameObject monster)
     {
         if (monster == null)
@@ -398,6 +416,18 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (MonsterCollectionManager.Unlock(controller.Data))
             Debug.Log($"Unlocked monster card: {controller.MonsterName}");
+    }
+
+    private void SaveSpawnedMonster(GameObject monster)
+    {
+        if (monster == null || GardenMonsterSaveManager.Instance == null)
+            return;
+
+        TinyMonsterController controller = monster.GetComponent<TinyMonsterController>();
+        if (controller == null || controller.Data == null)
+            return;
+
+        GardenMonsterSaveManager.Instance.SaveMonsterInGarden(controller.Data);
     }
 
     private string GetMonsterName(GameObject monster)
@@ -455,7 +485,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
     private void ShowMonsterNotice(string monsterName)
     {
-        ShowNoticeMessage(string.Format(monsterNoticeFormat, monsterName));
+        ShowNoticeMessage(GetText(monsterNoticeKey, monsterNoticeFormat, monsterName));
     }
 
     private void ShowNoticeMessage(string message)
@@ -493,6 +523,14 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (noticeLayer != null)
             noticeLayer.SetActive(false);
+    }
+
+    private string GetText(GameTextKey key, string fallback, params object[] args)
+    {
+        if (textDatabase != null)
+            return textDatabase.Get(key, fallback, args);
+
+        return args == null || args.Length == 0 ? fallback : string.Format(fallback, args);
     }
 
     private IEnumerator MoveCameraRoutine(Vector3 fromPosition, Vector3 toPosition, float fromSize, float toSize)

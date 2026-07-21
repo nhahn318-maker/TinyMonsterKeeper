@@ -10,6 +10,7 @@ public class CameraMapDragController : MonoBehaviour
     [SerializeField] private Camera targetCamera;
     [SerializeField] private Collider2D mapBoundsCollider;
     [SerializeField] private Transform mapRoot;
+    [SerializeField] private Vector2 boundsPadding = new Vector2(0.5f, 0.5f);
 
     [Header("Drag")]
     [SerializeField] private bool allowDrag = true;
@@ -216,6 +217,7 @@ public class CameraMapDragController : MonoBehaviour
         if (mapBoundsCollider != null)
         {
             calculatedMapBounds = mapBoundsCollider.bounds;
+            ExpandBoundsByPadding();
             return;
         }
 
@@ -237,6 +239,13 @@ public class CameraMapDragController : MonoBehaviour
 
         for (int i = 1; i < renderers.Length; i++)
             calculatedMapBounds.Encapsulate(renderers[i].bounds);
+
+        ExpandBoundsByPadding();
+    }
+
+    private void ExpandBoundsByPadding()
+    {
+        calculatedMapBounds.Expand(new Vector3(boundsPadding.x * 2f, boundsPadding.y * 2f, 0f));
     }
 
     private void ClampCameraInsideBounds()

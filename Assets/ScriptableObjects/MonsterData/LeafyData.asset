@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 001
   monsterName: Leafy
-  icon: {fileID: -682142402, guid: 866575b0e27e3e0418d87b9895315d2c, type: 3}
+  icon: {fileID: -309667777, guid: eb59d9d724739cb4aab554d46a65269e, type: 3}
   prefab: {fileID: 242072064891303551, guid: a9f45997d79cb0f42bc25471c0f3a401, type: 3}
   favoriteFoodId: 
   favoriteToyId: 

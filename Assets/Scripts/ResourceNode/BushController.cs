@@ -25,6 +25,7 @@ public class BushController : MonoBehaviour {
 
     [SerializeField] private float normalClickDuration = 0.25f;
     [SerializeField] private float fruitingClickDuration = 0.35f;
+    [SerializeField] private float clickAnimationSpeed = 1f;
 
     [Header("References")]
     [SerializeField] private SpriteRenderer spriteRenderer;
@@ -155,10 +156,14 @@ public class BushController : MonoBehaviour {
 
         if (animator != null && !string.IsNullOrEmpty(animName))
         {
+            animator.speed = Mathf.Max(0.1f, clickAnimationSpeed);
             animator.Play(animName, 0, 0f);
         }
 
-        yield return new WaitForSeconds(animDuration);
+        yield return new WaitForSeconds(animDuration / Mathf.Max(0.1f, clickAnimationSpeed));
+
+        if (animator != null)
+            animator.speed = 1f;
 
         if (clickedState == BushState.Fruiting && currentState == BushState.Fruiting)
         {
