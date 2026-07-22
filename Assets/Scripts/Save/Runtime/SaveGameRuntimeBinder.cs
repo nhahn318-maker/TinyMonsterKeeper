@@ -21,7 +21,7 @@ public class SaveGameRuntimeBinder : MonoBehaviour
 
         saveManager = SaveSystemBootstrap.SaveManager;
 
-        if (loadSaveOnStart && saveManager.HasExistingSave && saveManager.CurrentSave.HasAnyGameplayData())
+        if (loadSaveOnStart && saveManager.HasExistingSave && ShouldApplyLoadedSave(saveManager.CurrentSave))
             ApplySaveToGame();
 
         CaptureCurrentGameState();
@@ -64,6 +64,11 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             fogZoneManager.ApplyUnlockedZones(saveManager.CurrentSave.unlockedFogZones);
 
         isApplyingSave = false;
+    }
+
+    private static bool ShouldApplyLoadedSave(GameSaveData saveData)
+    {
+        return saveData != null && (saveData.HasAnyGameplayData() || saveData.forceApplyEmptyState);
     }
 
     private void BindAutosaveEvents()

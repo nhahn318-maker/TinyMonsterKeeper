@@ -73,6 +73,15 @@ public class SaveManager
         SaveChanged?.Invoke(CurrentSave);
     }
 
+    public async Task ResetCurrentSaveAsync()
+    {
+        CurrentSave = GameSaveData.CreateNew();
+        CurrentSave.forceApplyEmptyState = true;
+        HasExistingSave = true;
+        await SaveAsync();
+        SaveLoaded?.Invoke(CurrentSave);
+    }
+
     public async void SaveSoon()
     {
         try

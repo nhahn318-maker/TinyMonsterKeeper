@@ -13,6 +13,7 @@ public class GameSaveData
     public List<string> discoveredRecipes = new List<string>();
     public List<string> failedMixes = new List<string>();
     public long lastSavedAtUnix;
+    public bool forceApplyEmptyState;
 
     public static GameSaveData CreateNew()
     {

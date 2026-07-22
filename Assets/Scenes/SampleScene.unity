@@ -3470,6 +3470,7 @@ GameObject:
   - component: {fileID: 393120131}
   - component: {fileID: 393120130}
   - component: {fileID: 393120132}
+  - component: {fileID: 393120133}
   m_Layer: 0
   m_Name: SaveSystem
   m_TagString: Untagged
@@ -3535,6 +3536,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 17dd78ff7c0048aea4af5b395e084cc4, type: 2}
   loadSaveOnStart: 1
   autosaveOnChange: 1
+--- !u!114 &393120133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393120129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86778f535df642d8a76ade97ea8b5fdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clearAllTinyMonsterKeeperPlayerPrefs: 1
+  reloadSceneAfterReset: 1
 --- !u!1 &395557543
 GameObject:
   m_ObjectHideFlags: 0
@@ -6816,8 +6831,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: db53411a10f6375478efb907123dca9c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -6863,7 +6878,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 1.5, y: 1.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -7494,7 +7509,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 1.5, y: 1.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -7544,8 +7559,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: db53411a10f6375478efb907123dca9c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -8045,6 +8060,8 @@ MonoBehaviour:
     unlockCost: 0
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 932929626}
+    unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
+    unlockVisualDuration: 0.45
     fogReveal: {fileID: 607575370}
     revealBounds: {fileID: 0}
     monsterBlockers:
@@ -8058,6 +8075,8 @@ MonoBehaviour:
     unlockCost: 0
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 806572358}
+    unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
+    unlockVisualDuration: 0.45
     fogReveal: {fileID: 1841840557}
     revealBounds: {fileID: 0}
     monsterBlockers:

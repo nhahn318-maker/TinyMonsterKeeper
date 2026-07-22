@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -28,6 +29,8 @@ public class FogZoneManager : MonoBehaviour
         [Header("Click Target")]
         public Button uiButton;
         public Collider2D mapButtonCollider;
+        public Sprite unlockedButtonSprite;
+        public float unlockVisualDuration = 0.25f;
 
         [Header("Fog")]
         public FogTilemapRevealController fogReveal;
@@ -190,8 +193,84 @@ public class FogZoneManager : MonoBehaviour
 
     private void UnlockZone(FogZone zone, bool animateReveal, bool notify)
     {
-        zone.isUnlocking = animateReveal;
+        if (animateReveal)
+        {
+            StartCoroutine(UnlockZoneRoutine(zone, notify));
+            return;
+        }
+
+        zone.isUnlocking = false;
         zone.isUnlocked = true;
+
+        HideUnlockTarget(zone);
+        SetMonsterBlockers(zone, false);
+        ClearOrRevealFog(zone, false);
+
+        if (notify)
+            FogZoneUnlocked?.Invoke(GetZoneId(zone));
+    }
+
+    private IEnumerator UnlockZoneRoutine(FogZone zone, bool notify)
+    {
+        zone.isUnlocking = true;
+        zone.isUnlocked = true;
+
+        ShowUnlockedVisual(zone);
+        DisableUnlockInteraction(zone);
+
+        float waitDuration = Mathf.Max(0f, zone.unlockVisualDuration);
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+
+        HideUnlockTarget(zone);
+        SetMonsterBlockers(zone, false);
+        ClearOrRevealFog(zone, true);
+
+        zone.isUnlocking = false;
+
+        if (notify)
+            FogZoneUnlocked?.Invoke(GetZoneId(zone));
+    }
+
+    private void ShowUnlockedVisual(FogZone zone)
+    {
+        if (zone == null || zone.unlockedButtonSprite == null)
+            return;
+
+        if (zone.uiButton != null)
+        {
+            Image image = zone.uiButton.targetGraphic as Image;
+            if (image == null)
+                image = zone.uiButton.GetComponent<Image>();
+
+            if (image != null)
+                image.sprite = zone.unlockedButtonSprite;
+        }
+
+        if (zone.mapButtonCollider != null)
+        {
+            SpriteRenderer spriteRenderer = zone.mapButtonCollider.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+                spriteRenderer.sprite = zone.unlockedButtonSprite;
+        }
+    }
+
+    private void DisableUnlockInteraction(FogZone zone)
+    {
+        if (zone == null)
+            return;
+
+        if (zone.uiButton != null)
+            zone.uiButton.interactable = false;
+
+        if (zone.mapButtonCollider != null)
+            zone.mapButtonCollider.enabled = false;
+    }
+
+    private void HideUnlockTarget(FogZone zone)
+    {
+        if (zone == null || !zone.hideButtonOnUnlock)
+            return;
 
         if (zone.hideButtonOnUnlock)
         {
@@ -201,14 +280,13 @@ public class FogZoneManager : MonoBehaviour
             if (zone.mapButtonCollider != null)
                 zone.mapButtonCollider.gameObject.SetActive(false);
         }
+    }
 
-        SetMonsterBlockers(zone, false);
-
+    private void ClearOrRevealFog(FogZone zone, bool animateReveal)
+    {
         if (zone.fogReveal == null)
         {
             Debug.LogWarning($"Fog reveal controller is missing for zone: {zone.zoneName}");
-            if (notify)
-                FogZoneUnlocked?.Invoke(GetZoneId(zone));
             return;
         }
 
@@ -227,11 +305,6 @@ public class FogZoneManager : MonoBehaviour
             else
                 zone.fogReveal.ClearColliderBounds(zone.revealBounds);
         }
-
-        zone.isUnlocking = false;
-
-        if (notify)
-            FogZoneUnlocked?.Invoke(GetZoneId(zone));
     }
 
     public void ApplyUnlockedZones(List<string> unlockedZoneIds)

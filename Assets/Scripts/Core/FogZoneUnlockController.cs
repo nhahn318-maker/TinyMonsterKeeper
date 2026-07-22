@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class FogZoneUnlockController : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class FogZoneUnlockController : MonoBehaviour
     [SerializeField] private FogUnlockConfirmDialogUI confirmDialog;
     [SerializeField] private FogTilemapRevealController fogReveal;
     [SerializeField] private Collider2D revealBounds;
+    [SerializeField] private Sprite unlockedButtonSprite;
+    [SerializeField] private float unlockVisualDuration = 0.25f;
 
     [Header("Reveal Motion")]
     [SerializeField] private RevealDirection revealDirection = RevealDirection.Right;
@@ -100,13 +103,30 @@ public class FogZoneUnlockController : MonoBehaviour
             return;
         }
 
-        UnlockFog();
+        StartCoroutine(UnlockFogRoutine());
     }
 
-    private void UnlockFog()
+    private IEnumerator UnlockFogRoutine()
     {
         isUnlocking = true;
         isUnlocked = true;
+
+        if (unlockButton != null && unlockedButtonSprite != null)
+        {
+            Image image = unlockButton.targetGraphic as Image;
+            if (image == null)
+                image = unlockButton.GetComponent<Image>();
+
+            if (image != null)
+                image.sprite = unlockedButtonSprite;
+        }
+
+        if (unlockButton != null)
+            unlockButton.interactable = false;
+
+        float waitDuration = Mathf.Max(0f, unlockVisualDuration);
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
 
         if (unlockButton != null)
             unlockButton.gameObject.SetActive(false);
@@ -114,7 +134,7 @@ public class FogZoneUnlockController : MonoBehaviour
         if (fogReveal == null)
         {
             Debug.LogWarning("Fog reveal controller is missing.");
-            return;
+            yield break;
         }
 
         if (revealWholeTilemap || revealBounds == null)

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -61,6 +61,24 @@ switch ($Command) {
         $exitCode = $LASTEXITCODE
         if (!(Select-String -Path $LogPath -Pattern "Save runtime binder setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupSaveRuntimeBinder. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-fog-unlock-visuals" {
+        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupFogUnlockVisuals"
+        $exitCode = $LASTEXITCODE
+        if (!(Select-String -Path $LogPath -Pattern "Fog unlock visuals setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupFogUnlockVisuals. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-save-reset-tool" {
+        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.AddSaveAccountResetTool"
+        $exitCode = $LASTEXITCODE
+        if (!(Select-String -Path $LogPath -Pattern "Save account reset tool setup finished" -Quiet)) {
+            Write-Error "Unity exited before running AddSaveAccountResetTool. Check log: $LogPath"
             exit 1
         }
         exit $exitCode

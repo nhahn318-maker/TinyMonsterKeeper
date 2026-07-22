@@ -60,7 +60,8 @@ public class FirebaseCloudSaveService : ISaveService
             { "unlockedFogZones", CleanStringList(saveData.unlockedFogZones) },
             { "discoveredRecipes", CleanStringList(saveData.discoveredRecipes) },
             { "failedMixes", CleanStringList(saveData.failedMixes) },
-            { "lastSavedAtUnix", saveData.lastSavedAtUnix }
+            { "lastSavedAtUnix", saveData.lastSavedAtUnix },
+            { "forceApplyEmptyState", saveData.forceApplyEmptyState }
         };
     }
 
@@ -76,6 +77,7 @@ public class FirebaseCloudSaveService : ISaveService
         saveData.discoveredRecipes = ReadStringList(data, "discoveredRecipes");
         saveData.failedMixes = ReadStringList(data, "failedMixes");
         saveData.lastSavedAtUnix = ReadLong(data, "lastSavedAtUnix", 0);
+        saveData.forceApplyEmptyState = ReadBool(data, "forceApplyEmptyState", false);
         return saveData;
     }
 
@@ -200,6 +202,21 @@ public class FirebaseCloudSaveService : ISaveService
         try
         {
             return Convert.ToInt64(raw);
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static bool ReadBool(Dictionary<string, object> data, string key, bool fallback)
+    {
+        if (!data.TryGetValue(key, out object raw) || raw == null)
+            return fallback;
+
+        try
+        {
+            return Convert.ToBoolean(raw);
         }
         catch
         {

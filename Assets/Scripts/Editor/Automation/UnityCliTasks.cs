@@ -43,6 +43,10 @@ namespace TinyMonsterKeeper.EditorAutomation
             if (binder == null)
                 binder = saveSystem.AddComponent<SaveGameRuntimeBinder>();
 
+            SaveAccountResetTool resetTool = saveSystem.GetComponent<SaveAccountResetTool>();
+            if (resetTool == null)
+                resetTool = saveSystem.AddComponent<SaveAccountResetTool>();
+
             SerializedObject serializedBinder = new SerializedObject(binder);
             AssignObjectArray<ItemData>(serializedBinder.FindProperty("itemDatabase"), "Assets/ScriptableObjects/ItemData");
             AssignObjectArray<MonsterData>(serializedBinder.FindProperty("monsterDatabase"), "Assets/ScriptableObjects/MonsterData");
@@ -57,6 +61,68 @@ namespace TinyMonsterKeeper.EditorAutomation
             AssetDatabase.SaveAssets();
 
             Debug.Log("Save runtime binder setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Fog Unlock Visuals")]
+        public static void SetupFogUnlockVisuals()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            const string unlockSpritePath = "Assets/Arts/UI/padlock_unlock.png";
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            Sprite unlockSprite = AssetDatabase.LoadAssetAtPath<Sprite>(unlockSpritePath);
+            if (unlockSprite == null)
+            {
+                Debug.LogError("padlock_unlock sprite is missing. Path: " + unlockSpritePath);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            FogZoneManager fogZoneManager = Object.FindObjectOfType<FogZoneManager>();
+            if (fogZoneManager == null)
+            {
+                Debug.LogError("FogZoneManager is missing in scene.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            SerializedObject serializedManager = new SerializedObject(fogZoneManager);
+            SerializedProperty zones = serializedManager.FindProperty("zones");
+            for (int i = 0; i < zones.arraySize; i++)
+            {
+                SerializedProperty zone = zones.GetArrayElementAtIndex(i);
+                zone.FindPropertyRelative("unlockedButtonSprite").objectReferenceValue = unlockSprite;
+                zone.FindPropertyRelative("unlockVisualDuration").floatValue = 0.25f;
+            }
+
+            serializedManager.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(fogZoneManager);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("Fog unlock visuals setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Add Save Account Reset Tool")]
+        public static void AddSaveAccountResetTool()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            GameObject saveSystem = GameObject.Find("SaveSystem");
+            if (saveSystem == null)
+                saveSystem = new GameObject("SaveSystem");
+
+            if (saveSystem.GetComponent<SaveAccountResetTool>() == null)
+                saveSystem.AddComponent<SaveAccountResetTool>();
+
+            EditorUtility.SetDirty(saveSystem);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("Save account reset tool setup finished.");
         }
 
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
