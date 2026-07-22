@@ -44,6 +44,15 @@ public class FogTilemapRevealController : MonoBehaviour
         RevealCellBounds(fogTilemap.cellBounds, revealDriftOffset);
     }
 
+    public void ClearAll()
+    {
+        if (fogTilemap == null)
+            return;
+
+        fogTilemap.ClearAllTiles();
+        revealingCells.Clear();
+    }
+
     public void RevealWorldBounds(Bounds worldBounds)
     {
         RevealWorldBounds(worldBounds, driftOffset);
@@ -82,6 +91,34 @@ public class FogTilemapRevealController : MonoBehaviour
         RevealWorldBounds(boundsCollider.bounds, revealDriftOffset);
     }
 
+    public void ClearColliderBounds(Collider2D boundsCollider)
+    {
+        if (boundsCollider == null || fogTilemap == null)
+            return;
+
+        ClearWorldBounds(boundsCollider.bounds);
+    }
+
+    public void ClearWorldBounds(Bounds worldBounds)
+    {
+        if (fogTilemap == null)
+            return;
+
+        Vector3Int minCell = fogTilemap.WorldToCell(worldBounds.min);
+        Vector3Int maxCell = fogTilemap.WorldToCell(worldBounds.max);
+
+        BoundsInt cellBounds = new BoundsInt(
+            minCell.x,
+            minCell.y,
+            minCell.z,
+            maxCell.x - minCell.x + 1,
+            maxCell.y - minCell.y + 1,
+            maxCell.z - minCell.z + 1
+        );
+
+        ClearCellBounds(cellBounds);
+    }
+
     public void RevealCircle(Vector3 worldCenter, float radius)
     {
         RevealCircle(worldCenter, radius, driftOffset);
@@ -108,6 +145,18 @@ public class FogTilemapRevealController : MonoBehaviour
         List<Vector3Int> cells = CollectFogCells(cellBounds);
         for (int i = 0; i < cells.Count; i++)
             StartCoroutine(RevealCellRoutine(cells[i], i * tileStaggerDelay, revealDriftOffset));
+    }
+
+    public void ClearCellBounds(BoundsInt cellBounds)
+    {
+        if (fogTilemap == null)
+            return;
+
+        foreach (Vector3Int cellPosition in cellBounds.allPositionsWithin)
+        {
+            fogTilemap.SetTile(cellPosition, null);
+            revealingCells.Remove(cellPosition);
+        }
     }
 
     private List<Vector3Int> CollectFogCells(BoundsInt cellBounds)

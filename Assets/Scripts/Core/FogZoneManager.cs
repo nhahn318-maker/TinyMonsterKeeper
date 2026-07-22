@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class FogZoneManager : MonoBehaviour
 {
+    public event Action<string> FogZoneUnlocked;
+
     private enum RevealDirection
     {
         Right,
@@ -183,7 +185,12 @@ public class FogZoneManager : MonoBehaviour
 
     private void UnlockZone(FogZone zone)
     {
-        zone.isUnlocking = true;
+        UnlockZone(zone, true, true);
+    }
+
+    private void UnlockZone(FogZone zone, bool animateReveal, bool notify)
+    {
+        zone.isUnlocking = animateReveal;
         zone.isUnlocked = true;
 
         if (zone.hideButtonOnUnlock)
@@ -200,14 +207,81 @@ public class FogZoneManager : MonoBehaviour
         if (zone.fogReveal == null)
         {
             Debug.LogWarning($"Fog reveal controller is missing for zone: {zone.zoneName}");
+            if (notify)
+                FogZoneUnlocked?.Invoke(GetZoneId(zone));
             return;
         }
 
-        Vector3 driftOffset = GetRevealDriftOffset(zone);
-        if (zone.revealWholeTilemap || zone.revealBounds == null)
-            zone.fogReveal.RevealAll(driftOffset);
+        if (animateReveal)
+        {
+            Vector3 driftOffset = GetRevealDriftOffset(zone);
+            if (zone.revealWholeTilemap || zone.revealBounds == null)
+                zone.fogReveal.RevealAll(driftOffset);
+            else
+                zone.fogReveal.RevealColliderBounds(zone.revealBounds, driftOffset);
+        }
         else
-            zone.fogReveal.RevealColliderBounds(zone.revealBounds, driftOffset);
+        {
+            if (zone.revealWholeTilemap || zone.revealBounds == null)
+                zone.fogReveal.ClearAll();
+            else
+                zone.fogReveal.ClearColliderBounds(zone.revealBounds);
+        }
+
+        zone.isUnlocking = false;
+
+        if (notify)
+            FogZoneUnlocked?.Invoke(GetZoneId(zone));
+    }
+
+    public void ApplyUnlockedZones(List<string> unlockedZoneIds)
+    {
+        if (unlockedZoneIds == null)
+            return;
+
+        HashSet<string> unlockedIdSet = new HashSet<string>(unlockedZoneIds);
+        for (int i = 0; i < zones.Count; i++)
+        {
+            FogZone zone = zones[i];
+            if (zone == null)
+                continue;
+
+            string zoneId = GetZoneId(zone, i);
+            if (!unlockedIdSet.Contains(zoneId))
+                continue;
+
+            UnlockZone(zone, false, false);
+        }
+    }
+
+    public List<string> ExportUnlockedZoneIds()
+    {
+        List<string> unlockedZoneIds = new List<string>();
+        for (int i = 0; i < zones.Count; i++)
+        {
+            FogZone zone = zones[i];
+            if (zone != null && zone.isUnlocked)
+                unlockedZoneIds.Add(GetZoneId(zone, i));
+        }
+
+        return unlockedZoneIds;
+    }
+
+    private string GetZoneId(FogZone zone)
+    {
+        int index = zones.IndexOf(zone);
+        return GetZoneId(zone, index);
+    }
+
+    private string GetZoneId(FogZone zone, int index)
+    {
+        if (zone == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(zone.zoneName))
+            return zone.zoneName.Trim();
+
+        return "FogZone_" + index;
     }
 
     private void SetMonsterBlockers(FogZone zone, bool blocked)

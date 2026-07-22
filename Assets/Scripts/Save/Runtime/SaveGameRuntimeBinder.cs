@@ -38,6 +38,10 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             InventoryManager.Instance.OnInventoryChanged -= HandleInventoryChanged;
 
         MonsterCollectionManager.MonsterCollectionChanged -= HandleMonsterCollectionChanged;
+
+        FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
+        if (fogZoneManager != null)
+            fogZoneManager.FogZoneUnlocked -= HandleFogZoneUnlocked;
     }
 
     private void ApplySaveToGame()
@@ -55,6 +59,10 @@ public class SaveGameRuntimeBinder : MonoBehaviour
 
         MonsterCollectionManager.ApplySavedCounts(monsterDatabase, saveManager.CurrentSave.monsterCollection);
 
+        FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
+        if (fogZoneManager != null)
+            fogZoneManager.ApplyUnlockedZones(saveManager.CurrentSave.unlockedFogZones);
+
         isApplyingSave = false;
     }
 
@@ -70,6 +78,10 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             InventoryManager.Instance.OnInventoryChanged += HandleInventoryChanged;
 
         MonsterCollectionManager.MonsterCollectionChanged += HandleMonsterCollectionChanged;
+
+        FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
+        if (fogZoneManager != null)
+            fogZoneManager.FogZoneUnlocked += HandleFogZoneUnlocked;
     }
 
     private void CaptureCurrentGameState()
@@ -84,6 +96,10 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             saveManager.CurrentSave.inventory = InventoryManager.Instance.ExportItemAmounts();
 
         saveManager.CurrentSave.monsterCollection = MonsterCollectionManager.ExportCounts(monsterDatabase);
+
+        FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
+        if (fogZoneManager != null)
+            saveManager.CurrentSave.unlockedFogZones = fogZoneManager.ExportUnlockedZoneIds();
     }
 
     private void HandleCoinChanged(int coin)
@@ -110,6 +126,18 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             return;
 
         saveManager.CurrentSave.monsterCollection = MonsterCollectionManager.ExportCounts(monsterDatabase);
+        saveManager.SaveSoon();
+    }
+
+    private void HandleFogZoneUnlocked(string zoneId)
+    {
+        if (isApplyingSave || saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
+        if (fogZoneManager != null)
+            saveManager.CurrentSave.unlockedFogZones = fogZoneManager.ExportUnlockedZoneIds();
+
         saveManager.SaveSoon();
     }
 }
