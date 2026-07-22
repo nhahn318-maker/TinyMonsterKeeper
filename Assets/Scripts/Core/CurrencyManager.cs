@@ -46,4 +46,12 @@ public class CurrencyManager : MonoBehaviour {
 
         return true;
     }
+
+    public void SetCoin(int amount, bool notify = true)
+    {
+        coin = Mathf.Max(0, amount);
+
+        if (notify)
+            OnCoinChanged?.Invoke(coin);
+    }
 }

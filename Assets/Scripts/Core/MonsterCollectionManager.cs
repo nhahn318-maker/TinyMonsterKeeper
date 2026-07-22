@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class MonsterCollectionManager
@@ -37,6 +38,54 @@ public static class MonsterCollectionManager
         MonsterUnlocked?.Invoke(monsterData);
         MonsterCollectionChanged?.Invoke(monsterData, count);
         return true;
+    }
+
+    public static void ApplySavedCounts(MonsterData[] monsterDatabase, List<MonsterCollectionSave> savedCounts)
+    {
+        if (savedCounts != null)
+        {
+            for (int i = 0; i < savedCounts.Count; i++)
+            {
+                MonsterCollectionSave savedCount = savedCounts[i];
+                if (savedCount == null || string.IsNullOrWhiteSpace(savedCount.monsterId))
+                    continue;
+
+                PlayerPrefs.SetInt(SavePrefix + savedCount.monsterId, Mathf.Max(0, savedCount.count));
+            }
+        }
+
+        if (monsterDatabase != null)
+        {
+            for (int i = 0; i < monsterDatabase.Length; i++)
+            {
+                string id = GetMonsterId(monsterDatabase[i]);
+                if (IsDefaultUnlockedMonsterId(id) && PlayerPrefs.GetInt(SavePrefix + id, 0) <= 0)
+                    PlayerPrefs.SetInt(SavePrefix + id, 1);
+            }
+        }
+
+        PlayerPrefs.Save();
+    }
+
+    public static List<MonsterCollectionSave> ExportCounts(MonsterData[] monsterDatabase)
+    {
+        List<MonsterCollectionSave> result = new List<MonsterCollectionSave>();
+        if (monsterDatabase == null)
+            return result;
+
+        for (int i = 0; i < monsterDatabase.Length; i++)
+        {
+            MonsterData monsterData = monsterDatabase[i];
+            string id = GetMonsterId(monsterData);
+            if (string.IsNullOrEmpty(id))
+                continue;
+
+            int count = GetUnlockCount(monsterData);
+            if (count > 0)
+                result.Add(new MonsterCollectionSave(id, count));
+        }
+
+        return result;
     }
 
     public static string GetMonsterId(MonsterData monsterData)

@@ -9,6 +9,7 @@
 
 # Visual Studio / Rider
 .vs/
+.vscode/
 .idea/
 *.csproj
 *.sln
@@ -38,3 +39,11 @@ Thumbs.db
 
 # Unity auto-generated Asset Store tools
 [Aa]ssets/AssetStoreTools*
+
+# Local downloaded Firebase Unity SDK packages, not needed after import
+FirebaseSDK/
+
+# Mac editor native Firebase bundle exceeds GitHub's 100MB file limit.
+# Windows/Android development uses the dll/so/aars committed with the project.
+Assets/Firebase/Plugins/x86_64/*.bundle
+Assets/Firebase/Plugins/x86_64/*.bundle.meta

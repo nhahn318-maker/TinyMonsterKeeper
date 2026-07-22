@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "944486294606",
+    "project_id": "tinymonsterkeeper",
+    "storage_bucket": "tinymonsterkeeper.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944486294606:android:c9d049e914f38560a50f1f",
+        "android_client_info": {
+          "package_name": "com.nhahn.tinymonsterkeeper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrBCNgTroMqMGGFAGDlFZSPLLz4QkNhuU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

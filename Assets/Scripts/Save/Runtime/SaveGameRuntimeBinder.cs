@@ -1,0 +1,115 @@
+using System.Collections;
+using UnityEngine;
+
+public class SaveGameRuntimeBinder : MonoBehaviour
+{
+    [Header("Data Lookup")]
+    [SerializeField] private ItemData[] itemDatabase;
+    [SerializeField] private MonsterData[] monsterDatabase;
+
+    [Header("Sync")]
+    [SerializeField] private bool loadSaveOnStart = true;
+    [SerializeField] private bool autosaveOnChange = true;
+
+    private SaveManager saveManager;
+    private bool isApplyingSave;
+
+    private IEnumerator Start()
+    {
+        while (SaveSystemBootstrap.SaveManager == null || !SaveSystemBootstrap.SaveManager.IsReady)
+            yield return null;
+
+        saveManager = SaveSystemBootstrap.SaveManager;
+
+        if (loadSaveOnStart && saveManager.HasExistingSave && saveManager.CurrentSave.HasAnyGameplayData())
+            ApplySaveToGame();
+
+        CaptureCurrentGameState();
+        BindAutosaveEvents();
+        saveManager.SaveSoon();
+    }
+
+    private void OnDestroy()
+    {
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinChanged -= HandleCoinChanged;
+
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.OnInventoryChanged -= HandleInventoryChanged;
+
+        MonsterCollectionManager.MonsterCollectionChanged -= HandleMonsterCollectionChanged;
+    }
+
+    private void ApplySaveToGame()
+    {
+        if (saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        isApplyingSave = true;
+
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.SetCoin(saveManager.CurrentSave.coin);
+
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.ApplySavedItems(saveManager.CurrentSave.inventory, itemDatabase);
+
+        MonsterCollectionManager.ApplySavedCounts(monsterDatabase, saveManager.CurrentSave.monsterCollection);
+
+        isApplyingSave = false;
+    }
+
+    private void BindAutosaveEvents()
+    {
+        if (!autosaveOnChange)
+            return;
+
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinChanged += HandleCoinChanged;
+
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.OnInventoryChanged += HandleInventoryChanged;
+
+        MonsterCollectionManager.MonsterCollectionChanged += HandleMonsterCollectionChanged;
+    }
+
+    private void CaptureCurrentGameState()
+    {
+        if (saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        if (CurrencyManager.Instance != null)
+            saveManager.CurrentSave.coin = CurrencyManager.Instance.Coin;
+
+        if (InventoryManager.Instance != null)
+            saveManager.CurrentSave.inventory = InventoryManager.Instance.ExportItemAmounts();
+
+        saveManager.CurrentSave.monsterCollection = MonsterCollectionManager.ExportCounts(monsterDatabase);
+    }
+
+    private void HandleCoinChanged(int coin)
+    {
+        if (isApplyingSave || saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        saveManager.CurrentSave.coin = coin;
+        saveManager.SaveSoon();
+    }
+
+    private void HandleInventoryChanged()
+    {
+        if (isApplyingSave || saveManager == null || saveManager.CurrentSave == null || InventoryManager.Instance == null)
+            return;
+
+        saveManager.CurrentSave.inventory = InventoryManager.Instance.ExportItemAmounts();
+        saveManager.SaveSoon();
+    }
+
+    private void HandleMonsterCollectionChanged(MonsterData monsterData, int count)
+    {
+        if (isApplyingSave || saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        saveManager.CurrentSave.monsterCollection = MonsterCollectionManager.ExportCounts(monsterDatabase);
+        saveManager.SaveSoon();
+    }
+}

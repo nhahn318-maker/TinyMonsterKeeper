@@ -126,6 +126,48 @@ public class InventoryManager : MonoBehaviour {
         return true;
     }
 
+    public void ApplySavedItems(List<ItemAmountSave> savedItems, ItemData[] itemDatabase)
+    {
+        itemAmounts.Clear();
+        itemDataById.Clear();
+        knownItems.Clear();
+
+        if (itemDatabase != null)
+        {
+            for (int i = 0; i < itemDatabase.Length; i++)
+                RegisterItem(itemDatabase[i]);
+        }
+
+        if (savedItems != null)
+        {
+            for (int i = 0; i < savedItems.Count; i++)
+            {
+                ItemAmountSave savedItem = savedItems[i];
+                if (savedItem == null || string.IsNullOrWhiteSpace(savedItem.itemId))
+                    continue;
+
+                itemAmounts[savedItem.itemId] = Mathf.Max(0, savedItem.amount);
+            }
+        }
+
+        OnInventoryChanged?.Invoke();
+    }
+
+    public List<ItemAmountSave> ExportItemAmounts()
+    {
+        List<ItemAmountSave> result = new List<ItemAmountSave>();
+
+        foreach (KeyValuePair<string, int> entry in itemAmounts)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Key) || entry.Value <= 0)
+                continue;
+
+            result.Add(new ItemAmountSave(entry.Key, entry.Value));
+        }
+
+        return result;
+    }
+
     private void RegisterItem(ItemData itemData)
     {
         if (itemData == null || string.IsNullOrEmpty(itemData.itemId))
