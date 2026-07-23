@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "setup-mushribbit-monster", "setup-arcant-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -107,6 +107,22 @@ switch ($Command) {
         $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupAntieMonster"))
         if (!(Select-String -Path $LogPath -Pattern "Antie monster setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupAntieMonster. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-mushribbit-monster" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupMushRibbitMonster"))
+        if (!(Select-String -Path $LogPath -Pattern "MushRibbit monster setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupMushRibbitMonster. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-arcant-monster" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupArcantMonster"))
+        if (!(Select-String -Path $LogPath -Pattern "Arcant monster setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupArcantMonster. Check log: $LogPath"
             exit 1
         }
         exit $exitCode

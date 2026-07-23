@@ -297,6 +297,96 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Antie monster setup finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Setup MushRibbit Monster")]
+        public static void SetupMushRibbitMonster()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            const string sourceSpritePath = "Assets/Arts/Monsters/MonNo8_MushRibbit/Mushribbit_Idle.png";
+            const string animationFolder = "Assets/Animations/MonNo8";
+            const string animatorFolder = "Assets/Animators/Monsters";
+            const string prefabPath = "Assets/Prefabs/Monsters/MonNo8_MushRibbit.prefab";
+            const string dataPath = "Assets/ScriptableObjects/MonsterData/MushRibbitData.asset";
+            const string sourcePrefabPath = "Assets/Prefabs/Monsters/MonNo4_Cotty.prefab";
+            const string sourceControllerPath = "Assets/Animators/Monsters/MonNo4_CottyController.controller";
+
+            Sprite[] idleSprites = LoadSprites(sourceSpritePath);
+            if (idleSprites.Length == 0)
+            {
+                Debug.LogError("MushRibbit idle sprites are missing or not sliced. Path: " + sourceSpritePath);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EnsureFolder("Assets/Animations", "MonNo8");
+
+            AnimationClip idleClip = CreateOrReplaceSpriteClip(animationFolder + "/Idle.anim", idleSprites, 8f, true);
+            AnimationClip happyClip = CreateOrReplaceSpriteClip(animationFolder + "/Happy.anim", new[] { idleSprites[0] }, 8f, false);
+            AnimationClip sleepClip = CreateOrReplaceSpriteClip(animationFolder + "/Sleep.anim", new[] { idleSprites[0] }, 8f, true);
+
+            string controllerPath = animatorFolder + "/MonNo8_MushRibbitController.controller";
+            AnimatorController controller = CreateMonsterAnimatorController(sourceControllerPath, controllerPath, "MonNo8_MushRibbitController", idleClip, happyClip, sleepClip);
+
+            MonsterData monsterData = CreateOrUpdateMonsterData(dataPath, "008", "MushRibbit", idleSprites[0]);
+            GameObject prefab = CreateOrUpdateMonsterPrefab(sourcePrefabPath, prefabPath, "MonNo8_MushRibbit", "MonNo8_MushRibbit_Visual", monsterData, idleSprites[0], controller);
+            monsterData.prefab = prefab;
+            EditorUtility.SetDirty(monsterData);
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            AppendMonsterToSceneDatabases(monsterData);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("MushRibbit monster setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Arcant Monster")]
+        public static void SetupArcantMonster()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            const string sourceSpritePath = "Assets/Arts/Monsters/MonNo9_Arcant/Arcant_Idle.png";
+            const string animationFolder = "Assets/Animations/MonNo9";
+            const string animatorFolder = "Assets/Animators/Monsters";
+            const string prefabPath = "Assets/Prefabs/Monsters/MonNo9_Arcant.prefab";
+            const string dataPath = "Assets/ScriptableObjects/MonsterData/ArcantData.asset";
+            const string sourcePrefabPath = "Assets/Prefabs/Monsters/MonNo4_Cotty.prefab";
+            const string sourceControllerPath = "Assets/Animators/Monsters/MonNo4_CottyController.controller";
+
+            Sprite[] idleSprites = LoadSprites(sourceSpritePath);
+            if (idleSprites.Length == 0)
+            {
+                Debug.LogError("Arcant idle sprites are missing or not sliced. Path: " + sourceSpritePath);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EnsureFolder("Assets/Animations", "MonNo9");
+
+            AnimationClip idleClip = CreateOrReplaceSpriteClip(animationFolder + "/Idle.anim", idleSprites, 8f, true);
+            AnimationClip happyClip = CreateOrReplaceSpriteClip(animationFolder + "/Happy.anim", new[] { idleSprites[0] }, 8f, false);
+            AnimationClip sleepClip = CreateOrReplaceSpriteClip(animationFolder + "/Sleep.anim", new[] { idleSprites[0] }, 8f, true);
+
+            string controllerPath = animatorFolder + "/MonNo9_ArcantController.controller";
+            AnimatorController controller = CreateMonsterAnimatorController(sourceControllerPath, controllerPath, "MonNo9_ArcantController", idleClip, happyClip, sleepClip);
+
+            MonsterData monsterData = CreateOrUpdateMonsterData(dataPath, "009", "Arcant", idleSprites[0]);
+            GameObject prefab = CreateOrUpdateMonsterPrefab(sourcePrefabPath, prefabPath, "MonNo9_Arcant", "MonNo9_Arcant_Visual", monsterData, idleSprites[0], controller);
+            monsterData.prefab = prefab;
+            EditorUtility.SetDirty(monsterData);
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            AppendMonsterToSceneDatabases(monsterData);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Arcant monster setup finished.");
+        }
+
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name, new[] { searchFolder });
@@ -621,7 +711,22 @@ namespace TinyMonsterKeeper.EditorAutomation
 
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, targetPath);
             PrefabUtility.UnloadPrefabContents(prefabRoot);
-            return AssetDatabase.LoadAssetAtPath<GameObject>(targetPath);
+
+            GameObject savedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(targetPath);
+            VerifySavedPrefabVisualSprite(savedPrefab, idleSprite, rootName);
+            return savedPrefab;
+        }
+
+        private static void VerifySavedPrefabVisualSprite(GameObject prefab, Sprite expectedSprite, string rootName)
+        {
+            if (prefab == null || expectedSprite == null)
+                return;
+
+            SpriteRenderer visualRenderer = FindMainVisualRenderer(prefab);
+            if (visualRenderer == null || visualRenderer.sprite == expectedSprite)
+                return;
+
+            Debug.LogError($"{rootName} visual sprite is still {visualRenderer.sprite?.name}; expected {expectedSprite.name}. Open the prefab and assign the visual SpriteRenderer sprite manually.");
         }
 
         private static SpriteRenderer FindMainVisualRenderer(GameObject prefabRoot)
