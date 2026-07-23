@@ -42,6 +42,9 @@ public class SaveGameRuntimeBinder : MonoBehaviour
         FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
         if (fogZoneManager != null)
             fogZoneManager.FogZoneUnlocked -= HandleFogZoneUnlocked;
+
+        if (GardenMonsterSaveManager.Instance != null)
+            GardenMonsterSaveManager.Instance.GardenMonstersChanged -= HandleGardenMonstersChanged;
     }
 
     private void ApplySaveToGame()
@@ -62,6 +65,9 @@ public class SaveGameRuntimeBinder : MonoBehaviour
         FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
         if (fogZoneManager != null)
             fogZoneManager.ApplyUnlockedZones(saveManager.CurrentSave.unlockedFogZones);
+
+        if (GardenMonsterSaveManager.Instance != null)
+            GardenMonsterSaveManager.Instance.ApplySavedGardenMonsters(saveManager.CurrentSave.gardenMonsters, true);
 
         isApplyingSave = false;
     }
@@ -87,6 +93,9 @@ public class SaveGameRuntimeBinder : MonoBehaviour
         FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
         if (fogZoneManager != null)
             fogZoneManager.FogZoneUnlocked += HandleFogZoneUnlocked;
+
+        if (GardenMonsterSaveManager.Instance != null)
+            GardenMonsterSaveManager.Instance.GardenMonstersChanged += HandleGardenMonstersChanged;
     }
 
     private void CaptureCurrentGameState()
@@ -105,6 +114,9 @@ public class SaveGameRuntimeBinder : MonoBehaviour
         FogZoneManager fogZoneManager = FindObjectOfType<FogZoneManager>();
         if (fogZoneManager != null)
             saveManager.CurrentSave.unlockedFogZones = fogZoneManager.ExportUnlockedZoneIds();
+
+        if (GardenMonsterSaveManager.Instance != null)
+            saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
     }
 
     private void HandleCoinChanged(int coin)
@@ -143,6 +155,15 @@ public class SaveGameRuntimeBinder : MonoBehaviour
         if (fogZoneManager != null)
             saveManager.CurrentSave.unlockedFogZones = fogZoneManager.ExportUnlockedZoneIds();
 
+        saveManager.SaveSoon();
+    }
+
+    private void HandleGardenMonstersChanged()
+    {
+        if (isApplyingSave || saveManager == null || saveManager.CurrentSave == null || GardenMonsterSaveManager.Instance == null)
+            return;
+
+        saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
         saveManager.SaveSoon();
     }
 }

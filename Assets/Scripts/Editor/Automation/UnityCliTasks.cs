@@ -125,6 +125,44 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Save account reset tool setup finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Garden Monster Save Manager")]
+        public static void SetupGardenMonsterSaveManager()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            GardenMonsterSaveManager manager = Object.FindObjectOfType<GardenMonsterSaveManager>();
+            if (manager == null)
+            {
+                GameObject managerObject = new GameObject("GardenMonsterSaveManager");
+                manager = managerObject.AddComponent<GardenMonsterSaveManager>();
+            }
+
+            SerializedObject serializedManager = new SerializedObject(manager);
+            AssignObjectArray<MonsterData>(serializedManager.FindProperty("monsters"), "Assets/ScriptableObjects/MonsterData");
+
+            CookingPotController cookingPot = Object.FindObjectOfType<CookingPotController>();
+            Collider2D gardenBounds = null;
+            if (cookingPot != null)
+            {
+                SerializedObject serializedPot = new SerializedObject(cookingPot);
+                gardenBounds = serializedPot.FindProperty("monsterGardenBounds").objectReferenceValue as Collider2D;
+            }
+
+            if (gardenBounds != null)
+                serializedManager.FindProperty("gardenBounds").objectReferenceValue = gardenBounds;
+
+            serializedManager.FindProperty("spawnDefaultUnlockedMonsters").boolValue = true;
+            serializedManager.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(manager);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("Garden monster save manager setup finished.");
+        }
+
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name, new[] { searchFolder });

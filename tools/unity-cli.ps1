@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -79,6 +79,15 @@ switch ($Command) {
         $exitCode = $LASTEXITCODE
         if (!(Select-String -Path $LogPath -Pattern "Save account reset tool setup finished" -Quiet)) {
             Write-Error "Unity exited before running AddSaveAccountResetTool. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-garden-monster-save" {
+        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupGardenMonsterSaveManager"
+        $exitCode = $LASTEXITCODE
+        if (!(Select-String -Path $LogPath -Pattern "Garden monster save manager setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupGardenMonsterSaveManager. Check log: $LogPath"
             exit 1
         }
         exit $exitCode
