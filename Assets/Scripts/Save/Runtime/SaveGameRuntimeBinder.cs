@@ -10,6 +10,8 @@ public class SaveGameRuntimeBinder : MonoBehaviour
     [Header("Sync")]
     [SerializeField] private bool loadSaveOnStart = true;
     [SerializeField] private bool autosaveOnChange = true;
+    [SerializeField] private bool migrateLegacyPlayerPrefs = true;
+    [SerializeField] private float gardenMonsterAutosaveInterval = 5f;
 
     private SaveManager saveManager;
     private bool isApplyingSave;
@@ -21,11 +23,17 @@ public class SaveGameRuntimeBinder : MonoBehaviour
 
         saveManager = SaveSystemBootstrap.SaveManager;
 
-        if (loadSaveOnStart && saveManager.HasExistingSave && ShouldApplyLoadedSave(saveManager.CurrentSave))
+        bool migratedLegacySave = migrateLegacyPlayerPrefs
+            && LegacyPlayerPrefsSaveMigrator.TryMigrateInto(saveManager.CurrentSave, itemDatabase, monsterDatabase, saveManager.UserId);
+
+        if (loadSaveOnStart && (saveManager.HasExistingSave || migratedLegacySave) && ShouldApplyLoadedSave(saveManager.CurrentSave))
             ApplySaveToGame();
 
         CaptureCurrentGameState();
         BindAutosaveEvents();
+        if (autosaveOnChange && gardenMonsterAutosaveInterval > 0f)
+            StartCoroutine(GardenMonsterAutosaveRoutine());
+
         saveManager.SaveSoon();
     }
 
@@ -67,7 +75,12 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             fogZoneManager.ApplyUnlockedZones(saveManager.CurrentSave.unlockedFogZones);
 
         if (GardenMonsterSaveManager.Instance != null)
-            GardenMonsterSaveManager.Instance.ApplySavedGardenMonsters(saveManager.CurrentSave.gardenMonsters, true);
+        {
+            if (saveManager.CurrentSave.gardenMonsterInstances != null && saveManager.CurrentSave.gardenMonsterInstances.Count > 0)
+                GardenMonsterSaveManager.Instance.ApplySavedGardenMonsters(saveManager.CurrentSave.gardenMonsterInstances, true);
+            else
+                GardenMonsterSaveManager.Instance.ApplySavedGardenMonsters(saveManager.CurrentSave.gardenMonsters, true);
+        }
 
         isApplyingSave = false;
     }
@@ -116,7 +129,10 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             saveManager.CurrentSave.unlockedFogZones = fogZoneManager.ExportUnlockedZoneIds();
 
         if (GardenMonsterSaveManager.Instance != null)
+        {
             saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
+            saveManager.CurrentSave.gardenMonsterInstances = GardenMonsterSaveManager.Instance.ExportGardenMonsterInstances();
+        }
     }
 
     private void HandleCoinChanged(int coin)
@@ -164,6 +180,44 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             return;
 
         saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
+        saveManager.CurrentSave.gardenMonsterInstances = GardenMonsterSaveManager.Instance.ExportGardenMonsterInstances();
+        saveManager.SaveSoon();
+    }
+
+    private IEnumerator GardenMonsterAutosaveRoutine()
+    {
+        WaitForSeconds wait = new WaitForSeconds(gardenMonsterAutosaveInterval);
+
+        while (true)
+        {
+            yield return wait;
+
+            if (isApplyingSave || saveManager == null || saveManager.CurrentSave == null || GardenMonsterSaveManager.Instance == null)
+                continue;
+
+            saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
+            saveManager.CurrentSave.gardenMonsterInstances = GardenMonsterSaveManager.Instance.ExportGardenMonsterInstances();
+            saveManager.SaveSoon();
+        }
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+            SaveCurrentStateSoon();
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveCurrentStateSoon();
+    }
+
+    private void SaveCurrentStateSoon()
+    {
+        if (saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        CaptureCurrentGameState();
         saveManager.SaveSoon();
     }
 }

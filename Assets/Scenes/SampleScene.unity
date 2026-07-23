@@ -3434,8 +3434,19 @@ MonoBehaviour:
   textDatabase: {fileID: 11400000, guid: 62f60d41ed9e41e789ce9833af4161ef, type: 2}
   monsterNoticeKey: 2
   monsterAlreadyInGardenKey: 3
+  monsterStarIncreasedKey: 4
   monsterNoticeFormat: '{0} joined your garden!'
   monsterAlreadyInGardenFallback: '{0} is already in your garden!'
+  monsterStarIncreasedFallback: '{0} gained a {1} star!'
+  bronzeStarSprite: {fileID: 21300000, guid: 654b1affd6feb5d48b73e5ca88509247, type: 3}
+  silverStarSprite: {fileID: 21300000, guid: c22ec4d8b078dc644ac75cb683f6e9d0, type: 3}
+  goldStarSprite: {fileID: 21300000, guid: 4af092810e1d907438275380c4fa30ce, type: 3}
+  starPopupOffset: {x: 0, y: 0.85, z: 0}
+  starPopupDuration: 1.25
+  starPopupRiseDistance: 0.35
+  starPopupStartScale: 0.55
+  starPopupEndScale: 1
+  starPopupSortingOrderOffset: 20
   recipes:
   - {fileID: 11400000, guid: 023140beee67fda4c99c9de9e7f57eeb, type: 2}
   clickCollider: {fileID: 0}
@@ -3591,6 +3602,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 17dd78ff7c0048aea4af5b395e084cc4, type: 2}
   loadSaveOnStart: 1
   autosaveOnChange: 1
+  migrateLegacyPlayerPrefs: 1
 --- !u!114 &393120133
 MonoBehaviour:
   m_ObjectHideFlags: 0

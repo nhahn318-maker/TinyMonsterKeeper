@@ -24,4 +24,4 @@ MonoBehaviour:
     count: 1
   attractedMonsterPrefabs:
   - {fileID: 242072064891303551, guid: 43fef19ef0744340b7fdef6278ed519e, type: 3}
-  allowDuplicateMonsters: 1
+  allowDuplicateMonsters: 0

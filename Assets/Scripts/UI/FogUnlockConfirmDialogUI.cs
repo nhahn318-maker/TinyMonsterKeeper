@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,8 +13,10 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button yesButton;
     [SerializeField] private Button noButton;
+    [SerializeField] private float messageAutoHideDuration = 2f;
 
     private Action confirmAction;
+    private Coroutine messageRoutine;
 
     private void Awake()
     {
@@ -45,6 +48,7 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
 
     public void ShowConfirm(string message, Action onConfirm)
     {
+        StopMessageRoutine();
         confirmAction = onConfirm;
 
         if (messageText != null)
@@ -70,6 +74,7 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
 
     public void ShowMessage(string message)
     {
+        StopMessageRoutine();
         confirmAction = null;
 
         if (messageText != null)
@@ -79,18 +84,18 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
             yesButton.gameObject.SetActive(false);
 
         if (noButton != null)
-        {
-            noButton.gameObject.SetActive(true);
-            noButton.onClick.RemoveListener(Hide);
-            noButton.onClick.AddListener(Hide);
-        }
+            noButton.gameObject.SetActive(false);
 
         if (panelRoot != null)
             panelRoot.SetActive(true);
+
+        if (messageAutoHideDuration > 0f)
+            messageRoutine = StartCoroutine(HideMessageAfterDelay(messageAutoHideDuration));
     }
 
     public void Hide()
     {
+        StopMessageRoutine();
         confirmAction = null;
         ClearButtonListeners();
 
@@ -112,5 +117,21 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
 
         if (noButton != null)
             noButton.onClick.RemoveListener(Hide);
+    }
+
+    private IEnumerator HideMessageAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        messageRoutine = null;
+        Hide();
+    }
+
+    private void StopMessageRoutine()
+    {
+        if (messageRoutine == null)
+            return;
+
+        StopCoroutine(messageRoutine);
+        messageRoutine = null;
     }
 }

@@ -57,6 +57,7 @@ public class FirebaseCloudSaveService : ISaveService
             { "inventory", ItemListToMap(saveData.inventory) },
             { "monsterCollection", MonsterListToMap(saveData.monsterCollection) },
             { "gardenMonsters", CleanStringList(saveData.gardenMonsters) },
+            { "gardenMonsterInstances", GardenMonsterInstancesToList(saveData.gardenMonsterInstances) },
             { "unlockedFogZones", CleanStringList(saveData.unlockedFogZones) },
             { "discoveredRecipes", CleanStringList(saveData.discoveredRecipes) },
             { "failedMixes", CleanStringList(saveData.failedMixes) },
@@ -73,6 +74,7 @@ public class FirebaseCloudSaveService : ISaveService
         saveData.inventory = MapToItemList(ReadDictionary(data, "inventory"));
         saveData.monsterCollection = MapToMonsterList(ReadDictionary(data, "monsterCollection"));
         saveData.gardenMonsters = ReadStringList(data, "gardenMonsters");
+        saveData.gardenMonsterInstances = ReadGardenMonsterInstances(data, "gardenMonsterInstances");
         saveData.unlockedFogZones = ReadStringList(data, "unlockedFogZones");
         saveData.discoveredRecipes = ReadStringList(data, "discoveredRecipes");
         saveData.failedMixes = ReadStringList(data, "failedMixes");
@@ -135,6 +137,32 @@ public class FirebaseCloudSaveService : ISaveService
         return monsters;
     }
 
+    private static List<Dictionary<string, object>> GardenMonsterInstancesToList(List<GardenMonsterInstanceSave> instances)
+    {
+        List<Dictionary<string, object>> result = new List<Dictionary<string, object>>();
+        if (instances == null)
+            return result;
+
+        for (int i = 0; i < instances.Count; i++)
+        {
+            GardenMonsterInstanceSave instance = instances[i];
+            if (instance == null || string.IsNullOrWhiteSpace(instance.monsterId))
+                continue;
+
+            result.Add(new Dictionary<string, object>
+            {
+                { "monsterId", instance.monsterId },
+                { "x", instance.x },
+                { "y", instance.y },
+                { "z", instance.z },
+                { "storedCoin", Mathf.Max(0, instance.storedCoin) },
+                { "hasPosition", instance.hasPosition }
+            });
+        }
+
+        return result;
+    }
+
     private static List<string> CleanStringList(List<string> values)
     {
         List<string> result = new List<string>();
@@ -166,6 +194,60 @@ public class FirebaseCloudSaveService : ISaveService
         }
 
         return values;
+    }
+
+    private static List<GardenMonsterInstanceSave> ReadGardenMonsterInstances(Dictionary<string, object> data, string key)
+    {
+        List<GardenMonsterInstanceSave> instances = new List<GardenMonsterInstanceSave>();
+        if (!data.TryGetValue(key, out object raw) || raw == null)
+            return instances;
+
+        if (!(raw is IEnumerable enumerable))
+            return instances;
+
+        foreach (object item in enumerable)
+        {
+            Dictionary<string, object> map = ToObjectDictionary(item);
+            if (map.Count == 0)
+                continue;
+
+            string monsterId = ReadString(map, "monsterId", string.Empty);
+            if (string.IsNullOrWhiteSpace(monsterId))
+                continue;
+
+            instances.Add(new GardenMonsterInstanceSave
+            {
+                monsterId = monsterId,
+                x = ReadFloat(map, "x", 0f),
+                y = ReadFloat(map, "y", 0f),
+                z = ReadFloat(map, "z", 0f),
+                storedCoin = ReadInt(map, "storedCoin", 0),
+                hasPosition = ReadBool(map, "hasPosition", true)
+            });
+        }
+
+        return instances;
+    }
+
+    private static Dictionary<string, object> ToObjectDictionary(object raw)
+    {
+        Dictionary<string, object> result = new Dictionary<string, object>();
+        if (raw == null)
+            return result;
+
+        if (raw is Dictionary<string, object> dictionary)
+            return dictionary;
+
+        if (raw is IDictionary genericDictionary)
+        {
+            foreach (DictionaryEntry entry in genericDictionary)
+            {
+                if (entry.Key != null)
+                    result[entry.Key.ToString()] = entry.Value;
+            }
+        }
+
+        return result;
     }
 
     private static Dictionary<string, object> ReadDictionary(Dictionary<string, object> data, string key)
@@ -217,6 +299,26 @@ public class FirebaseCloudSaveService : ISaveService
         try
         {
             return Convert.ToBoolean(raw);
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static string ReadString(Dictionary<string, object> data, string key, string fallback)
+    {
+        return data.TryGetValue(key, out object raw) && raw != null ? raw.ToString() : fallback;
+    }
+
+    private static float ReadFloat(Dictionary<string, object> data, string key, float fallback)
+    {
+        if (!data.TryGetValue(key, out object raw) || raw == null)
+            return fallback;
+
+        try
+        {
+            return Convert.ToSingle(raw);
         }
         catch
         {

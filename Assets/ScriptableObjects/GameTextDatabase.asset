@@ -21,3 +21,5 @@ MonoBehaviour:
     text: '{0} joined your garden!'
   - key: 3
     text: '{0} is already in your garden.'
+  - key: 4
+    text: '{0} gained a {1} star!'

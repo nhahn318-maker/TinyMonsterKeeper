@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [Header("Visual")]
@@ -40,8 +41,21 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private GameTextDatabase textDatabase;
     [SerializeField] private GameTextKey monsterNoticeKey = GameTextKey.MonsterJoined;
     [SerializeField] private GameTextKey monsterAlreadyInGardenKey = GameTextKey.MonsterAlreadyInGarden;
+    [SerializeField] private GameTextKey monsterStarIncreasedKey = GameTextKey.MonsterStarIncreased;
     [SerializeField] private string monsterNoticeFormat = "{0} joined your garden!";
     [SerializeField] private string monsterAlreadyInGardenFallback = "{0} is already in your garden!";
+    [SerializeField] private string monsterStarIncreasedFallback = "{0} gained a {1} star!";
+
+    [Header("Star Gain Feedback")]
+    [SerializeField] private Sprite bronzeStarSprite;
+    [SerializeField] private Sprite silverStarSprite;
+    [SerializeField] private Sprite goldStarSprite;
+    [SerializeField] private Vector3 starPopupOffset = new Vector3(0f, 0.85f, 0f);
+    [SerializeField] private float starPopupDuration = 1.25f;
+    [SerializeField] private float starPopupRiseDistance = 0.35f;
+    [SerializeField] private float starPopupStartScale = 0.55f;
+    [SerializeField] private float starPopupEndScale = 1f;
+    [SerializeField] private int starPopupSortingOrderOffset = 20;
 
     [Header("Recipes")]
     [SerializeField] private CookingRecipeData[] recipes;
@@ -59,6 +73,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private Coroutine noticeRoutine;
     private CookingRecipeData activeRecipe;
     private int lastHandledClickFrame = -1;
+    private Button[] noticeButtons;
 
     private void Awake()
     {
@@ -80,6 +95,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (focusCamera == null)
             focusCamera = Camera.main;
 
+        CacheNoticeButtons();
         HideMonsterNotice();
         SetEmptyVisual();
     }
@@ -322,14 +338,31 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return;
         }
 
-        if (!activeRecipe.allowDuplicateMonsters && IsMonsterAlreadyInGarden(prefab))
+        if (IsDuplicateMonsterResult(prefab))
         {
             string existingName = GetPrefabMonsterName(prefab);
             MonsterData existingData = GetPrefabMonsterData(prefab);
+            int unlockCount = 0;
             if (existingData != null && MonsterCollectionManager.Unlock(existingData))
+            {
+                unlockCount = MonsterCollectionManager.GetUnlockCount(existingData);
                 Debug.Log($"Increased monster card stars: {existingName}");
+            }
 
-            ShowTemporaryNotice(GetText(monsterAlreadyInGardenKey, monsterAlreadyInGardenFallback, existingName), 2f);
+            TinyMonsterController existingMonster = FindExistingMonster(existingData, prefab);
+            string tierName = GetStarTierName(unlockCount);
+            string notice = GetText(monsterStarIncreasedKey, monsterStarIncreasedFallback, existingName, tierName);
+
+            if (existingMonster != null)
+            {
+                ShowStarGainFeedback(existingMonster.transform, unlockCount);
+                FocusCameraOnTargetWithNotice(existingMonster.transform, notice);
+            }
+            else
+            {
+                ShowTemporaryNotice(GetText(monsterAlreadyInGardenKey, monsterAlreadyInGardenFallback, existingName), 2f);
+            }
+
             Debug.Log($"{existingName} is already in garden. Spawn skipped.");
             return;
         }
@@ -344,6 +377,42 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         FocusCameraOnMonster(monster.transform, monsterName);
 
         Debug.Log($"Spawned attracted monster: {monster.name}");
+    }
+
+    private TinyMonsterController FindExistingMonster(MonsterData monsterData, GameObject prefab)
+    {
+        string targetId = monsterData != null
+            ? MonsterCollectionManager.GetMonsterId(monsterData)
+            : string.Empty;
+
+        TinyMonsterController prefabController = prefab != null ? prefab.GetComponent<TinyMonsterController>() : null;
+        if (string.IsNullOrEmpty(targetId) && prefabController != null && prefabController.Data != null)
+            targetId = MonsterCollectionManager.GetMonsterId(prefabController.Data);
+
+        TinyMonsterController[] monsters = FindObjectsOfType<TinyMonsterController>();
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            TinyMonsterController monster = monsters[i];
+            if (monster == null)
+                continue;
+
+            if (!string.IsNullOrEmpty(targetId) && monster.Data != null && MonsterCollectionManager.GetMonsterId(monster.Data) == targetId)
+                return monster;
+
+            if (prefab != null && monster.name.Replace("(Clone)", string.Empty).Trim() == prefab.name)
+                return monster;
+        }
+
+        return null;
+    }
+
+    private bool IsDuplicateMonsterResult(GameObject prefab)
+    {
+        MonsterData monsterData = GetPrefabMonsterData(prefab);
+        if (monsterData != null && MonsterCollectionManager.IsUnlocked(monsterData))
+            return true;
+
+        return IsMonsterAlreadyInGarden(prefab);
     }
 
     private bool IsMonsterAlreadyInGarden(GameObject prefab)
@@ -427,7 +496,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (controller == null || controller.Data == null)
             return;
 
-        GardenMonsterSaveManager.Instance.SaveMonsterInGarden(controller.Data);
+        GardenMonsterSaveManager.Instance.SaveMonsterInGarden(controller);
     }
 
     private string GetMonsterName(GameObject monster)
@@ -444,6 +513,11 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
     private void FocusCameraOnMonster(Transform target, string monsterName)
     {
+        FocusCameraOnTargetWithNotice(target, GetText(monsterNoticeKey, monsterNoticeFormat, monsterName));
+    }
+
+    private void FocusCameraOnTargetWithNotice(Transform target, string noticeMessage)
+    {
         if (focusCamera == null || target == null)
             return;
 
@@ -453,10 +527,10 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             HideMonsterNotice();
         }
 
-        cameraFocusRoutine = StartCoroutine(FocusCameraRoutine(target, monsterName));
+        cameraFocusRoutine = StartCoroutine(FocusCameraRoutine(target, noticeMessage));
     }
 
-    private IEnumerator FocusCameraRoutine(Transform target, string monsterName)
+    private IEnumerator FocusCameraRoutine(Transform target, string noticeMessage)
     {
         CameraMapDragController cameraDrag = focusCamera.GetComponent<CameraMapDragController>();
         if (cameraDrag != null)
@@ -468,7 +542,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         Vector3 focusPosition = target.position + monsterFocusOffset;
         focusPosition.z = originalPosition.z;
 
-        ShowMonsterNotice(monsterName);
+        ShowNoticeMessage(noticeMessage);
         yield return MoveCameraRoutine(originalPosition, focusPosition, originalOrthographicSize, monsterFocusOrthographicSize);
         yield return new WaitForSeconds(monsterFocusDuration);
         yield return MoveCameraRoutine(focusCamera.transform.position, originalPosition, focusCamera.orthographicSize, originalOrthographicSize);
@@ -488,10 +562,94 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         ShowNoticeMessage(GetText(monsterNoticeKey, monsterNoticeFormat, monsterName));
     }
 
+    private void ShowStarGainFeedback(Transform target, int unlockCount)
+    {
+        Sprite starSprite = GetStarSprite(unlockCount);
+        if (target == null || starSprite == null)
+            return;
+
+        GameObject popup = new GameObject("StarGainPopup");
+        popup.transform.position = target.position + starPopupOffset;
+        popup.transform.localScale = Vector3.one * Mathf.Max(0.01f, starPopupStartScale);
+
+        SpriteRenderer spriteRenderer = popup.AddComponent<SpriteRenderer>();
+        spriteRenderer.sprite = starSprite;
+        spriteRenderer.sortingOrder = GetPopupSortingOrder(target);
+
+        StartCoroutine(StarPopupRoutine(popup, spriteRenderer));
+    }
+
+    private IEnumerator StarPopupRoutine(GameObject popup, SpriteRenderer spriteRenderer)
+    {
+        if (popup == null || spriteRenderer == null)
+            yield break;
+
+        Vector3 startPosition = popup.transform.position;
+        Vector3 endPosition = startPosition + Vector3.up * Mathf.Max(0f, starPopupRiseDistance);
+        float duration = Mathf.Max(0.01f, starPopupDuration);
+        float elapsed = 0f;
+        Color startColor = spriteRenderer.color;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = t * t * (3f - 2f * t);
+
+            popup.transform.position = Vector3.Lerp(startPosition, endPosition, eased);
+            popup.transform.localScale = Vector3.one * Mathf.Lerp(starPopupStartScale, starPopupEndScale, eased);
+
+            Color color = startColor;
+            color.a = Mathf.Lerp(1f, 0f, Mathf.Clamp01((t - 0.65f) / 0.35f));
+            spriteRenderer.color = color;
+
+            yield return null;
+        }
+
+        Destroy(popup);
+    }
+
+    private int GetPopupSortingOrder(Transform target)
+    {
+        int sortingOrder = starPopupSortingOrderOffset;
+        SpriteRenderer[] renderers = target.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+                sortingOrder = Mathf.Max(sortingOrder, renderers[i].sortingOrder + starPopupSortingOrderOffset);
+        }
+
+        return sortingOrder;
+    }
+
+    private Sprite GetStarSprite(int unlockCount)
+    {
+        if (unlockCount >= 7)
+            return goldStarSprite != null ? goldStarSprite : silverStarSprite;
+
+        if (unlockCount >= 4)
+            return silverStarSprite != null ? silverStarSprite : bronzeStarSprite;
+
+        return bronzeStarSprite;
+    }
+
+    private string GetStarTierName(int unlockCount)
+    {
+        if (unlockCount >= 7)
+            return "gold";
+
+        if (unlockCount >= 4)
+            return "silver";
+
+        return "bronze";
+    }
+
     private void ShowNoticeMessage(string message)
     {
         if (noticeText != null)
             noticeText.text = message;
+
+        SetNoticeButtonsVisible(false);
 
         if (noticeLayer != null)
             noticeLayer.SetActive(true);
@@ -523,6 +681,29 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (noticeLayer != null)
             noticeLayer.SetActive(false);
+    }
+
+    private void CacheNoticeButtons()
+    {
+        if (noticeLayer == null)
+            return;
+
+        noticeButtons = noticeLayer.GetComponentsInChildren<Button>(true);
+    }
+
+    private void SetNoticeButtonsVisible(bool visible)
+    {
+        if (noticeButtons == null || noticeButtons.Length == 0)
+            CacheNoticeButtons();
+
+        if (noticeButtons == null)
+            return;
+
+        for (int i = 0; i < noticeButtons.Length; i++)
+        {
+            if (noticeButtons[i] != null)
+                noticeButtons[i].gameObject.SetActive(visible);
+        }
     }
 
     private string GetText(GameTextKey key, string fallback, params object[] args)

@@ -16,6 +16,8 @@ public class GardenMonsterSaveManager : MonoBehaviour
     [SerializeField] private bool spawnDefaultUnlockedMonsters = true;
 
     private readonly HashSet<string> spawnedMonsterIds = new HashSet<string>();
+    private readonly Dictionary<string, TinyMonsterController> trackedMonsters = new Dictionary<string, TinyMonsterController>();
+    private readonly HashSet<TinyMonsterCoinProducer> trackedCoinProducers = new HashSet<TinyMonsterCoinProducer>();
     private bool cloudSaveControlsLoading;
 
     private void Awake()
@@ -35,6 +37,17 @@ public class GardenMonsterSaveManager : MonoBehaviour
             LoadSavedMonstersFromPlayerPrefs();
     }
 
+    private void OnDestroy()
+    {
+        foreach (TinyMonsterCoinProducer coinProducer in trackedCoinProducers)
+        {
+            if (coinProducer != null)
+                coinProducer.StoredCoinChanged -= HandleMonsterStoredCoinChanged;
+        }
+
+        trackedCoinProducers.Clear();
+    }
+
     public void SaveMonsterInGarden(MonsterData monsterData)
     {
         string id = MonsterCollectionManager.GetMonsterId(monsterData);
@@ -47,19 +60,55 @@ public class GardenMonsterSaveManager : MonoBehaviour
         GardenMonstersChanged?.Invoke();
     }
 
+    public void SaveMonsterInGarden(TinyMonsterController monster)
+    {
+        if (monster == null || monster.Data == null)
+            return;
+
+        TrackMonster(monster);
+        SaveMonsterInGarden(monster.Data);
+    }
+
     public void ApplySavedGardenMonsters(List<string> savedMonsterIds, bool includeDefaultUnlockedMonsters)
     {
-        cloudSaveControlsLoading = true;
-        ClearSpawnedMonsterSet();
-        CacheExistingMonsters();
-
-        HashSet<string> targetMonsterIds = new HashSet<string>();
+        List<GardenMonsterInstanceSave> instances = new List<GardenMonsterInstanceSave>();
         if (savedMonsterIds != null)
         {
             for (int i = 0; i < savedMonsterIds.Count; i++)
             {
                 if (!string.IsNullOrWhiteSpace(savedMonsterIds[i]))
-                    targetMonsterIds.Add(savedMonsterIds[i].Trim());
+                {
+                    instances.Add(new GardenMonsterInstanceSave
+                    {
+                        monsterId = savedMonsterIds[i].Trim(),
+                        storedCoin = 0,
+                        hasPosition = false
+                    });
+                }
+            }
+        }
+
+        ApplySavedGardenMonsters(instances, includeDefaultUnlockedMonsters);
+    }
+
+    public void ApplySavedGardenMonsters(List<GardenMonsterInstanceSave> savedMonsterInstances, bool includeDefaultUnlockedMonsters)
+    {
+        cloudSaveControlsLoading = true;
+        ClearSpawnedMonsterSet();
+        CacheExistingMonsters();
+
+        Dictionary<string, GardenMonsterInstanceSave> targetInstances = new Dictionary<string, GardenMonsterInstanceSave>();
+        if (savedMonsterInstances != null)
+        {
+            for (int i = 0; i < savedMonsterInstances.Count; i++)
+            {
+                GardenMonsterInstanceSave instance = savedMonsterInstances[i];
+                if (instance == null || string.IsNullOrWhiteSpace(instance.monsterId))
+                    continue;
+
+                string id = instance.monsterId.Trim();
+                if (!targetInstances.ContainsKey(id))
+                    targetInstances[id] = instance;
             }
         }
 
@@ -71,12 +120,13 @@ public class GardenMonsterSaveManager : MonoBehaviour
                     continue;
 
                 string id = MonsterCollectionManager.GetMonsterId(monsters[i]);
-                if (!string.IsNullOrEmpty(id) && MonsterCollectionManager.IsUnlocked(monsters[i]))
-                    targetMonsterIds.Add(id);
+                if (!string.IsNullOrEmpty(id) && MonsterCollectionManager.IsUnlocked(monsters[i]) && !targetInstances.ContainsKey(id))
+                    targetInstances[id] = new GardenMonsterInstanceSave(id, GetSpawnPosition(), 0);
             }
         }
 
-        SpawnMissingMonsters(targetMonsterIds);
+        ApplyExistingMonsterState(targetInstances);
+        SpawnMissingMonsters(targetInstances);
     }
 
     public List<string> ExportGardenMonsterIds()
@@ -85,7 +135,46 @@ public class GardenMonsterSaveManager : MonoBehaviour
         return new List<string>(spawnedMonsterIds);
     }
 
+    public List<GardenMonsterInstanceSave> ExportGardenMonsterInstances()
+    {
+        CacheExistingMonsters();
+        List<GardenMonsterInstanceSave> instances = new List<GardenMonsterInstanceSave>();
+
+        foreach (KeyValuePair<string, TinyMonsterController> entry in trackedMonsters)
+        {
+            TinyMonsterController monster = entry.Value;
+            if (monster == null || monster.Data == null)
+                continue;
+
+            TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
+            int storedCoin = coinProducer != null ? coinProducer.StoredCoin : 0;
+            instances.Add(new GardenMonsterInstanceSave(entry.Key, monster.transform.position, storedCoin));
+        }
+
+        return instances;
+    }
+
     public MonsterData[] MonsterDatabase => monsters;
+
+    public static List<string> ExportLegacySavedMonsterIds(MonsterData[] monsterDatabase)
+    {
+        List<string> savedMonsterIds = new List<string>();
+        if (monsterDatabase == null)
+            return savedMonsterIds;
+
+        for (int i = 0; i < monsterDatabase.Length; i++)
+        {
+            MonsterData monsterData = monsterDatabase[i];
+            string id = MonsterCollectionManager.GetMonsterId(monsterData);
+            if (string.IsNullOrEmpty(id))
+                continue;
+
+            if (PlayerPrefs.GetInt(SavePrefix + id, 0) == 1)
+                savedMonsterIds.Add(id);
+        }
+
+        return savedMonsterIds;
+    }
 
     private void LoadSavedMonstersFromPlayerPrefs()
     {
@@ -113,12 +202,30 @@ public class GardenMonsterSaveManager : MonoBehaviour
                 targetMonsterIds.Add(id);
         }
 
-        SpawnMissingMonsters(targetMonsterIds);
+        Dictionary<string, GardenMonsterInstanceSave> targetInstances = new Dictionary<string, GardenMonsterInstanceSave>();
+        foreach (string id in targetMonsterIds)
+            targetInstances[id] = new GardenMonsterInstanceSave(id, GetSpawnPosition(), 0);
+
+        SpawnMissingMonsters(targetInstances);
     }
 
-    private void SpawnMissingMonsters(HashSet<string> monsterIds)
+    private void ApplyExistingMonsterState(Dictionary<string, GardenMonsterInstanceSave> targetInstances)
     {
-        if (monsterIds == null || monsters == null)
+        if (targetInstances == null)
+            return;
+
+        foreach (KeyValuePair<string, GardenMonsterInstanceSave> entry in targetInstances)
+        {
+            if (!trackedMonsters.TryGetValue(entry.Key, out TinyMonsterController monster) || monster == null)
+                continue;
+
+            ApplyMonsterInstanceState(monster, entry.Value);
+        }
+    }
+
+    private void SpawnMissingMonsters(Dictionary<string, GardenMonsterInstanceSave> targetInstances)
+    {
+        if (targetInstances == null || monsters == null)
             return;
 
         for (int i = 0; i < monsters.Length; i++)
@@ -131,10 +238,10 @@ public class GardenMonsterSaveManager : MonoBehaviour
             if (string.IsNullOrEmpty(id) || spawnedMonsterIds.Contains(id))
                 continue;
 
-            if (!monsterIds.Contains(id))
+            if (!targetInstances.TryGetValue(id, out GardenMonsterInstanceSave instance))
                 continue;
 
-            SpawnMonster(monsterData);
+            SpawnMonster(monsterData, instance);
         }
     }
 
@@ -147,24 +254,77 @@ public class GardenMonsterSaveManager : MonoBehaviour
                 continue;
 
             string id = MonsterCollectionManager.GetMonsterId(existingMonsters[i].Data);
-            if (!string.IsNullOrEmpty(id))
-                spawnedMonsterIds.Add(id);
+            if (string.IsNullOrEmpty(id))
+                continue;
+
+            spawnedMonsterIds.Add(id);
+            TrackMonster(existingMonsters[i]);
         }
     }
 
     private void ClearSpawnedMonsterSet()
     {
         spawnedMonsterIds.Clear();
+        trackedMonsters.Clear();
     }
 
-    private void SpawnMonster(MonsterData monsterData)
+    private void SpawnMonster(MonsterData monsterData, GardenMonsterInstanceSave instance = null)
     {
-        GameObject monster = Instantiate(monsterData.prefab, GetSpawnPosition(), Quaternion.identity, spawnParent);
+        Vector3 spawnPosition = instance != null && instance.hasPosition ? instance.GetPosition() : GetSpawnPosition();
+        GameObject monster = Instantiate(monsterData.prefab, spawnPosition, Quaternion.identity, spawnParent);
         ConfigureMonster(monster);
+
+        TinyMonsterController controller = monster.GetComponent<TinyMonsterController>();
+        if (controller != null)
+        {
+            TrackMonster(controller);
+            if (instance != null)
+                ApplyMonsterInstanceState(controller, instance);
+        }
 
         string id = MonsterCollectionManager.GetMonsterId(monsterData);
         if (!string.IsNullOrEmpty(id))
             spawnedMonsterIds.Add(id);
+    }
+
+    private void ApplyMonsterInstanceState(TinyMonsterController monster, GardenMonsterInstanceSave instance)
+    {
+        if (monster == null || instance == null)
+            return;
+
+        TinyMonsterNavRoam navRoam = monster.GetComponent<TinyMonsterNavRoam>();
+        if (instance.hasPosition && navRoam != null)
+            navRoam.WarpTo(instance.GetPosition());
+        else if (instance.hasPosition)
+            monster.transform.position = instance.GetPosition();
+
+        TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
+        if (coinProducer != null)
+            coinProducer.SetStoredCoin(instance.storedCoin);
+    }
+
+    private void TrackMonster(TinyMonsterController monster)
+    {
+        if (monster == null || monster.Data == null)
+            return;
+
+        string id = MonsterCollectionManager.GetMonsterId(monster.Data);
+        if (string.IsNullOrEmpty(id))
+            return;
+
+        trackedMonsters[id] = monster;
+
+        TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
+        if (coinProducer != null && !trackedCoinProducers.Contains(coinProducer))
+        {
+            trackedCoinProducers.Add(coinProducer);
+            coinProducer.StoredCoinChanged += HandleMonsterStoredCoinChanged;
+        }
+    }
+
+    private void HandleMonsterStoredCoinChanged()
+    {
+        GardenMonstersChanged?.Invoke();
     }
 
     private Vector3 GetSpawnPosition()

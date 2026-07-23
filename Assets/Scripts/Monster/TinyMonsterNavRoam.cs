@@ -112,6 +112,17 @@ public class TinyMonsterNavRoam : MonoBehaviour
         gardenBounds = bounds;
     }
 
+    public void WarpTo(Vector3 position)
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+            agent.Warp(position);
+        else
+            transform.position = position;
+
+        lastPosition = transform.position;
+        movementDelta = Vector3.zero;
+    }
+
     public void StopMovement()
     {
         isRoaming = false;

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class TinyMonsterCoinProducer : MonoBehaviour {
     [Header("References")]
@@ -11,6 +12,7 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
 
     private float timer;
 
+    public event Action StoredCoinChanged;
     public int StoredCoin => storedCoin;
     public bool HasCoinToCollect => storedCoin > 0;
 
@@ -51,8 +53,18 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
         storedCoin = Mathf.Clamp(storedCoin + amount, 0, maxCoin);
 
         UpdateCoinBubble();
+        StoredCoinChanged?.Invoke();
 
         Debug.Log($"{controller.MonsterName} stored coin: {storedCoin}/{maxCoin}");
+    }
+
+    public void SetStoredCoin(int amount)
+    {
+        int maxCoin = controller != null && controller.Data != null ? controller.Data.maxStoredCoin : int.MaxValue;
+        storedCoin = Mathf.Clamp(amount, 0, maxCoin);
+        timer = 0f;
+        UpdateCoinBubble();
+        StoredCoinChanged?.Invoke();
     }
 
     public void CollectCoin()
@@ -82,6 +94,7 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
         }
 
         UpdateCoinBubble();
+        StoredCoinChanged?.Invoke();
 
         Debug.Log($"Collected {collectAmount} coin from {controller.MonsterName}");
     }

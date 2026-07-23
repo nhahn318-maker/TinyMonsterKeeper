@@ -9,6 +9,7 @@ public class GameSaveData
     public List<ItemAmountSave> inventory = new List<ItemAmountSave>();
     public List<MonsterCollectionSave> monsterCollection = new List<MonsterCollectionSave>();
     public List<string> gardenMonsters = new List<string>();
+    public List<GardenMonsterInstanceSave> gardenMonsterInstances = new List<GardenMonsterInstanceSave>();
     public List<string> unlockedFogZones = new List<string>();
     public List<string> discoveredRecipes = new List<string>();
     public List<string> failedMixes = new List<string>();
@@ -30,6 +31,7 @@ public class GameSaveData
             || HasEntries(inventory)
             || HasEntries(monsterCollection)
             || HasEntries(gardenMonsters)
+            || HasEntries(gardenMonsterInstances)
             || HasEntries(unlockedFogZones)
             || HasEntries(discoveredRecipes)
             || HasEntries(failedMixes);
@@ -72,5 +74,35 @@ public class MonsterCollectionSave
     {
         this.monsterId = monsterId;
         this.count = count;
+    }
+}
+
+[Serializable]
+public class GardenMonsterInstanceSave
+{
+    public string monsterId;
+    public float x;
+    public float y;
+    public float z;
+    public int storedCoin;
+    public bool hasPosition;
+
+    public GardenMonsterInstanceSave()
+    {
+    }
+
+    public GardenMonsterInstanceSave(string monsterId, UnityEngine.Vector3 position, int storedCoin)
+    {
+        this.monsterId = monsterId;
+        x = position.x;
+        y = position.y;
+        z = position.z;
+        this.storedCoin = storedCoin;
+        hasPosition = true;
+    }
+
+    public UnityEngine.Vector3 GetPosition()
+    {
+        return new UnityEngine.Vector3(x, y, z);
     }
 }
