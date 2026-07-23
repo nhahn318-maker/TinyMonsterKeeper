@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e03a47f182d388d4397dd0823884877e, type: 3}
-  m_Name: MushyData
+  m_Name: KabutoData
   m_EditorClassIdentifier: 
-  id: 002
-  monsterName: Mushy
-  icon: {fileID: -1921809941, guid: 542d5dbb8f078fc40868374fe4d1f844, type: 3}
-  prefab: {fileID: 242072064891303551, guid: 0832a70c7f954c7e835650f61c4d6cf7, type: 3}
+  id: 006
+  monsterName: Kabuto
+  icon: {fileID: -1366787173, guid: 4e64ec05ebf12c34fb176344921914ce, type: 3}
+  prefab: {fileID: 242072064891303551, guid: be8e0df74c6da7e4192b5077daeeb72d, type: 3}
   favoriteFoodId: 
   favoriteToyId: 
   berryCostPerFeed: 1

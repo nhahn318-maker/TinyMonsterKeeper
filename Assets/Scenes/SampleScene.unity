@@ -311,6 +311,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 25c19f7f8f2d9a84c8a043c801c4a493, type: 2}
   - {fileID: 11400000, guid: 1f9abd34b720a474a90c6c522115f032, type: 2}
   - {fileID: 11400000, guid: 17dd78ff7c0048aea4af5b395e084cc4, type: 2}
+  - {fileID: 11400000, guid: 323b3ca441eab7d43b2dd2d0f7bf7826, type: 2}
+  - {fileID: 11400000, guid: 51058949228afaf48ae9098d28fec772, type: 2}
   gardenBounds: {fileID: 2109454461}
   spawnParent: {fileID: 0}
   spawnCenter: {x: 0, y: 0, z: 0}
@@ -2586,6 +2588,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 17dd78ff7c0048aea4af5b395e084cc4, type: 2}
   - {fileID: 11400000, guid: b60e898b3f8044bbb11929f669e3c659, type: 2}
   - {fileID: 11400000, guid: 267a7f1da1d94d6a9ef9af2a1c5833c5, type: 2}
+  - {fileID: 11400000, guid: 323b3ca441eab7d43b2dd2d0f7bf7826, type: 2}
+  - {fileID: 11400000, guid: 51058949228afaf48ae9098d28fec772, type: 2}
   defaultSelectedMonster: {fileID: 11400000, guid: 25c19f7f8f2d9a84c8a043c801c4a493, type: 2}
   showDefaultDetailOnOpen: 1
   lockedCardSprite: {fileID: 21300000, guid: 89185ecd33de60e40b7ea60b4d7847a6, type: 3}
@@ -3449,6 +3453,7 @@ MonoBehaviour:
   starPopupSortingOrderOffset: 20
   recipes:
   - {fileID: 11400000, guid: 023140beee67fda4c99c9de9e7f57eeb, type: 2}
+  - {fileID: 11400000, guid: 9e2f20a332210164ea2f100cbb6e97ce, type: 2}
   clickCollider: {fileID: 0}
 --- !u!1 &370222181
 GameObject:
@@ -3600,9 +3605,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 25c19f7f8f2d9a84c8a043c801c4a493, type: 2}
   - {fileID: 11400000, guid: 1f9abd34b720a474a90c6c522115f032, type: 2}
   - {fileID: 11400000, guid: 17dd78ff7c0048aea4af5b395e084cc4, type: 2}
+  - {fileID: 11400000, guid: 323b3ca441eab7d43b2dd2d0f7bf7826, type: 2}
+  - {fileID: 11400000, guid: 51058949228afaf48ae9098d28fec772, type: 2}
   loadSaveOnStart: 1
   autosaveOnChange: 1
   migrateLegacyPlayerPrefs: 1
+  gardenMonsterAutosaveInterval: 5
 --- !u!114 &393120133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13548,6 +13556,7 @@ MonoBehaviour:
   messageText: {fileID: 1714902513}
   yesButton: {fileID: 502580647}
   noButton: {fileID: 1800429746}
+  messageAutoHideDuration: 2
 --- !u!1 &1952006970
 GameObject:
   m_ObjectHideFlags: 0

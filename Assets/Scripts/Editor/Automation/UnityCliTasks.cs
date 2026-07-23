@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEditor.Animations;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -206,6 +207,96 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Scene hierarchy reorganization finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Kabuto Monster")]
+        public static void SetupKabutoMonster()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            const string sourceSpritePath = "Assets/Arts/Monsters/MonNo6_Kabuto/Kabuto_Idle.png";
+            const string animationFolder = "Assets/Animations/MonNo6";
+            const string animatorFolder = "Assets/Animators/Monsters";
+            const string prefabPath = "Assets/Prefabs/Monsters/MonNo6_Kabuto.prefab";
+            const string dataPath = "Assets/ScriptableObjects/MonsterData/KabutoData.asset";
+            const string sourcePrefabPath = "Assets/Prefabs/Monsters/MonNo4_Cotty.prefab";
+            const string sourceControllerPath = "Assets/Animators/Monsters/MonNo4_CottyController.controller";
+
+            Sprite[] idleSprites = LoadSprites(sourceSpritePath);
+            if (idleSprites.Length == 0)
+            {
+                Debug.LogError("Kabuto idle sprites are missing or not sliced. Path: " + sourceSpritePath);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EnsureFolder("Assets/Animations", "MonNo6");
+
+            AnimationClip idleClip = CreateOrReplaceSpriteClip(animationFolder + "/Idle.anim", idleSprites, 8f, true);
+            AnimationClip happyClip = CreateOrReplaceSpriteClip(animationFolder + "/Happy.anim", new[] { idleSprites[0] }, 8f, false);
+            AnimationClip sleepClip = CreateOrReplaceSpriteClip(animationFolder + "/Sleep.anim", new[] { idleSprites[0] }, 8f, true);
+
+            string controllerPath = animatorFolder + "/MonNo6_KabutoController.controller";
+            AnimatorController controller = CreateMonsterAnimatorController(sourceControllerPath, controllerPath, "MonNo6_KabutoController", idleClip, happyClip, sleepClip);
+
+            MonsterData monsterData = CreateOrUpdateKabutoData(dataPath, idleSprites[0]);
+            GameObject prefab = CreateOrUpdateKabutoPrefab(sourcePrefabPath, prefabPath, monsterData, idleSprites[0], controller);
+            monsterData.prefab = prefab;
+            EditorUtility.SetDirty(monsterData);
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            AppendMonsterToSceneDatabases(monsterData);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Kabuto monster setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Antie Monster")]
+        public static void SetupAntieMonster()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            const string sourceSpritePath = "Assets/Arts/Monsters/MonNo7_Antie/Antie_Idle.png";
+            const string animationFolder = "Assets/Animations/MonNo7";
+            const string animatorFolder = "Assets/Animators/Monsters";
+            const string prefabPath = "Assets/Prefabs/Monsters/MonNo7_Antie.prefab";
+            const string dataPath = "Assets/ScriptableObjects/MonsterData/AntieData.asset";
+            const string sourcePrefabPath = "Assets/Prefabs/Monsters/MonNo4_Cotty.prefab";
+            const string sourceControllerPath = "Assets/Animators/Monsters/MonNo4_CottyController.controller";
+
+            Sprite[] idleSprites = LoadSprites(sourceSpritePath);
+            if (idleSprites.Length == 0)
+            {
+                Debug.LogError("Antie idle sprites are missing or not sliced. Path: " + sourceSpritePath);
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            EnsureFolder("Assets/Animations", "MonNo7");
+
+            AnimationClip idleClip = CreateOrReplaceSpriteClip(animationFolder + "/Idle.anim", idleSprites, 8f, true);
+            AnimationClip happyClip = CreateOrReplaceSpriteClip(animationFolder + "/Happy.anim", new[] { idleSprites[0] }, 8f, false);
+            AnimationClip sleepClip = CreateOrReplaceSpriteClip(animationFolder + "/Sleep.anim", new[] { idleSprites[0] }, 8f, true);
+
+            string controllerPath = animatorFolder + "/MonNo7_AntieController.controller";
+            AnimatorController controller = CreateMonsterAnimatorController(sourceControllerPath, controllerPath, "MonNo7_AntieController", idleClip, happyClip, sleepClip);
+
+            MonsterData monsterData = CreateOrUpdateMonsterData(dataPath, "007", "Antie", idleSprites[0]);
+            GameObject prefab = CreateOrUpdateMonsterPrefab(sourcePrefabPath, prefabPath, "MonNo7_Antie", "MonNo7_Antie_Visual", monsterData, idleSprites[0], controller);
+            monsterData.prefab = prefab;
+            EditorUtility.SetDirty(monsterData);
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            AppendMonsterToSceneDatabases(monsterData);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Antie monster setup finished.");
+        }
+
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name, new[] { searchFolder });
@@ -216,6 +307,377 @@ namespace TinyMonsterKeeper.EditorAutomation
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
                 arrayProperty.GetArrayElementAtIndex(i).objectReferenceValue = AssetDatabase.LoadAssetAtPath<T>(path);
             }
+        }
+
+        private static Sprite[] LoadSprites(string path)
+        {
+            Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
+            int count = 0;
+            for (int i = 0; i < assets.Length; i++)
+            {
+                if (assets[i] is Sprite)
+                    count++;
+            }
+
+            Sprite[] sprites = new Sprite[count];
+            int index = 0;
+            for (int i = 0; i < assets.Length; i++)
+            {
+                if (assets[i] is Sprite sprite)
+                {
+                    sprites[index] = sprite;
+                    index++;
+                }
+            }
+
+            return sprites;
+        }
+
+        private static AnimationClip CreateOrReplaceSpriteClip(string path, Sprite[] sprites, float frameRate, bool loop)
+        {
+            AnimationClip existingClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+            if (existingClip != null)
+                AssetDatabase.DeleteAsset(path);
+
+            AnimationClip clip = new AnimationClip
+            {
+                frameRate = frameRate
+            };
+
+            EditorCurveBinding binding = new EditorCurveBinding
+            {
+                path = string.Empty,
+                type = typeof(SpriteRenderer),
+                propertyName = "m_Sprite"
+            };
+
+            ObjectReferenceKeyframe[] keyframes = new ObjectReferenceKeyframe[sprites.Length];
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                keyframes[i] = new ObjectReferenceKeyframe
+                {
+                    time = i / frameRate,
+                    value = sprites[i]
+                };
+            }
+
+            AnimationUtility.SetObjectReferenceCurve(clip, binding, keyframes);
+
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.loopTime = loop;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+
+            AssetDatabase.CreateAsset(clip, path);
+            return clip;
+        }
+
+        private static AnimatorController CreateMonsterAnimatorController(string sourcePath, string targetPath, string controllerName, AnimationClip idleClip, AnimationClip happyClip, AnimationClip sleepClip)
+        {
+            if (!File.Exists(targetPath))
+                AssetDatabase.CopyAsset(sourcePath, targetPath);
+
+            AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(targetPath);
+            if (controller == null)
+            {
+                Debug.LogError("Could not create Kabuto animator controller.");
+                EditorApplication.Exit(1);
+                return null;
+            }
+
+            controller.name = controllerName;
+            EnsureAnimatorTrigger(controller, "OnIdle");
+            EnsureAnimatorTrigger(controller, "IsHappy");
+            EnsureAnimatorTrigger(controller, "OnSleep");
+
+            for (int i = 0; i < controller.layers.Length; i++)
+            {
+                AnimatorState idleState = null;
+                AnimatorState happyState = null;
+                AnimatorState sleepState = null;
+                ChildAnimatorState[] states = controller.layers[i].stateMachine.states;
+                for (int j = 0; j < states.Length; j++)
+                {
+                    AnimatorState state = states[j].state;
+                    if (state.name == "Idle")
+                    {
+                        state.motion = idleClip;
+                        idleState = state;
+                    }
+                    else if (state.name == "Happy")
+                    {
+                        state.motion = happyClip;
+                        happyState = state;
+                    }
+                    else if (state.name == "Sleep")
+                    {
+                        state.motion = sleepClip;
+                        sleepState = state;
+                    }
+                }
+
+                if (idleState != null)
+                    controller.layers[i].stateMachine.defaultState = idleState;
+
+                if (happyState != null)
+                    EnsureAnyStateTriggerTransition(controller.layers[i].stateMachine, happyState, "IsHappy");
+
+                if (sleepState != null)
+                    EnsureAnyStateTriggerTransition(controller.layers[i].stateMachine, sleepState, "OnSleep");
+            }
+
+            EditorUtility.SetDirty(controller);
+            return controller;
+        }
+
+        private static void EnsureAnimatorTrigger(AnimatorController controller, string parameterName)
+        {
+            for (int i = 0; i < controller.parameters.Length; i++)
+            {
+                if (controller.parameters[i].name == parameterName)
+                    return;
+            }
+
+            controller.AddParameter(parameterName, AnimatorControllerParameterType.Trigger);
+        }
+
+        private static void EnsureAnyStateTriggerTransition(AnimatorStateMachine stateMachine, AnimatorState destinationState, string triggerName)
+        {
+            AnimatorStateTransition[] transitions = stateMachine.anyStateTransitions;
+            for (int i = 0; i < transitions.Length; i++)
+            {
+                AnimatorStateTransition transition = transitions[i];
+                if (transition.destinationState != destinationState)
+                    continue;
+
+                AnimatorCondition[] conditions = transition.conditions;
+                for (int j = 0; j < conditions.Length; j++)
+                {
+                    if (conditions[j].parameter == triggerName)
+                        return;
+                }
+            }
+
+            AnimatorStateTransition newTransition = stateMachine.AddAnyStateTransition(destinationState);
+            newTransition.hasExitTime = false;
+            newTransition.duration = 0f;
+            newTransition.canTransitionToSelf = true;
+            newTransition.AddCondition(AnimatorConditionMode.If, 0f, triggerName);
+        }
+
+        private static MonsterData CreateOrUpdateKabutoData(string dataPath, Sprite icon)
+        {
+            MonsterData data = AssetDatabase.LoadAssetAtPath<MonsterData>(dataPath);
+            if (data == null)
+            {
+                data = ScriptableObject.CreateInstance<MonsterData>();
+                AssetDatabase.CreateAsset(data, dataPath);
+            }
+
+            data.id = "006";
+            data.monsterName = "Kabuto";
+            data.icon = icon;
+            data.favoriteFoodId = string.Empty;
+            data.favoriteToyId = string.Empty;
+            data.berryCostPerFeed = 1;
+            data.feedFriendshipGain = 10;
+            data.coinPerTick = 1;
+            data.coinTickInterval = 8f;
+            data.maxStoredCoin = 5;
+            data.unlockAppealCost = 0;
+            data.unlockFriendshipCost = 0;
+            data.unlockRequiredItemId = string.Empty;
+
+            EditorUtility.SetDirty(data);
+            return data;
+        }
+
+        private static MonsterData CreateOrUpdateMonsterData(string dataPath, string monsterId, string monsterName, Sprite icon)
+        {
+            MonsterData data = AssetDatabase.LoadAssetAtPath<MonsterData>(dataPath);
+            if (data == null)
+            {
+                data = ScriptableObject.CreateInstance<MonsterData>();
+                AssetDatabase.CreateAsset(data, dataPath);
+            }
+
+            data.id = monsterId;
+            data.monsterName = monsterName;
+            data.icon = icon;
+            data.favoriteFoodId = string.Empty;
+            data.favoriteToyId = string.Empty;
+            data.berryCostPerFeed = 1;
+            data.feedFriendshipGain = 10;
+            data.coinPerTick = 1;
+            data.coinTickInterval = 8f;
+            data.maxStoredCoin = 5;
+            data.unlockAppealCost = 0;
+            data.unlockFriendshipCost = 0;
+            data.unlockRequiredItemId = string.Empty;
+
+            EditorUtility.SetDirty(data);
+            return data;
+        }
+
+        private static GameObject CreateOrUpdateKabutoPrefab(string sourcePath, string targetPath, MonsterData data, Sprite idleSprite, RuntimeAnimatorController controller)
+        {
+            if (!File.Exists(targetPath))
+                AssetDatabase.CopyAsset(sourcePath, targetPath);
+
+            GameObject prefabRoot = PrefabUtility.LoadPrefabContents(targetPath);
+            prefabRoot.name = "MonNo6_Kabuto";
+
+            TinyMonsterController monsterController = prefabRoot.GetComponent<TinyMonsterController>();
+            if (monsterController != null)
+            {
+                SerializedObject serializedMonster = new SerializedObject(monsterController);
+                serializedMonster.FindProperty("monsterData").objectReferenceValue = data;
+                serializedMonster.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            TinyMonsterNavRoam navRoam = prefabRoot.GetComponent<TinyMonsterNavRoam>();
+            if (navRoam != null)
+            {
+                SerializedObject serializedNav = new SerializedObject(navRoam);
+                SerializedProperty spriteRendererProperty = serializedNav.FindProperty("spriteRenderer");
+                SpriteRenderer visualRenderer = FindMainVisualRenderer(prefabRoot);
+                if (visualRenderer != null)
+                    spriteRendererProperty.objectReferenceValue = visualRenderer;
+                serializedNav.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            TinyMonsterAnimationController animationController = prefabRoot.GetComponent<TinyMonsterAnimationController>();
+            Animator animator = prefabRoot.GetComponentInChildren<Animator>(true);
+            if (animationController != null && animator != null)
+            {
+                SerializedObject serializedAnimation = new SerializedObject(animationController);
+                serializedAnimation.FindProperty("animator").objectReferenceValue = animator;
+                serializedAnimation.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            SpriteRenderer mainRenderer = FindMainVisualRenderer(prefabRoot);
+            if (mainRenderer != null)
+            {
+                mainRenderer.gameObject.name = "MonNo6_Kabuto_Visual";
+                mainRenderer.sprite = idleSprite;
+                mainRenderer.enabled = true;
+                EditorUtility.SetDirty(mainRenderer);
+            }
+
+            if (animator != null)
+                animator.runtimeAnimatorController = controller;
+
+            PrefabUtility.SaveAsPrefabAsset(prefabRoot, targetPath);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
+            return AssetDatabase.LoadAssetAtPath<GameObject>(targetPath);
+        }
+
+        private static GameObject CreateOrUpdateMonsterPrefab(string sourcePath, string targetPath, string rootName, string visualName, MonsterData data, Sprite idleSprite, RuntimeAnimatorController controller)
+        {
+            if (!File.Exists(targetPath))
+                AssetDatabase.CopyAsset(sourcePath, targetPath);
+
+            GameObject prefabRoot = PrefabUtility.LoadPrefabContents(targetPath);
+            prefabRoot.name = rootName;
+
+            TinyMonsterController monsterController = prefabRoot.GetComponent<TinyMonsterController>();
+            if (monsterController != null)
+            {
+                SerializedObject serializedMonster = new SerializedObject(monsterController);
+                serializedMonster.FindProperty("monsterData").objectReferenceValue = data;
+                serializedMonster.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            TinyMonsterNavRoam navRoam = prefabRoot.GetComponent<TinyMonsterNavRoam>();
+            if (navRoam != null)
+            {
+                SerializedObject serializedNav = new SerializedObject(navRoam);
+                SerializedProperty spriteRendererProperty = serializedNav.FindProperty("spriteRenderer");
+                SpriteRenderer visualRenderer = FindMainVisualRenderer(prefabRoot);
+                if (visualRenderer != null)
+                    spriteRendererProperty.objectReferenceValue = visualRenderer;
+                serializedNav.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            TinyMonsterAnimationController animationController = prefabRoot.GetComponent<TinyMonsterAnimationController>();
+            Animator animator = prefabRoot.GetComponentInChildren<Animator>(true);
+            if (animationController != null && animator != null)
+            {
+                SerializedObject serializedAnimation = new SerializedObject(animationController);
+                serializedAnimation.FindProperty("animator").objectReferenceValue = animator;
+                serializedAnimation.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            SpriteRenderer mainRenderer = FindMainVisualRenderer(prefabRoot);
+            if (mainRenderer != null)
+            {
+                mainRenderer.gameObject.name = visualName;
+                mainRenderer.sprite = idleSprite;
+                mainRenderer.enabled = true;
+                EditorUtility.SetDirty(mainRenderer);
+            }
+
+            if (animator != null)
+                animator.runtimeAnimatorController = controller;
+
+            PrefabUtility.SaveAsPrefabAsset(prefabRoot, targetPath);
+            PrefabUtility.UnloadPrefabContents(prefabRoot);
+            return AssetDatabase.LoadAssetAtPath<GameObject>(targetPath);
+        }
+
+        private static SpriteRenderer FindMainVisualRenderer(GameObject prefabRoot)
+        {
+            SpriteRenderer[] renderers = prefabRoot.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].gameObject.name.Contains("_Visual"))
+                    return renderers[i];
+            }
+
+            return renderers.Length > 0 ? renderers[0] : null;
+        }
+
+        private static void AppendMonsterToSceneDatabases(MonsterData monsterData)
+        {
+            BookOpenUI book = Object.FindObjectOfType<BookOpenUI>(true);
+            if (book != null)
+                AppendObjectToSerializedArray(book, "monsters", monsterData);
+
+            SaveGameRuntimeBinder binder = Object.FindObjectOfType<SaveGameRuntimeBinder>(true);
+            if (binder != null)
+                AppendObjectToSerializedArray(binder, "monsterDatabase", monsterData);
+
+            GardenMonsterSaveManager gardenManager = Object.FindObjectOfType<GardenMonsterSaveManager>(true);
+            if (gardenManager != null)
+                AppendObjectToSerializedArray(gardenManager, "monsters", monsterData);
+        }
+
+        private static void AppendObjectToSerializedArray(Object target, string propertyName, Object value)
+        {
+            SerializedObject serializedObject = new SerializedObject(target);
+            SerializedProperty array = serializedObject.FindProperty(propertyName);
+            if (array == null || !array.isArray)
+                return;
+
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                if (array.GetArrayElementAtIndex(i).objectReferenceValue == value)
+                {
+                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                    return;
+                }
+            }
+
+            array.arraySize++;
+            array.GetArrayElementAtIndex(array.arraySize - 1).objectReferenceValue = value;
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(target);
+        }
+
+        private static void EnsureFolder(string parentPath, string folderName)
+        {
+            string fullPath = parentPath + "/" + folderName;
+            if (!AssetDatabase.IsValidFolder(fullPath))
+                AssetDatabase.CreateFolder(parentPath, folderName);
         }
 
         private static GameObject GetOrCreateRootGroup(string groupName)

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -91,6 +91,22 @@ switch ($Command) {
         $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupGardenMonsterSaveManager"))
         if (!(Select-String -Path $LogPath -Pattern "Garden monster save manager setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupGardenMonsterSaveManager. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-kabuto-monster" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupKabutoMonster"))
+        if (!(Select-String -Path $LogPath -Pattern "Kabuto monster setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupKabutoMonster. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-antie-monster" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupAntieMonster"))
+        if (!(Select-String -Path $LogPath -Pattern "Antie monster setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupAntieMonster. Check log: $LogPath"
             exit 1
         }
         exit $exitCode
