@@ -163,6 +163,49 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Garden monster save manager setup finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Reorganize Scene Hierarchy")]
+        public static void ReorganizeSceneHierarchy()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+            Transform systems = GetOrCreateRootGroup("_Systems").transform;
+            Transform world = GetOrCreateRootGroup("_World").transform;
+            Transform ui = GetOrCreateRootGroup("_UI").transform;
+            Transform camera = GetOrCreateRootGroup("_Camera").transform;
+            Transform lighting = GetOrCreateRootGroup("_Lighting").transform;
+            Transform navigation = GetOrCreateRootGroup("_Navigation").transform;
+
+            MoveRootIfExists("SaveSystem", systems);
+            MoveRootIfExists("InventoryManager", systems);
+            MoveRootIfExists("CurrencyManager", systems);
+            MoveRootIfExists("FogZoneManager", systems);
+            MoveRootIfExists("GardenMonsterSaveManager", systems);
+
+            MoveRootIfExists("Enviroment", world);
+            MoveRootIfExists("ResourcesNode", world);
+            MoveRootIfExists("CookingPot_Map", world);
+
+            MoveRootIfExists("UI_Canvas", ui);
+            MoveRootIfExists("EventSystem", ui);
+            MoveRootIfExists("UIManager", ui);
+            MoveRootIfExists("NoticeSystem", ui);
+            MoveRootIfExists("RewardPopupManager", ui);
+
+            MoveRootIfExists("Main Camera", camera);
+            MoveRootIfExists("Global Light 2D", lighting);
+            MoveRootIfExists("Navmesh", navigation);
+
+            RenameInventoryFoodItems();
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("Scene hierarchy reorganization finished.");
+        }
+
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name, new[] { searchFolder });
@@ -173,6 +216,93 @@ namespace TinyMonsterKeeper.EditorAutomation
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
                 arrayProperty.GetArrayElementAtIndex(i).objectReferenceValue = AssetDatabase.LoadAssetAtPath<T>(path);
             }
+        }
+
+        private static GameObject GetOrCreateRootGroup(string groupName)
+        {
+            GameObject group = FindRootObject(groupName);
+            if (group != null)
+                return group;
+
+            group = new GameObject(groupName);
+            Undo.RegisterCreatedObjectUndo(group, "Create " + groupName);
+            group.transform.SetParent(null);
+            group.transform.position = Vector3.zero;
+            group.transform.rotation = Quaternion.identity;
+            group.transform.localScale = Vector3.one;
+            return group;
+        }
+
+        private static void MoveRootIfExists(string objectName, Transform parent)
+        {
+            GameObject target = FindRootObject(objectName);
+            if (target == null || target.transform == parent)
+                return;
+
+            target.transform.SetParent(parent, true);
+            EditorUtility.SetDirty(target);
+        }
+
+        private static GameObject FindRootObject(string objectName)
+        {
+            GameObject[] roots = SceneManager.GetActiveScene().GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                if (roots[i].name == objectName)
+                    return roots[i];
+            }
+
+            return null;
+        }
+
+        private static void RenameInventoryFoodItems()
+        {
+            GameObject foodItemsRoot = FindSceneObject("FoodGrid");
+            if (foodItemsRoot == null)
+                foodItemsRoot = FindSceneObject("YourFoodPanel");
+
+            if (foodItemsRoot == null)
+                return;
+
+            int slotIndex = 1;
+            for (int i = 0; i < foodItemsRoot.transform.childCount; i++)
+            {
+                Transform child = foodItemsRoot.transform.GetChild(i);
+                if (!child.name.StartsWith("FoodItem"))
+                    continue;
+
+                child.name = $"InventorySlot_{slotIndex:00}";
+                EditorUtility.SetDirty(child.gameObject);
+                slotIndex++;
+            }
+        }
+
+        private static GameObject FindSceneObject(string objectName)
+        {
+            GameObject[] roots = SceneManager.GetActiveScene().GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                GameObject found = FindInChildrenIncludingInactive(roots[i].transform, objectName);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
+
+        private static GameObject FindInChildrenIncludingInactive(Transform root, string objectName)
+        {
+            if (root.name == objectName)
+                return root.gameObject;
+
+            for (int i = 0; i < root.childCount; i++)
+            {
+                GameObject found = FindInChildrenIncludingInactive(root.GetChild(i), objectName);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
         }
 
         private static int RequireFile(string path, string message)

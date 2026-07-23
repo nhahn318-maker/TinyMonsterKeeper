@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -34,22 +34,29 @@ $baseArgs = @(
     "-logFile", $LogPath
 )
 
+function Invoke-UnityBatch {
+    param(
+        [string[]]$UnityArgs
+    )
+
+    $process = Start-Process -FilePath $UnityPath -ArgumentList $UnityArgs -Wait -PassThru
+    return $process.ExitCode
+}
+
 switch ($Command) {
     "open" {
-        & $UnityPath @baseArgs
-        exit $LASTEXITCODE
+        Start-Process -FilePath $UnityPath -ArgumentList $baseArgs | Out-Null
+        exit 0
     }
     "compile" {
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate"
-        $exitCode = $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate"))
         if ($exitCode -eq 0 -and (Select-String -Path $LogPath -Pattern "Scripts have compiler errors|error CS" -Quiet)) {
             $exitCode = 1
         }
         exit $exitCode
     }
     "validate" {
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.ValidateProject"
-        $exitCode = $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.ValidateProject"))
         if (!(Select-String -Path $LogPath -Pattern "Unity CLI validation finished" -Quiet)) {
             Write-Error "Unity exited before running ValidateProject. Check log: $LogPath"
             exit 1
@@ -57,8 +64,7 @@ switch ($Command) {
         exit $exitCode
     }
     "setup-save-binder" {
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupSaveRuntimeBinder"
-        $exitCode = $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupSaveRuntimeBinder"))
         if (!(Select-String -Path $LogPath -Pattern "Save runtime binder setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupSaveRuntimeBinder. Check log: $LogPath"
             exit 1
@@ -66,8 +72,7 @@ switch ($Command) {
         exit $exitCode
     }
     "setup-fog-unlock-visuals" {
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupFogUnlockVisuals"
-        $exitCode = $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupFogUnlockVisuals"))
         if (!(Select-String -Path $LogPath -Pattern "Fog unlock visuals setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupFogUnlockVisuals. Check log: $LogPath"
             exit 1
@@ -75,8 +80,7 @@ switch ($Command) {
         exit $exitCode
     }
     "setup-save-reset-tool" {
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.AddSaveAccountResetTool"
-        $exitCode = $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.AddSaveAccountResetTool"))
         if (!(Select-String -Path $LogPath -Pattern "Save account reset tool setup finished" -Quiet)) {
             Write-Error "Unity exited before running AddSaveAccountResetTool. Check log: $LogPath"
             exit 1
@@ -84,22 +88,29 @@ switch ($Command) {
         exit $exitCode
     }
     "setup-garden-monster-save" {
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-accept-apiupdate" "-executeMethod" "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupGardenMonsterSaveManager"
-        $exitCode = $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupGardenMonsterSaveManager"))
         if (!(Select-String -Path $LogPath -Pattern "Garden monster save manager setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupGardenMonsterSaveManager. Check log: $LogPath"
             exit 1
         }
         exit $exitCode
     }
+    "reorganize-scene-hierarchy" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.ReorganizeSceneHierarchy"))
+        if (!(Select-String -Path $LogPath -Pattern "Scene hierarchy reorganization finished" -Quiet)) {
+            Write-Error "Unity exited before running ReorganizeSceneHierarchy. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
     "test-editmode" {
         $resultsPath = Join-Path $ProjectPath "Logs\unity-editmode-results.xml"
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-runTests" "-testPlatform" "EditMode" "-testResults" $resultsPath
-        exit $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-runTests", "-testPlatform", "EditMode", "-testResults", $resultsPath))
+        exit $exitCode
     }
     "test-playmode" {
         $resultsPath = Join-Path $ProjectPath "Logs\unity-playmode-results.xml"
-        & $UnityPath @baseArgs "-batchmode" "-quit" "-runTests" "-testPlatform" "PlayMode" "-testResults" $resultsPath
-        exit $LASTEXITCODE
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-runTests", "-testPlatform", "PlayMode", "-testResults", $resultsPath))
+        exit $exitCode
     }
 }
