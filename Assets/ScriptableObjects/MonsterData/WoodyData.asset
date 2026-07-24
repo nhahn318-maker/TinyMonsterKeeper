@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03a47f182d388d4397dd0823884877e, type: 3}
+  m_Name: WoodyData
+  m_EditorClassIdentifier: 
+  id: 013
+  monsterName: Woody
+  icon: {fileID: 234918206, guid: b3b6f26113c0e3a45a38777f0da5a15d, type: 3}
+  prefab: {fileID: 242072064891303551, guid: e221f035ac09a374d9160c1ba392364c, type: 3}
+  favoriteFoodId: 
+  favoriteToyId: 
+  berryCostPerFeed: 1
+  feedFriendshipGain: 10
+  coinPerTick: 1
+  coinTickInterval: 8
+  maxStoredCoin: 5
+  unlockAppealCost: 0
+  unlockFriendshipCost: 0
+  unlockRequiredItemId: 

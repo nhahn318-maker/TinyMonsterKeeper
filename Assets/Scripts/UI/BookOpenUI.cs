@@ -23,6 +23,7 @@ public class BookOpenUI : MonoBehaviour
     [SerializeField] private Sprite silverStarSprite;
     [SerializeField] private Sprite goldStarSprite;
     [SerializeField] private int totalPages = 2;
+    [SerializeField] private int cardsPerPage = 4;
     [SerializeField] private MonsterData[] monsters;
     [SerializeField] private MonsterData defaultSelectedMonster;
     [SerializeField] private bool showDefaultDetailOnOpen = true;
@@ -381,6 +382,12 @@ public class BookOpenUI : MonoBehaviour
 
         for (int i = 0; i < cardViews.Count; i++)
         {
+            if (i >= pageCapacity)
+            {
+                cardViews[i].SetVisible(false);
+                continue;
+            }
+
             int monsterIndex = startIndex + i;
             MonsterData monsterData = monsters != null && monsterIndex < monsters.Length ? monsters[monsterIndex] : null;
             int unlockCount = GetDisplayUnlockCount(monsterData);
@@ -537,7 +544,11 @@ public class BookOpenUI : MonoBehaviour
 
     private int GetPageCapacity()
     {
-        return Mathf.Max(1, cardViews.Count);
+        int configuredCardsPerPage = Mathf.Max(1, cardsPerPage);
+        if (cardViews.Count == 0)
+            return configuredCardsPerPage;
+
+        return Mathf.Min(configuredCardsPerPage, cardViews.Count);
     }
 
     private int GetPageIndexForMonster(MonsterData monsterData)

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03a47f182d388d4397dd0823884877e, type: 3}
+  m_Name: CooconiData
+  m_EditorClassIdentifier: 
+  id: 014
+  monsterName: Cooconi
+  icon: {fileID: 1010477137, guid: 17f579b0d13f3084f835c58bff5e11e7, type: 3}
+  prefab: {fileID: 242072064891303551, guid: 667035bd026757d47b4981280ba4ea2b, type: 3}
+  favoriteFoodId: 
+  favoriteToyId: 
+  berryCostPerFeed: 1
+  feedFriendshipGain: 10
+  coinPerTick: 1
+  coinTickInterval: 8
+  maxStoredCoin: 5
+  unlockAppealCost: 0
+  unlockFriendshipCost: 0
+  unlockRequiredItemId: 

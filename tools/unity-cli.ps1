@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "setup-mushribbit-monster", "setup-arcant-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "setup-mushribbit-monster", "setup-arcant-monster", "setup-monsters-10-16", "setup-cacu-monster", "setup-leafbag-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -123,6 +123,30 @@ switch ($Command) {
         $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupArcantMonster"))
         if (!(Select-String -Path $LogPath -Pattern "Arcant monster setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupArcantMonster. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-monsters-10-16" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupMonsters10To16"))
+        if (!(Select-String -Path $LogPath -Pattern "Monsters 10-16 setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupMonsters10To16. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-cacu-monster" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupCacuMonster"))
+        if (!(Select-String -Path $LogPath -Pattern "Cacu monster setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupCacuMonster. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-leafbag-monster" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupLeafbagMonster"))
+        if (!(Select-String -Path $LogPath -Pattern "Leafbag monster setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupLeafbagMonster. Check log: $LogPath"
             exit 1
         }
         exit $exitCode

@@ -23,5 +23,5 @@ MonoBehaviour:
   - itemData: {fileID: 11400000, guid: 1b6a0bd3619c40a095e40439382a9e89, type: 2}
     count: 1
   attractedMonsterPrefabs:
-  - {fileID: 242072064891303551, guid: 29aa916d1a95ddb43be9e36b5e0b8dd3, type: 3}
+  - {fileID: 242072064891303551, guid: accc1c5e5ff8f78439425d846ca19482, type: 3}
   allowDuplicateMonsters: 0

@@ -387,6 +387,75 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Arcant monster setup finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Monsters 10-16")]
+        public static void SetupMonsters10To16()
+        {
+            MonsterSetupDefinition[] monstersToSetup =
+            {
+                new MonsterSetupDefinition(10, "Moolo", "MonNo10_Moolo", "Moolo_Idle.png"),
+                new MonsterSetupDefinition(11, "Lotus", "MonNo11_Lotus", "lotus_idle.png"),
+                new MonsterSetupDefinition(12, "Pipcher", "MonNo12_Pipcher", "Pipcher_Idle.png"),
+                new MonsterSetupDefinition(13, "Woody", "MonNo13_Woody", "Woody_Idle.png"),
+                new MonsterSetupDefinition(14, "Cooconi", "MonNo14_Cooconi", "Cooconi_Idle.png"),
+                new MonsterSetupDefinition(15, "LilyPadle", "MonNo15_LilyPadle", "LilyPadle_Idle.png"),
+                new MonsterSetupDefinition(16, "Strawli", "MonNo16_Strawli", "Strawli_Idle.png")
+            };
+
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+            for (int i = 0; i < monstersToSetup.Length; i++)
+            {
+                MonsterData monsterData = SetupMonsterAssetBundle(monstersToSetup[i]);
+                AppendMonsterToSceneDatabases(monsterData);
+            }
+
+            SetupBookCardCapacity(16, 4);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Monsters 10-16 setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Cacu Monster")]
+        public static void SetupCacuMonster()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+            MonsterData monsterData = SetupMonsterAssetBundle(new MonsterSetupDefinition(17, "Cacu", "MonNo17_Cacu", "Cacu_Idle.png"));
+            AppendMonsterToSceneDatabases(monsterData);
+            SetupBookCardCapacity(17, 4);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Cacu monster setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Leafbag Monster")]
+        public static void SetupLeafbagMonster()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+            MonsterData monsterData = SetupMonsterAssetBundle(new MonsterSetupDefinition(18, "Leafbag", "MonNo18_Leafbag", "Leafbag_Idle.png"));
+            AppendMonsterToSceneDatabases(monsterData);
+            SetupBookCardCapacity(18, 4);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Leafbag monster setup finished.");
+        }
+
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name, new[] { searchFolder });
@@ -421,6 +490,41 @@ namespace TinyMonsterKeeper.EditorAutomation
             }
 
             return sprites;
+        }
+
+        private static MonsterData SetupMonsterAssetBundle(MonsterSetupDefinition definition)
+        {
+            const string sourcePrefabPath = "Assets/Prefabs/Monsters/MonNo4_Cotty.prefab";
+            const string sourceControllerPath = "Assets/Animators/Monsters/MonNo4_CottyController.controller";
+
+            string sourceSpritePath = $"Assets/Arts/Monsters/{definition.folderName}/{definition.idleSpriteFileName}";
+            Sprite[] idleSprites = LoadSprites(sourceSpritePath);
+            if (idleSprites.Length == 0)
+            {
+                Debug.LogError($"{definition.monsterName} idle sprites are missing or not sliced. Path: {sourceSpritePath}");
+                EditorApplication.Exit(1);
+                return null;
+            }
+
+            string animationFolder = $"Assets/Animations/MonNo{definition.monsterNumber}";
+            EnsureFolder("Assets/Animations", $"MonNo{definition.monsterNumber}");
+
+            AnimationClip idleClip = CreateOrReplaceSpriteClip(animationFolder + "/Idle.anim", idleSprites, 8f, true);
+            AnimationClip happyClip = CreateOrReplaceSpriteClip(animationFolder + "/Happy.anim", new[] { idleSprites[0] }, 8f, false);
+            AnimationClip sleepClip = CreateOrReplaceSpriteClip(animationFolder + "/Sleep.anim", new[] { idleSprites[0] }, 8f, true);
+
+            string controllerPath = $"Assets/Animators/Monsters/{definition.folderName}Controller.controller";
+            AnimatorController controller = CreateMonsterAnimatorController(sourceControllerPath, controllerPath, $"{definition.folderName}Controller", idleClip, happyClip, sleepClip);
+
+            string dataPath = $"Assets/ScriptableObjects/MonsterData/{definition.monsterName}Data.asset";
+            MonsterData monsterData = CreateOrUpdateMonsterData(dataPath, definition.monsterNumber.ToString("000"), definition.monsterName, idleSprites[0]);
+
+            string prefabPath = $"Assets/Prefabs/Monsters/{definition.folderName}.prefab";
+            GameObject prefab = CreateOrUpdateMonsterPrefab(sourcePrefabPath, prefabPath, definition.folderName, definition.folderName + "_Visual", monsterData, idleSprites[0], controller);
+            monsterData.prefab = prefab;
+            EditorUtility.SetDirty(monsterData);
+
+            return monsterData;
         }
 
         private static AnimationClip CreateOrReplaceSpriteClip(string path, Sprite[] sprites, float frameRate, bool loop)
@@ -713,11 +817,11 @@ namespace TinyMonsterKeeper.EditorAutomation
             PrefabUtility.UnloadPrefabContents(prefabRoot);
 
             GameObject savedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(targetPath);
-            VerifySavedPrefabVisualSprite(savedPrefab, idleSprite, rootName);
+            EnforceSavedPrefabVisualSprite(savedPrefab, idleSprite, rootName);
             return savedPrefab;
         }
 
-        private static void VerifySavedPrefabVisualSprite(GameObject prefab, Sprite expectedSprite, string rootName)
+        private static void EnforceSavedPrefabVisualSprite(GameObject prefab, Sprite expectedSprite, string rootName)
         {
             if (prefab == null || expectedSprite == null)
                 return;
@@ -726,7 +830,12 @@ namespace TinyMonsterKeeper.EditorAutomation
             if (visualRenderer == null || visualRenderer.sprite == expectedSprite)
                 return;
 
-            Debug.LogError($"{rootName} visual sprite is still {visualRenderer.sprite?.name}; expected {expectedSprite.name}. Open the prefab and assign the visual SpriteRenderer sprite manually.");
+            visualRenderer.sprite = expectedSprite;
+            EditorUtility.SetDirty(visualRenderer);
+            PrefabUtility.SavePrefabAsset(prefab);
+
+            if (visualRenderer.sprite != expectedSprite)
+                Debug.LogError($"{rootName} visual sprite is still {visualRenderer.sprite?.name}; expected {expectedSprite.name}.");
         }
 
         private static SpriteRenderer FindMainVisualRenderer(GameObject prefabRoot)
@@ -743,6 +852,9 @@ namespace TinyMonsterKeeper.EditorAutomation
 
         private static void AppendMonsterToSceneDatabases(MonsterData monsterData)
         {
+            if (monsterData == null)
+                return;
+
             BookOpenUI book = Object.FindObjectOfType<BookOpenUI>(true);
             if (book != null)
                 AppendObjectToSerializedArray(book, "monsters", monsterData);
@@ -778,11 +890,88 @@ namespace TinyMonsterKeeper.EditorAutomation
             EditorUtility.SetDirty(target);
         }
 
+        private static void SetupBookCardCapacity(int totalMonsterCount, int cardsPerPage)
+        {
+            BookOpenUI book = Object.FindObjectOfType<BookOpenUI>(true);
+            if (book != null)
+            {
+                SerializedObject serializedBook = new SerializedObject(book);
+                SerializedProperty totalPages = serializedBook.FindProperty("totalPages");
+                if (totalPages != null)
+                    totalPages.intValue = Mathf.Max(1, Mathf.CeilToInt(totalMonsterCount / (float)cardsPerPage));
+
+                SerializedProperty serializedCardsPerPage = serializedBook.FindProperty("cardsPerPage");
+                if (serializedCardsPerPage != null)
+                    serializedCardsPerPage.intValue = cardsPerPage;
+
+                serializedBook.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(book);
+            }
+
+            GameObject contentRoot = FindSceneObject("BookContentRootLeft");
+            if (contentRoot == null)
+            {
+                Debug.LogWarning("BookContentRootLeft is missing. Book card count was not updated.");
+                return;
+            }
+
+            EnsureChildCardCount(contentRoot.transform, cardsPerPage);
+        }
+
+        private static void EnsureChildCardCount(Transform root, int targetCount)
+        {
+            GameObject template = null;
+            int cardCount = 0;
+
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform child = root.GetChild(i);
+                if (!child.name.StartsWith("BookCard_Lock"))
+                    continue;
+
+                cardCount++;
+                if (template == null)
+                    template = child.gameObject;
+            }
+
+            if (template == null)
+            {
+                Debug.LogWarning("No BookCard_Lock template found under BookContentRootLeft.");
+                return;
+            }
+
+            for (int i = cardCount + 1; i <= targetCount; i++)
+            {
+                GameObject clone = Object.Instantiate(template, root);
+                clone.name = $"BookCard_Lock_{i:00}";
+                clone.SetActive(true);
+                EditorUtility.SetDirty(clone);
+            }
+
+            EditorUtility.SetDirty(root.gameObject);
+        }
+
         private static void EnsureFolder(string parentPath, string folderName)
         {
             string fullPath = parentPath + "/" + folderName;
             if (!AssetDatabase.IsValidFolder(fullPath))
                 AssetDatabase.CreateFolder(parentPath, folderName);
+        }
+
+        private readonly struct MonsterSetupDefinition
+        {
+            public readonly int monsterNumber;
+            public readonly string monsterName;
+            public readonly string folderName;
+            public readonly string idleSpriteFileName;
+
+            public MonsterSetupDefinition(int monsterNumber, string monsterName, string folderName, string idleSpriteFileName)
+            {
+                this.monsterNumber = monsterNumber;
+                this.monsterName = monsterName;
+                this.folderName = folderName;
+                this.idleSpriteFileName = idleSpriteFileName;
+            }
         }
 
         private static GameObject GetOrCreateRootGroup(string groupName)
