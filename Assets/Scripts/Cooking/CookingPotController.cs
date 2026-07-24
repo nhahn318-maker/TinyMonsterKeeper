@@ -72,6 +72,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private Coroutine cameraFocusRoutine;
     private Coroutine noticeRoutine;
     private CookingRecipeData activeRecipe;
+    private CookingRecipeData.MonsterResultOption activeMonsterResult;
     private int lastHandledClickFrame = -1;
     private Button[] noticeButtons;
 
@@ -207,18 +208,26 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return false;
         }
 
+        CookingRecipeData.MonsterResultOption selectedResult = recipe.GetRandomMonsterResultOption();
+        if (selectedResult.monsterPrefab == null)
+        {
+            Debug.LogWarning($"No monster result option assigned for recipe: {recipe.resultName}");
+            return false;
+        }
+
         ConsumeIngredients(ingredients);
-        StartCoroutine(CookingRoutine(recipe));
+        StartCoroutine(CookingRoutine(recipe, selectedResult));
 
         return true;
     }
 
-    private IEnumerator CookingRoutine(CookingRecipeData recipe)
+    private IEnumerator CookingRoutine(CookingRecipeData recipe, CookingRecipeData.MonsterResultOption selectedResult)
     {
         isCooking = true;
         isDone = false;
         activeRecipe = recipe;
-        currentCookDuration = Mathf.Max(0.1f, recipe.cookDuration);
+        activeMonsterResult = selectedResult;
+        currentCookDuration = Mathf.Max(0.1f, recipe.ResolveCookDuration(activeMonsterResult));
 
         SetCookingVisual();
 
@@ -320,6 +329,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             yield return new WaitForSeconds(remainingAromaTime);
 
         activeRecipe = null;
+        activeMonsterResult = default;
         isAttracting = false;
     }
 
@@ -331,10 +341,10 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return;
         }
 
-        GameObject prefab = activeRecipe.GetRandomAttractedMonsterPrefab();
+        GameObject prefab = activeMonsterResult.monsterPrefab;
         if (prefab == null)
         {
-            Debug.LogWarning($"No attracted monster prefab assigned for recipe: {activeRecipe.resultName}");
+            Debug.LogWarning($"No monster result option assigned for recipe: {activeRecipe.resultName}");
             return;
         }
 

@@ -105,6 +105,77 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Fog unlock visuals setup finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Mobile Screen Layout")]
+        public static void SetupMobileScreenLayout()
+        {
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            GameObject canvasObject = GameObject.Find("UI_Canvas");
+            GameObject hudObject = GameObject.Find("HUD");
+            GameObject cameraObject = GameObject.Find("Main Camera");
+            GameObject grassObject = GameObject.Find("Tilemap_Grass");
+
+            if (canvasObject == null || hudObject == null || cameraObject == null)
+            {
+                Debug.LogError("Setup Mobile Screen Layout failed: UI_Canvas, HUD, or Main Camera is missing.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            RectTransform canvasRect = canvasObject.GetComponent<RectTransform>();
+            RectTransform hudRect = hudObject.GetComponent<RectTransform>();
+            if (canvasRect == null || hudRect == null)
+            {
+                Debug.LogError("Setup Mobile Screen Layout failed: UI_Canvas or HUD is missing RectTransform.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            SafeAreaFitter safeAreaFitter = hudObject.GetComponent<SafeAreaFitter>();
+            if (safeAreaFitter == null)
+                safeAreaFitter = hudObject.AddComponent<SafeAreaFitter>();
+
+            SerializedObject serializedSafeArea = new SerializedObject(safeAreaFitter);
+            serializedSafeArea.FindProperty("fitMode").enumValueIndex = 1;
+            serializedSafeArea.FindProperty("fitLeft").boolValue = true;
+            serializedSafeArea.FindProperty("fitRight").boolValue = true;
+            serializedSafeArea.FindProperty("fitTop").boolValue = true;
+            serializedSafeArea.FindProperty("fitBottom").boolValue = false;
+            serializedSafeArea.FindProperty("extraPadding").vector2Value = new Vector2(8f, 8f);
+            serializedSafeArea.ApplyModifiedPropertiesWithoutUndo();
+
+            hudRect.anchorMin = new Vector2(0f, 1f);
+            hudRect.anchorMax = new Vector2(1f, 1f);
+            hudRect.pivot = new Vector2(0.5f, 1f);
+            hudRect.anchoredPosition = new Vector2(0f, -8f);
+            hudRect.sizeDelta = new Vector2(0f, 150f);
+            hudRect.localScale = Vector3.one;
+
+            CameraMapAspectFitter aspectFitter = cameraObject.GetComponent<CameraMapAspectFitter>();
+            if (aspectFitter == null)
+                aspectFitter = cameraObject.AddComponent<CameraMapAspectFitter>();
+
+            SerializedObject serializedAspectFitter = new SerializedObject(aspectFitter);
+            serializedAspectFitter.FindProperty("targetCamera").objectReferenceValue = cameraObject.GetComponent<Camera>();
+            serializedAspectFitter.FindProperty("mapBoundsCollider").objectReferenceValue =
+                grassObject != null ? grassObject.GetComponent<Collider2D>() : null;
+            serializedAspectFitter.FindProperty("desiredOrthographicSize").floatValue = 5f;
+            serializedAspectFitter.FindProperty("edgePadding").floatValue = 0.05f;
+            serializedAspectFitter.FindProperty("fallbackBackgroundColor").colorValue = new Color(0.76f, 0.88f, 0.56f, 1f);
+            serializedAspectFitter.ApplyModifiedPropertiesWithoutUndo();
+            aspectFitter.ApplyFit();
+
+            EditorUtility.SetDirty(hudObject);
+            EditorUtility.SetDirty(cameraObject);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("Mobile screen layout setup finished.");
+        }
+
+
         [MenuItem("TinyMonsterKeeper/Automation/Add Save Account Reset Tool")]
         public static void AddSaveAccountResetTool()
         {

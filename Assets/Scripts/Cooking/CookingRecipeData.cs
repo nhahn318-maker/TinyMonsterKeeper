@@ -11,6 +11,14 @@ public class CookingRecipeData : ScriptableObject
         public int count;
     }
 
+    [System.Serializable]
+    public struct MonsterResultOption
+    {
+        public GameObject monsterPrefab;
+        public float cookDuration;
+        public int weight;
+    }
+
     [Header("Recipe")]
     public string recipeId;
     public string resultName;
@@ -18,7 +26,7 @@ public class CookingRecipeData : ScriptableObject
     public IngredientRequirement[] ingredients;
 
     [Header("Attraction")]
-    public GameObject[] attractedMonsterPrefabs;
+    public MonsterResultOption[] monsterResultOptions;
     public bool allowDuplicateMonsters;
 
     public int RequiredSlotCount
@@ -65,12 +73,46 @@ public class CookingRecipeData : ScriptableObject
         return true;
     }
 
-    public GameObject GetRandomAttractedMonsterPrefab()
+    public MonsterResultOption GetRandomMonsterResultOption()
     {
-        if (attractedMonsterPrefabs == null || attractedMonsterPrefabs.Length == 0)
-            return null;
+        return GetWeightedMonsterResultOption();
+    }
 
-        return attractedMonsterPrefabs[Random.Range(0, attractedMonsterPrefabs.Length)];
+    public float ResolveCookDuration(MonsterResultOption resultOption)
+    {
+        return resultOption.cookDuration > 0f ? resultOption.cookDuration : cookDuration;
+    }
+
+    private MonsterResultOption GetWeightedMonsterResultOption()
+    {
+        if (monsterResultOptions == null || monsterResultOptions.Length == 0)
+            return default;
+
+        int totalWeight = 0;
+        for (int i = 0; i < monsterResultOptions.Length; i++)
+        {
+            if (monsterResultOptions[i].monsterPrefab == null)
+                continue;
+
+            totalWeight += Mathf.Max(1, monsterResultOptions[i].weight);
+        }
+
+        if (totalWeight <= 0)
+            return default;
+
+        int roll = Random.Range(0, totalWeight);
+        for (int i = 0; i < monsterResultOptions.Length; i++)
+        {
+            MonsterResultOption option = monsterResultOptions[i];
+            if (option.monsterPrefab == null)
+                continue;
+
+            roll -= Mathf.Max(1, option.weight);
+            if (roll < 0)
+                return option;
+        }
+
+        return default;
     }
 
     public string GetRequirementSummary()

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "setup-mushribbit-monster", "setup-arcant-monster", "setup-monsters-10-16", "setup-cacu-monster", "setup-leafbag-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
+    [ValidateSet("open", "compile", "validate", "setup-save-binder", "setup-fog-unlock-visuals", "setup-mobile-screen-layout", "setup-save-reset-tool", "setup-garden-monster-save", "setup-kabuto-monster", "setup-antie-monster", "setup-mushribbit-monster", "setup-arcant-monster", "setup-monsters-10-16", "setup-cacu-monster", "setup-leafbag-monster", "reorganize-scene-hierarchy", "test-editmode", "test-playmode")]
     [string]$Command = "compile",
 
     [string]$UnityPath = "",
@@ -75,6 +75,14 @@ switch ($Command) {
         $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupFogUnlockVisuals"))
         if (!(Select-String -Path $LogPath -Pattern "Fog unlock visuals setup finished" -Quiet)) {
             Write-Error "Unity exited before running SetupFogUnlockVisuals. Check log: $LogPath"
+            exit 1
+        }
+        exit $exitCode
+    }
+    "setup-mobile-screen-layout" {
+        $exitCode = Invoke-UnityBatch ($baseArgs + @("-batchmode", "-quit", "-accept-apiupdate", "-executeMethod", "TinyMonsterKeeper.EditorAutomation.UnityCliTasks.SetupMobileScreenLayout"))
+        if (!(Select-String -Path $LogPath -Pattern "Mobile screen layout setup finished" -Quiet)) {
+            Write-Error "Unity exited before running SetupMobileScreenLayout. Check log: $LogPath"
             exit 1
         }
         exit $exitCode
