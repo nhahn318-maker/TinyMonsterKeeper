@@ -74,6 +74,7 @@ public class FogZoneManager : MonoBehaviour
 
     private void OnEnable()
     {
+        RefreshMonsterBlockerStates();
         BindButtons();
     }
 
@@ -309,10 +310,10 @@ public class FogZoneManager : MonoBehaviour
 
     public void ApplyUnlockedZones(List<string> unlockedZoneIds)
     {
-        if (unlockedZoneIds == null)
-            return;
+        HashSet<string> unlockedIdSet = unlockedZoneIds != null
+            ? new HashSet<string>(unlockedZoneIds)
+            : new HashSet<string>();
 
-        HashSet<string> unlockedIdSet = new HashSet<string>(unlockedZoneIds);
         for (int i = 0; i < zones.Count; i++)
         {
             FogZone zone = zones[i];
@@ -320,10 +321,10 @@ public class FogZoneManager : MonoBehaviour
                 continue;
 
             string zoneId = GetZoneId(zone, i);
-            if (!unlockedIdSet.Contains(zoneId))
-                continue;
-
-            UnlockZone(zone, false, false);
+            if (unlockedIdSet.Contains(zoneId))
+                UnlockZone(zone, false, false);
+            else
+                SetMonsterBlockers(zone, true);
         }
     }
 
@@ -366,6 +367,16 @@ public class FogZoneManager : MonoBehaviour
         {
             if (zone.monsterBlockers[i] != null)
                 zone.monsterBlockers[i].SetBlocked(blocked);
+        }
+    }
+
+    private void RefreshMonsterBlockerStates()
+    {
+        for (int i = 0; i < zones.Count; i++)
+        {
+            FogZone zone = zones[i];
+            if (zone != null)
+                SetMonsterBlockers(zone, !zone.isUnlocked);
         }
     }
 

@@ -121,7 +121,7 @@ public class GardenMonsterSaveManager : MonoBehaviour
 
                 string id = MonsterCollectionManager.GetMonsterId(monsters[i]);
                 if (!string.IsNullOrEmpty(id) && MonsterCollectionManager.IsUnlocked(monsters[i]) && !targetInstances.ContainsKey(id))
-                    targetInstances[id] = new GardenMonsterInstanceSave(id, GetSpawnPosition(), 0);
+                    targetInstances[id] = new GardenMonsterInstanceSave(id, GetSpawnPosition(monsters[i].prefab), 0);
             }
         }
 
@@ -204,7 +204,10 @@ public class GardenMonsterSaveManager : MonoBehaviour
 
         Dictionary<string, GardenMonsterInstanceSave> targetInstances = new Dictionary<string, GardenMonsterInstanceSave>();
         foreach (string id in targetMonsterIds)
-            targetInstances[id] = new GardenMonsterInstanceSave(id, GetSpawnPosition(), 0);
+        {
+            MonsterData monsterData = FindMonsterData(id);
+            targetInstances[id] = new GardenMonsterInstanceSave(id, GetSpawnPosition(monsterData != null ? monsterData.prefab : null), 0);
+        }
 
         SpawnMissingMonsters(targetInstances);
     }
@@ -270,7 +273,7 @@ public class GardenMonsterSaveManager : MonoBehaviour
 
     private void SpawnMonster(MonsterData monsterData, GardenMonsterInstanceSave instance = null)
     {
-        Vector3 spawnPosition = instance != null && instance.hasPosition ? instance.GetPosition() : GetSpawnPosition();
+        Vector3 spawnPosition = instance != null && instance.hasPosition ? instance.GetPosition() : GetSpawnPosition(monsterData.prefab);
         GameObject monster = Instantiate(monsterData.prefab, spawnPosition, Quaternion.identity, spawnParent);
         ConfigureMonster(monster);
 
@@ -327,7 +330,7 @@ public class GardenMonsterSaveManager : MonoBehaviour
         GardenMonstersChanged?.Invoke();
     }
 
-    private Vector3 GetSpawnPosition()
+    private Vector3 GetSpawnPosition(GameObject monsterPrefab)
     {
         if (gardenBounds == null)
         {
@@ -346,11 +349,31 @@ public class GardenMonsterSaveManager : MonoBehaviour
             );
 
             randomPoint.z = 0f;
-            if (gardenBounds.OverlapPoint(randomPoint))
-                return randomPoint;
+            if (!gardenBounds.OverlapPoint(randomPoint))
+                continue;
+
+            if (TryGetNearestNavMeshPosition(monsterPrefab, randomPoint, out Vector3 navMeshPosition))
+                return navMeshPosition;
+
+            return randomPoint;
         }
 
         return bounds.center;
+    }
+
+    private MonsterData FindMonsterData(string monsterId)
+    {
+        if (monsters == null || string.IsNullOrWhiteSpace(monsterId))
+            return null;
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterData monsterData = monsters[i];
+            if (monsterData != null && MonsterCollectionManager.GetMonsterId(monsterData) == monsterId)
+                return monsterData;
+        }
+
+        return null;
     }
 
     private void ConfigureMonster(GameObject monster)
@@ -359,7 +382,30 @@ public class GardenMonsterSaveManager : MonoBehaviour
             return;
 
         TinyMonsterNavRoam navRoam = monster.GetComponent<TinyMonsterNavRoam>();
-        if (navRoam != null && gardenBounds != null)
+        if (navRoam == null)
+            return;
+
+        if (gardenBounds != null)
             navRoam.SetGardenBounds(gardenBounds);
+
+        navRoam.WarpTo(monster.transform.position);
+    }
+
+    private bool TryGetNearestNavMeshPosition(GameObject monsterPrefab, Vector3 position, out Vector3 navMeshPosition)
+    {
+        int areaMask = UnityEngine.AI.NavMesh.AllAreas;
+        TinyMonsterNavRoam prefabNavRoam = monsterPrefab != null ? monsterPrefab.GetComponent<TinyMonsterNavRoam>() : null;
+        if (prefabNavRoam != null)
+            areaMask = prefabNavRoam.AgentAreaMask;
+
+        if (UnityEngine.AI.NavMesh.SamplePosition(position, out UnityEngine.AI.NavMeshHit hit, 2f, areaMask))
+        {
+            navMeshPosition = hit.position;
+            navMeshPosition.z = position.z;
+            return true;
+        }
+
+        navMeshPosition = position;
+        return false;
     }
 }

@@ -7,6 +7,7 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private TinyMonsterCoinProducer coinProducer;
 
     public TinyMonsterController Controller => controller;
+    public MonsterData Data => controller != null ? controller.Data : null;
 
     public string MonsterName => controller != null ? controller.MonsterName : "Unknown";
     public int Friendship => controller != null ? controller.Friendship : 0;

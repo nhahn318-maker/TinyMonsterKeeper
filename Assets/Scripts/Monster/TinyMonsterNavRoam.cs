@@ -32,6 +32,7 @@ public class TinyMonsterNavRoam : MonoBehaviour
 
     public bool IsWalking => isWalking;
     public bool IsMovingNorth => isWalking && movementDelta.y > 0.001f;
+    public int AgentAreaMask => agent != null ? agent.areaMask : NavMesh.AllAreas;
 
     private void Reset()
     {
@@ -114,13 +115,38 @@ public class TinyMonsterNavRoam : MonoBehaviour
 
     public void WarpTo(Vector3 position)
     {
-        if (agent != null && agent.enabled && agent.isOnNavMesh)
-            agent.Warp(position);
+        Vector3 targetPosition = position;
+        if (TryGetNearestNavMeshPosition(position, Mathf.Max(sampleDistance, 2f), out Vector3 navMeshPosition))
+            targetPosition = navMeshPosition;
+
+        if (agent != null && agent.enabled)
+        {
+            if (agent.isOnNavMesh)
+                agent.Warp(targetPosition);
+            else
+                transform.position = targetPosition;
+        }
         else
-            transform.position = position;
+        {
+            transform.position = targetPosition;
+        }
 
         lastPosition = transform.position;
         movementDelta = Vector3.zero;
+    }
+
+    public bool TryGetNearestNavMeshPosition(Vector3 position, float maxDistance, out Vector3 navMeshPosition)
+    {
+        int areaMask = AgentAreaMask;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, maxDistance, areaMask))
+        {
+            navMeshPosition = hit.position;
+            navMeshPosition.z = position.z;
+            return true;
+        }
+
+        navMeshPosition = position;
+        return false;
     }
 
     public void StopMovement()
@@ -180,10 +206,28 @@ public class TinyMonsterNavRoam : MonoBehaviour
                 continue;
             }
 
-            if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, sampleDistance, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, sampleDistance, AgentAreaMask))
             {
+                if (agent == null || !agent.enabled)
+                {
+                    EnterIdleState();
+                    return;
+                }
+
+                if (!agent.isOnNavMesh)
+                    WarpTo(transform.position);
+
+                if (!agent.isOnNavMesh)
+                {
+                    EnterIdleState();
+                    return;
+                }
+
+                if (!TryGetUnblockedPath(hit.position, out NavMeshPath path))
+                    continue;
+
                 agent.isStopped = false;
-                agent.SetDestination(hit.position);
+                agent.SetPath(path);
 
                 isWalking = true;
                 stateTimer = Random.Range(walkTimeRange.x, walkTimeRange.y);
@@ -192,6 +236,32 @@ public class TinyMonsterNavRoam : MonoBehaviour
         }
 
         EnterIdleState();
+    }
+
+    private bool TryGetUnblockedPath(Vector3 destination, out NavMeshPath path)
+    {
+        path = new NavMeshPath();
+
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return false;
+
+        if (!agent.CalculatePath(destination, path) || path.status != NavMeshPathStatus.PathComplete)
+            return false;
+
+        Vector3[] corners = path.corners;
+        if (corners == null || corners.Length == 0)
+            return false;
+
+        for (int i = 0; i < corners.Length; i++)
+        {
+            if (FogAreaBlocker.BlocksPoint(corners[i]))
+                return false;
+
+            if (i > 0 && FogAreaBlocker.BlocksPath(corners[i - 1], corners[i]))
+                return false;
+        }
+
+        return true;
     }
 
     private void EnterIdleState()

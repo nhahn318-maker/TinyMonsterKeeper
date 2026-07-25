@@ -20,6 +20,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private GameObject readyBubbleObject;
     [SerializeField] private GameObject progressBarObject;
     [SerializeField] private Transform progressFillTransform;
+    [SerializeField] private TextMeshProUGUI cookTimerText;
 
     [Header("Attraction")]
     [SerializeField] private AromaAnimation aromaAnimation;
@@ -233,18 +234,21 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         float elapsed = 0f;
         UpdateProgressBar(0f);
+        UpdateCookTimer(currentCookDuration);
 
         while (elapsed < currentCookDuration)
         {
             elapsed += Time.deltaTime;
             UpdateCookingAnimation(elapsed);
             UpdateProgressBar(elapsed / currentCookDuration);
+            UpdateCookTimer(currentCookDuration - elapsed);
             yield return null;
         }
 
         isCooking = false;
         isDone = true;
         UpdateProgressBar(1f);
+        UpdateCookTimer(0f);
 
         SetDoneVisual();
 
@@ -377,7 +381,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return;
         }
 
-        Vector3 spawnPosition = ResolveMonsterSpawnPosition();
+        Vector3 spawnPosition = ResolveMonsterSpawnPosition(prefab);
 
         GameObject monster = Instantiate(prefab, spawnPosition, Quaternion.identity);
         ConfigureSpawnedMonster(monster);
@@ -480,8 +484,13 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return;
 
         TinyMonsterNavRoam navRoam = monster.GetComponent<TinyMonsterNavRoam>();
-        if (navRoam != null && monsterGardenBounds != null)
+        if (navRoam == null)
+            return;
+
+        if (monsterGardenBounds != null)
             navRoam.SetGardenBounds(monsterGardenBounds);
+
+        navRoam.WarpTo(monster.transform.position);
     }
 
     private void UnlockSpawnedMonster(GameObject monster)
@@ -745,13 +754,18 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         focusCamera.orthographicSize = toSize;
     }
 
-    private Vector3 ResolveMonsterSpawnPosition()
+    private Vector3 ResolveMonsterSpawnPosition(GameObject monsterPrefab)
     {
         Vector3 desiredPosition = monsterSpawnPoint != null
             ? monsterSpawnPoint.position
             : transform.position + monsterSpawnOffset;
 
-        if (NavMesh.SamplePosition(desiredPosition, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        int areaMask = NavMesh.AllAreas;
+        TinyMonsterNavRoam prefabNavRoam = monsterPrefab != null ? monsterPrefab.GetComponent<TinyMonsterNavRoam>() : null;
+        if (prefabNavRoam != null)
+            areaMask = prefabNavRoam.AgentAreaMask;
+
+        if (NavMesh.SamplePosition(desiredPosition, out NavMeshHit hit, 2f, areaMask))
             return hit.position;
 
         return desiredPosition;
@@ -772,6 +786,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             progressBarObject.SetActive(false);
 
         UpdateProgressBar(0f);
+        HideCookTimer();
     }
 
     private void SetCookingVisual()
@@ -788,6 +803,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (progressBarObject != null)
             progressBarObject.SetActive(true);
 
+        ShowCookTimer();
         UpdateCookingAnimation(0f);
     }
 
@@ -809,6 +825,8 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (progressBarObject != null)
             progressBarObject.SetActive(false);
+
+        HideCookTimer();
     }
 
     private bool TryResolveRecipe(List<ItemData> ingredients, out CookingRecipeData recipe)
@@ -889,6 +907,31 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         float offsetX = (progressFillInitialScale.x - scale.x) * 0.5f;
         position.x -= offsetX;
         progressFillTransform.localPosition = position;
+    }
+
+    private void ShowCookTimer()
+    {
+        if (cookTimerText != null)
+            cookTimerText.gameObject.SetActive(true);
+    }
+
+    private void HideCookTimer()
+    {
+        if (cookTimerText != null)
+            cookTimerText.gameObject.SetActive(false);
+    }
+
+    private void UpdateCookTimer(float remainingSeconds)
+    {
+        if (cookTimerText == null)
+            return;
+
+        ShowCookTimer();
+
+        int totalSeconds = Mathf.Max(0, Mathf.CeilToInt(remainingSeconds));
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        cookTimerText.text = $"{minutes:00}:{seconds:00}";
     }
 
     private void UpdateCookingAnimation(float elapsedTime)

@@ -1,9 +1,12 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class MonsterUIPanel : MonoBehaviour
 {
+    private const string PlayCooldownPrefix = "TinyMonsterKeeper.MonsterPlayCooldown.";
+
     public static MonsterUIPanel Instance { get; private set; }
 
     [Header("References")]
@@ -11,6 +14,7 @@ public class MonsterUIPanel : MonoBehaviour
     [SerializeField] private RectTransform panelContainer;
     [SerializeField] private RectTransform infoPanel;
     [SerializeField] private RectTransform actionMenuPanel;
+    [SerializeField] private GameTextDatabase textDatabase;
 
     [Header("Info Panel Elements")]
     [SerializeField] private TextMeshProUGUI nameText;
@@ -21,7 +25,12 @@ public class MonsterUIPanel : MonoBehaviour
 
     [Header("Feed Settings")]
     [SerializeField] private ItemData berryItemData;
+
+    [Header("Play Settings")]
     [SerializeField] private int playFriendshipGain = 15;
+    [SerializeField] private float playCooldownSeconds = 3600f;
+    [SerializeField] private GameTextKey playCooldownMessageKey = GameTextKey.MonsterPlayCooldown;
+    [SerializeField] private string playCooldownMessageFallback = "You can play with this monster again in {0}.";
 
 
 
@@ -181,8 +190,16 @@ public class MonsterUIPanel : MonoBehaviour
         if (selectedMonster == null) return;
 
         TinyMonsterTouch monster = selectedMonster;
+        double remainingSeconds = GetPlayCooldownRemaining(monster);
+        if (remainingSeconds > 0d)
+        {
+            ShowNotice(GetText(playCooldownMessageKey, playCooldownMessageFallback, FormatDuration(remainingSeconds)));
+            Hide(true);
+            return;
+        }
 
         monster.AddFriendship(playFriendshipGain);
+        SaveNextPlayTime(monster);
 
         UpdateInfo(monster);
 
@@ -195,6 +212,78 @@ public class MonsterUIPanel : MonoBehaviour
         }
 
         Debug.Log($"Play with {monster.MonsterName}. Current Friendship: {monster.Friendship}");
+    }
+
+    private double GetPlayCooldownRemaining(TinyMonsterTouch monster)
+    {
+        string key = GetPlayCooldownKey(monster);
+        if (string.IsNullOrEmpty(key))
+            return 0d;
+
+        string savedTicks = PlayerPrefs.GetString(key, string.Empty);
+        if (!long.TryParse(savedTicks, out long nextPlayUnixSeconds))
+            return 0d;
+
+        long nowUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        return Math.Max(0d, nextPlayUnixSeconds - nowUnixSeconds);
+    }
+
+    private void SaveNextPlayTime(TinyMonsterTouch monster)
+    {
+        string key = GetPlayCooldownKey(monster);
+        if (string.IsNullOrEmpty(key))
+            return;
+
+        long nowUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        long nextPlayUnixSeconds = nowUnixSeconds + Mathf.Max(0, Mathf.RoundToInt(playCooldownSeconds));
+        PlayerPrefs.SetString(key, nextPlayUnixSeconds.ToString());
+        PlayerPrefs.Save();
+    }
+
+    private string GetPlayCooldownKey(TinyMonsterTouch monster)
+    {
+        if (monster == null)
+            return string.Empty;
+
+        string monsterId = MonsterCollectionManager.GetMonsterId(monster.Data);
+        if (string.IsNullOrWhiteSpace(monsterId))
+            monsterId = monster.MonsterName;
+
+        return string.IsNullOrWhiteSpace(monsterId)
+            ? string.Empty
+            : PlayCooldownPrefix + monsterId.Trim();
+    }
+
+    private string FormatDuration(double totalSeconds)
+    {
+        TimeSpan duration = TimeSpan.FromSeconds(Math.Ceiling(totalSeconds));
+
+        if (duration.TotalHours >= 1d)
+            return $"{(int)duration.TotalHours}h {duration.Minutes}m";
+
+        if (duration.TotalMinutes >= 1d)
+            return $"{duration.Minutes}m {duration.Seconds}s";
+
+        return $"{duration.Seconds}s";
+    }
+
+    private void ShowNotice(string message)
+    {
+        if (FogUnlockConfirmDialogUI.Instance != null)
+        {
+            FogUnlockConfirmDialogUI.Instance.ShowMessage(message);
+            return;
+        }
+
+        Debug.Log(message);
+    }
+
+    private string GetText(GameTextKey key, string fallback, params object[] args)
+    {
+        if (textDatabase != null)
+            return textDatabase.Get(key, fallback, args);
+
+        return args == null || args.Length == 0 ? fallback : string.Format(fallback, args);
     }
 
     private void UpdateInfo(TinyMonsterTouch monster)

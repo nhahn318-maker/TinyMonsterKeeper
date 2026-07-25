@@ -10,7 +10,8 @@ public enum GameTextKey
     NotEnoughCoin,
     MonsterJoined,
     MonsterAlreadyInGarden,
-    MonsterStarIncreased
+    MonsterStarIncreased,
+    MonsterPlayCooldown
 }
 
 [CreateAssetMenu(fileName = "GameTextDatabase", menuName = "Tiny Monster Keeper/Game Text Database")]

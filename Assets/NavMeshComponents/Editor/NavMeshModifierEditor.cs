@@ -13,6 +13,9 @@ namespace NavMeshPlus.Components.Editors
 
         void OnEnable()
         {
+            if (target == null)
+                return;
+
             m_AffectedAgents = serializedObject.FindProperty("m_AffectedAgents");
             m_Area = serializedObject.FindProperty("m_Area");
             m_IgnoreFromBuild = serializedObject.FindProperty("m_IgnoreFromBuild");
@@ -25,6 +28,9 @@ namespace NavMeshPlus.Components.Editors
 
         public override void OnInspectorGUI()
         {
+            if (target == null || m_IgnoreFromBuild == null || m_OverrideArea == null || m_Area == null || m_AffectedAgents == null)
+                return;
+
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(m_IgnoreFromBuild);
