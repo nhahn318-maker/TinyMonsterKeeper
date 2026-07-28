@@ -71,6 +71,12 @@ public class BookOpenUI : MonoBehaviour
         Hide();
     }
 
+    private void OnValidate()
+    {
+        if (!showDefaultDetailOnOpen && detailCardImage != null && lockedCardSprite != null)
+            detailCardImage.sprite = lockedCardSprite;
+    }
+
     private void OnEnable()
     {
         MonsterCollectionManager.MonsterCollectionChanged += HandleMonsterCollectionChanged;
@@ -100,9 +106,7 @@ public class BookOpenUI : MonoBehaviour
         if (openRoutine != null)
             StopCoroutine(openRoutine);
 
-        currentPage = showDefaultDetailOnOpen && defaultSelectedMonster != null
-            ? GetPageIndexForMonster(defaultSelectedMonster)
-            : Mathf.Clamp(currentPage, 0, GetLastPageIndex());
+        currentPage = Mathf.Clamp(currentPage, 0, GetLastPageIndex());
 
         openRoutine = StartCoroutine(OpenRoutine());
     }
@@ -333,6 +337,9 @@ public class BookOpenUI : MonoBehaviour
     {
         if (detailRoot != null)
             detailRoot.SetActive(isActive);
+
+        if (isActive && detailCardImage != null && !showDefaultDetailOnOpen)
+            detailCardImage.sprite = GetLockedDetailCardSprite();
     }
 
     private void LockCameraDragIfNeeded()
@@ -491,7 +498,7 @@ public class BookOpenUI : MonoBehaviour
         int activeStars = GetActiveStarsInTier(unlockCount);
 
         if (detailView != null)
-            detailView.Set(monsterData, unlockedCardSprite, detailMonsterIconSize, detailMonsterIconOffset);
+            detailView.Set(monsterData, GetUnlockedDetailCardSprite(), detailMonsterIconSize, detailMonsterIconOffset);
 
         if (detailBadgeImage != null)
         {
@@ -523,6 +530,22 @@ public class BookOpenUI : MonoBehaviour
         if (detailView != null)
             detailView.Hide();
 
+        HideDetailRewards();
+    }
+
+    private void ShowLockedDetailPlaceholder()
+    {
+        if (detailView == null)
+            CacheDetailView();
+
+        if (detailView != null)
+            detailView.SetLocked(GetLockedDetailCardSprite());
+
+        HideDetailRewards();
+    }
+
+    private void HideDetailRewards()
+    {
         if (detailBadgeImage != null)
             detailBadgeImage.enabled = false;
 
@@ -571,7 +594,7 @@ public class BookOpenUI : MonoBehaviour
     {
         if (!showDefaultDetailOnOpen)
         {
-            HideDetail();
+            ShowLockedDetailPlaceholder();
             return;
         }
 
@@ -657,6 +680,22 @@ public class BookOpenUI : MonoBehaviour
             default:
                 return bronzeStarSprite;
         }
+    }
+
+    private Sprite GetUnlockedDetailCardSprite()
+    {
+        if (unlockedCardSprite != null)
+            return unlockedCardSprite;
+
+        return detailCardImage != null ? detailCardImage.sprite : null;
+    }
+
+    private Sprite GetLockedDetailCardSprite()
+    {
+        if (lockedCardSprite != null)
+            return lockedCardSprite;
+
+        return detailCardImage != null ? detailCardImage.sprite : null;
     }
 
     private enum BadgeTier
@@ -772,6 +811,24 @@ public class BookOpenUI : MonoBehaviour
         }
 
         public MonsterData MonsterData { get; private set; }
+
+        public void SetLocked(Sprite cardSprite)
+        {
+            if (background == null)
+                return;
+
+            MonsterData = null;
+            background.gameObject.SetActive(true);
+            background.enabled = true;
+            background.sprite = cardSprite != null ? cardSprite : background.sprite;
+
+            Image icon = GetOrCreateIcon();
+            if (icon != null)
+            {
+                icon.sprite = null;
+                icon.enabled = false;
+            }
+        }
 
         public void Set(MonsterData monsterData, Sprite cardSprite, Vector2 iconSize, Vector2 iconOffset)
         {

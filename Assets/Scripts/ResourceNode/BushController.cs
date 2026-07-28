@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class BushController : MonoBehaviour {
     public enum BushState {
@@ -46,6 +47,10 @@ public class BushController : MonoBehaviour {
     [Header("Ready Bubble")]
     [SerializeField] private GameObject readyBubbleObject;
 
+    [Header("Growth Countdown")]
+    [SerializeField] private TMP_Text growthCountdownText;
+    [SerializeField] private string countdownFormat = "{0}s";
+
     private BushState currentState = BushState.Normal;
     private float timer;
     private bool isPlayingClickAnimation;
@@ -63,6 +68,8 @@ public class BushController : MonoBehaviour {
 
         if (mainCamera == null)
             mainCamera = Camera.main;
+
+        HideGrowthCountdown();
     }
 
     private void Start()
@@ -78,6 +85,7 @@ public class BushController : MonoBehaviour {
         if (currentState == BushState.Fruiting) return;
 
         timer += Time.deltaTime;
+        UpdateGrowthCountdown();
 
         if (currentState == BushState.Normal && timer >= timeToFruit)
         {
@@ -219,6 +227,7 @@ public class BushController : MonoBehaviour {
 
         ReturnToStaticSprite();
         UpdateReadyBubble();
+        UpdateGrowthCountdown();
 
         Debug.Log($"Bush State: {currentState}");
     }
@@ -228,6 +237,29 @@ public class BushController : MonoBehaviour {
 
         bool shouldShow = currentState == BushState.Fruiting;
         readyBubbleObject.SetActive(shouldShow);
+    }
+
+    private void UpdateGrowthCountdown()
+    {
+        if (growthCountdownText == null)
+            return;
+
+        bool shouldShow = currentState == BushState.Normal && timeToFruit > 0f;
+        if (growthCountdownText.gameObject.activeSelf != shouldShow)
+            growthCountdownText.gameObject.SetActive(shouldShow);
+
+        if (!shouldShow)
+            return;
+
+        float remainingTime = Mathf.Max(0f, timeToFruit - timer);
+        int remainingSeconds = Mathf.CeilToInt(remainingTime);
+        growthCountdownText.text = string.Format(countdownFormat, remainingSeconds);
+    }
+
+    private void HideGrowthCountdown()
+    {
+        if (growthCountdownText != null)
+            growthCountdownText.gameObject.SetActive(false);
     }
 
     private void ReturnToStaticSprite()

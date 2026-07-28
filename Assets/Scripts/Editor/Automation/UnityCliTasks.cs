@@ -527,6 +527,41 @@ namespace TinyMonsterKeeper.EditorAutomation
             Debug.Log("Leafbag monster setup finished.");
         }
 
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Monsters 19-27")]
+        public static void SetupMonsters19To27()
+        {
+            MonsterSetupDefinition[] monstersToSetup =
+            {
+                new MonsterSetupDefinition(19, "Molli", "MonNo19_Molli", "Molli_Idle.png"),
+                new MonsterSetupDefinition(20, "Rooty", "MonNo20_Rooty", "Rooty_Idle.png"),
+                new MonsterSetupDefinition(21, "Wispbo", "MonNo21_Wispbo", "Wispbo_Idle.png"),
+                new MonsterSetupDefinition(22, "Bambat", "MonNo22_Bambat", "Bambat_Idle.png"),
+                new MonsterSetupDefinition(23, "Bambam", "MonNo23_Bambam", "Bambam_Idle.png"),
+                new MonsterSetupDefinition(24, "Bamurtle", "MonNo24_Bamurtle", "Bamurtle_Idle.png"),
+                new MonsterSetupDefinition(25, "Beo", "MonNo25_Beo", "Beo_Idle.png"),
+                new MonsterSetupDefinition(26, "Moss", "MonNo26_Moss", "Moss_Idle.png"),
+                new MonsterSetupDefinition(27, "Bolla", "MonNo27_Bolla", "Bolla_Idle.png")
+            };
+
+            const string scenePath = "Assets/Scenes/SampleScene.unity";
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+            for (int i = 0; i < monstersToSetup.Length; i++)
+            {
+                MonsterData monsterData = SetupMonsterAssetBundle(monstersToSetup[i]);
+                AppendMonsterToSceneDatabases(monsterData);
+            }
+
+            SetupBookCardCapacity(27, 4);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("Monsters 19-27 setup finished.");
+        }
+
         private static void AssignObjectArray<T>(SerializedProperty arrayProperty, string searchFolder) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name, new[] { searchFolder });

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03a47f182d388d4397dd0823884877e, type: 3}
+  m_Name: RootyData
+  m_EditorClassIdentifier: 
+  id: 020
+  monsterName: Rooty
+  icon: {fileID: 444342020, guid: 8961ff1b2bea3c14b9862b55b6779936, type: 3}
+  prefab: {fileID: 242072064891303551, guid: aac661ac52859924aae7d823b0dc5446, type: 3}
+  favoriteFoodId: 
+  favoriteToyId: 
+  berryCostPerFeed: 1
+  feedFriendshipGain: 10
+  coinPerTick: 1
+  coinTickInterval: 8
+  maxStoredCoin: 5
+  unlockAppealCost: 0
+  unlockFriendshipCost: 0
+  unlockRequiredItemId: 
