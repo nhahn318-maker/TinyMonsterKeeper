@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 9aae8fcb9f1faf541904e0d1759b5c06
+guid: 703369e6e9ec65f43b7b0cfc5a0ec0cb
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: small_bamboo-sheet_0
+      name: bamboo-shoot-item_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 64
-        height: 64
+        width: 32
+        height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,20 +124,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cfb0e36e8d54fd4479b52dabed11e026
-      internalID: 1708152361
+      spriteID: f39131cb1be731946a33c9750d6f17d1
+      internalID: -1782039204
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: small_bamboo-sheet_1
+      name: bamboo-shoot-item_1
       rect:
         serializedVersion: 2
-        x: 64
+        x: 32
         y: 0
-        width: 64
-        height: 64
+        width: 32
+        height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -145,8 +145,29 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: efc32a49311f39e4cbc5c57294ee3d54
-      internalID: 1350647840
+      spriteID: 2b4c500ceb036b1438e029f5c20b0e10
+      internalID: -1719509033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bamboo-shoot-item_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 01a21c0442c86d54ca39e14362b4a56b
+      internalID: -4805106
       vertices: []
       indices: 
       edges: []
@@ -162,8 +183,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      small_bamboo-sheet_0: 1708152361
-      small_bamboo-sheet_1: 1350647840
+      bamboo-shoot-item_0: -1782039204
+      bamboo-shoot-item_1: -1719509033
+      bamboo-shoot-item_2: -4805106
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
