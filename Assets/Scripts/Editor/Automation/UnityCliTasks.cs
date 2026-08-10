@@ -1,14 +1,143 @@
 using System.IO;
+using System.Linq;
 using UnityEditor.Animations;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace TinyMonsterKeeper.EditorAutomation
 {
     public static class UnityCliTasks
     {
+        [MenuItem("TinyMonsterKeeper/Automation/Repair Main Menu Title Animation")]
+        public static void RepairMainMenuTitleAnimation()
+        {
+            const string titleAnimationPath = "Assets/Animations/UI/MainMenuTitleIdle.anim";
+            const string titleSpriteSheetPath = "Assets/Arts/MainMenu/namegame_256x256_animation.png";
+
+            AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(titleAnimationPath);
+            if (clip == null)
+            {
+                Debug.LogError("Main menu title animation is missing: " + titleAnimationPath);
+                return;
+            }
+
+            Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(titleSpriteSheetPath)
+                .OfType<Sprite>()
+                .OrderBy(sprite => sprite.name)
+                .ToArray();
+
+            if (sprites.Length == 0)
+            {
+                Debug.LogError("Main menu title sprites are missing: " + titleSpriteSheetPath);
+                return;
+            }
+
+            foreach (EditorCurveBinding existingBinding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                AnimationUtility.SetObjectReferenceCurve(clip, existingBinding, null);
+
+            EditorCurveBinding binding = EditorCurveBinding.PPtrCurve("Image", typeof(Image), "m_Sprite");
+            ObjectReferenceKeyframe[] frames = new ObjectReferenceKeyframe[sprites.Length];
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                frames[i] = new ObjectReferenceKeyframe
+                {
+                    time = i / 8f,
+                    value = sprites[i]
+                };
+            }
+
+            AnimationUtility.SetObjectReferenceCurve(clip, binding, frames);
+            clip.frameRate = 8f;
+            EditorUtility.SetDirty(clip);
+            AssetDatabase.SaveAssets();
+            Debug.Log("Main menu title animation binding repaired. Play the MainMenuScene to verify it.");
+        }
+
+        public static void SetupMainMenu()
+        {
+            const string scenePath = "Assets/Scenes/MainMenuScene.unity";
+            const string titleControllerPath = "Assets/Animators/UI/MainMenuTitleController.controller";
+            const string guestNormalSpritePath = "Assets/Arts/MainMenu/GuestButton_256x256.png";
+            const string guestPressedSpritePath = "Assets/Arts/MainMenu/GuestButton_256x256_Click.png";
+            const string googleNormalSpritePath = "Assets/Arts/MainMenu/GoogleButton_256x256.png";
+            const string googlePressedSpritePath = "Assets/Arts/MainMenu/GoogleButton_256x256_Click.png";
+
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            AnimatorController titleController = AssetDatabase.LoadAssetAtPath<AnimatorController>(titleControllerPath);
+            Sprite guestNormalSprite = AssetDatabase.LoadAssetAtPath<Sprite>(guestNormalSpritePath);
+            Sprite guestPressedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(guestPressedSpritePath);
+            Sprite googleNormalSprite = AssetDatabase.LoadAssetAtPath<Sprite>(googleNormalSpritePath);
+            Sprite googlePressedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(googlePressedSpritePath);
+
+            if (titleController == null || guestNormalSprite == null || guestPressedSprite == null ||
+                googleNormalSprite == null || googlePressedSprite == null)
+            {
+                Debug.LogError("Main menu setup failed because a required animation or button sprite is missing.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            GameObject gameTitle = GameObject.Find("GameTitle");
+            if (gameTitle == null)
+            {
+                Debug.LogError("Main menu setup failed: GameTitle is missing.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            Animator titleAnimator = gameTitle.GetComponent<Animator>();
+            if (titleAnimator == null)
+                titleAnimator = gameTitle.AddComponent<Animator>();
+            titleAnimator.runtimeAnimatorController = titleController;
+            EditorUtility.SetDirty(titleAnimator);
+
+            SetupMenuButton("ButtonGuest", guestNormalSprite, guestPressedSprite, true);
+            SetupMenuButton("ButtonGoogle", googleNormalSprite, googlePressedSprite, false);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene("Assets/Scenes/MainMenuScene.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/GameplayScene.unity", true)
+            };
+            AssetDatabase.SaveAssets();
+            Debug.Log("Main menu setup finished.");
+        }
+
+        private static void SetupMenuButton(string objectName, Sprite normalSprite, Sprite pressedSprite, bool isGuestButton)
+        {
+            GameObject buttonObject = GameObject.Find(objectName);
+            if (buttonObject == null)
+                throw new System.InvalidOperationException("Main menu setup failed: " + objectName + " is missing.");
+
+            Image image = buttonObject.GetComponent<Image>();
+            if (image == null)
+                image = buttonObject.AddComponent<Image>();
+            image.sprite = normalSprite;
+
+            Button button = buttonObject.GetComponent<Button>();
+            if (button == null)
+                button = buttonObject.AddComponent<Button>();
+            button.transition = Selectable.Transition.SpriteSwap;
+            button.targetGraphic = image;
+
+            SpriteState spriteState = button.spriteState;
+            spriteState.highlightedSprite = normalSprite;
+            spriteState.pressedSprite = pressedSprite;
+            spriteState.selectedSprite = pressedSprite;
+            spriteState.disabledSprite = null;
+            button.spriteState = spriteState;
+
+            if (isGuestButton && buttonObject.GetComponent<MainMenuGuestButton>() == null)
+                buttonObject.AddComponent<MainMenuGuestButton>();
+
+            EditorUtility.SetDirty(buttonObject);
+        }
+
         public static void ValidateProject()
         {
             int issueCount = 0;

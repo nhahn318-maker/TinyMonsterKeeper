@@ -32,6 +32,7 @@ public class TinyMonsterNavRoam : MonoBehaviour
 
     public bool IsWalking => isWalking;
     public bool IsMovingNorth => isWalking && movementDelta.y > 0.001f;
+    public bool IsPaused => isPaused;
     public int AgentAreaMask => agent != null ? agent.areaMask : NavMesh.AllAreas;
 
     private void Reset()

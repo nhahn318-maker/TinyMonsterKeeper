@@ -20,7 +20,10 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private GameObject readyBubbleObject;
     [SerializeField] private GameObject progressBarObject;
     [SerializeField] private Transform progressFillTransform;
-    [SerializeField] private TextMeshProUGUI cookTimerText;
+    [SerializeField] private TMP_Text cookTimerText;
+    [SerializeField] private Vector3 cookTimerLocalOffset = new Vector3(0f, 0.9f, 0f);
+    [SerializeField] private float cookTimerWorldFontSize = 2f;
+    [SerializeField] private int cookTimerSortingOrderOffset = 10;
 
     [Header("Attraction")]
     [SerializeField] private AromaAnimation aromaAnimation;
@@ -64,6 +67,12 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private Sprite bronzeStarSprite;
     [SerializeField] private Sprite silverStarSprite;
     [SerializeField] private Sprite goldStarSprite;
+    [SerializeField] private Sprite[] bronzeToBronzeStarFrames;
+    [SerializeField] private Sprite[] bronzeToSilverStarFrames;
+    [SerializeField] private Sprite[] silverToSilverStarFrames;
+    [SerializeField] private Sprite[] silverToGoldStarFrames;
+    [SerializeField] private Sprite[] goldToGoldStarFrames;
+    [SerializeField] private float starUpgradeAnimationFps = 12f;
     [SerializeField] private Vector3 starPopupOffset = new Vector3(0f, 0.85f, 0f);
     [SerializeField] private float starPopupDuration = 1.25f;
     [SerializeField] private float starPopupRiseDistance = 0.35f;
@@ -81,6 +90,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private bool isDone;
     private Vector3 progressFillInitialScale;
     private Vector3 progressFillInitialLocalPosition;
+    private MeshRenderer cookTimerRenderer;
     private float currentCookDuration;
     private bool isAttracting;
     private Coroutine cameraFocusRoutine;
@@ -105,6 +115,8 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             progressFillInitialLocalPosition = progressFillTransform.localPosition;
         }
 
+        EnsureWorldCookTimerText();
+
         if (aromaAnimation == null)
             aromaAnimation = GetComponentInChildren<AromaAnimation>(true);
 
@@ -120,6 +132,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private void Update()
     {
         HandleDirectWorldClick();
+        RefreshCookTimerSorting();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -351,6 +364,42 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         activeRecipe = null;
         activeMonsterResult = default;
         isAttracting = false;
+    }
+
+    private void EnsureWorldCookTimerText()
+    {
+        if (cookTimerText is TextMeshPro)
+        {
+            cookTimerRenderer = cookTimerText.GetComponent<MeshRenderer>();
+            RefreshCookTimerSorting();
+            return;
+        }
+
+        if (cookTimerText != null)
+            cookTimerText.gameObject.SetActive(false);
+
+        GameObject timerObject = new GameObject("CookTimerText_World", typeof(TextMeshPro));
+        timerObject.transform.SetParent(transform, false);
+        timerObject.transform.localPosition = cookTimerLocalOffset;
+
+        TextMeshPro worldTimer = timerObject.GetComponent<TextMeshPro>();
+        worldTimer.alignment = TextAlignmentOptions.Center;
+        worldTimer.fontSize = cookTimerWorldFontSize;
+        worldTimer.fontStyle = FontStyles.Bold;
+        worldTimer.color = Color.white;
+
+        cookTimerText = worldTimer;
+        cookTimerRenderer = worldTimer.GetComponent<MeshRenderer>();
+        RefreshCookTimerSorting();
+        timerObject.SetActive(false);
+    }
+
+    private void RefreshCookTimerSorting()
+    {
+        if (cookTimerRenderer == null || potRenderer == null)
+            return;
+
+        cookTimerRenderer.sortingOrder = potRenderer.sortingOrder + cookTimerSortingOrderOffset;
     }
 
     private IEnumerator SpawnRandomMonsterRoutine()
@@ -988,18 +1037,30 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (target == null || starSprite == null)
             return;
 
+        Sprite[] upgradeFrames = GetStarUpgradeFrames(unlockCount);
+
         GameObject popup = new GameObject("StarGainPopup");
         popup.transform.position = target.position + starPopupOffset;
         popup.transform.localScale = Vector3.one * Mathf.Max(0.01f, starPopupStartScale);
 
         SpriteRenderer spriteRenderer = popup.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = starSprite;
+        spriteRenderer.sprite = upgradeFrames != null && upgradeFrames.Length > 0 ? upgradeFrames[0] : starSprite;
         spriteRenderer.sortingOrder = GetPopupSortingOrder(target);
 
-        StartCoroutine(StarPopupRoutine(popup, spriteRenderer));
+        TinyMonsterNavRoam roaming = target.GetComponent<TinyMonsterNavRoam>();
+        bool resumeRoamingAfterFeedback = roaming != null && !roaming.IsPaused;
+        if (resumeRoamingAfterFeedback)
+            roaming.PauseForMenu();
+
+        StartCoroutine(StarPopupRoutine(popup, spriteRenderer, upgradeFrames, roaming, resumeRoamingAfterFeedback));
     }
 
-    private IEnumerator StarPopupRoutine(GameObject popup, SpriteRenderer spriteRenderer)
+    private IEnumerator StarPopupRoutine(
+        GameObject popup,
+        SpriteRenderer spriteRenderer,
+        Sprite[] upgradeFrames,
+        TinyMonsterNavRoam roaming,
+        bool resumeRoamingAfterFeedback)
     {
         if (popup == null || spriteRenderer == null)
             yield break;
@@ -1009,12 +1070,20 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         float duration = Mathf.Max(0.01f, starPopupDuration);
         float elapsed = 0f;
         Color startColor = spriteRenderer.color;
+        float animationFps = Mathf.Max(0.1f, starUpgradeAnimationFps);
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float eased = t * t * (3f - 2f * t);
+
+            if (upgradeFrames != null && upgradeFrames.Length > 0)
+            {
+                int frameIndex = Mathf.Min(Mathf.FloorToInt(elapsed * animationFps), upgradeFrames.Length - 1);
+                if (upgradeFrames[frameIndex] != null)
+                    spriteRenderer.sprite = upgradeFrames[frameIndex];
+            }
 
             popup.transform.position = Vector3.Lerp(startPosition, endPosition, eased);
             popup.transform.localScale = Vector3.one * Mathf.Lerp(starPopupStartScale, starPopupEndScale, eased);
@@ -1027,6 +1096,26 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         }
 
         Destroy(popup);
+
+        if (resumeRoamingAfterFeedback && roaming != null)
+            roaming.ResumeAfterMenu();
+    }
+
+    private Sprite[] GetStarUpgradeFrames(int unlockCount)
+    {
+        if (unlockCount >= 8)
+            return goldToGoldStarFrames;
+
+        if (unlockCount == 7)
+            return silverToGoldStarFrames;
+
+        if (unlockCount >= 5)
+            return silverToSilverStarFrames;
+
+        if (unlockCount == 4)
+            return bronzeToSilverStarFrames;
+
+        return bronzeToBronzeStarFrames;
     }
 
     private int GetPopupSortingOrder(Transform target)

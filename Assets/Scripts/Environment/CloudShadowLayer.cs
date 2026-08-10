@@ -84,13 +84,13 @@ public class CloudShadowLayer : MonoBehaviour
     {
         if (generatedSprite != null)
         {
-            DestroyObject(generatedSprite);
+            DestroyCloudResource(generatedSprite);
             generatedSprite = null;
         }
 
         if (generatedTexture != null)
         {
-            DestroyObject(generatedTexture);
+            DestroyCloudResource(generatedTexture);
             generatedTexture = null;
         }
 
@@ -164,7 +164,7 @@ public class CloudShadowLayer : MonoBehaviour
         for (int i = tileRenderers.Count - 1; i >= tileCount; i--)
         {
             if (tileRenderers[i] != null)
-                DestroyObject(tileRenderers[i].gameObject);
+                DestroyCloudResource(tileRenderers[i].gameObject);
 
             tileRenderers.RemoveAt(i);
         }
@@ -232,7 +232,7 @@ public class CloudShadowLayer : MonoBehaviour
         }
     }
 
-    private void DestroyObject(Object target)
+    private void DestroyCloudResource(Object target)
     {
         if (target == null)
             return;

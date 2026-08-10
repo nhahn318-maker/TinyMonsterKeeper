@@ -139,7 +139,10 @@ public static class YSortSetupTool
             || name.Contains("bamboo")
             || name.Contains("stone")
             || name.Contains("log")
-            || name.Contains("flower");
+            || name.Contains("flower")
+            || name.Contains("cave")
+            || name.Contains("crystal")
+            || name.Contains("stalagmite");
     }
 
     private static bool ShouldSkipResourceMapPrefab(string fileName)
