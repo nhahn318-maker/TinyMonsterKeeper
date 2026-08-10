@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6736201470467136058}
+  - component: {fileID: 7998055677581351640}
+  - component: {fileID: 2310942162637447955}
   m_Layer: 0
   m_Name: Big_Bamboo
   m_TagString: Untagged
@@ -32,6 +34,40 @@ Transform:
   - {fileID: 8309182194535745780}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!210 &7998055677581351640
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 551363246081440776}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 10280
+  m_SortAtRoot: 0
+--- !u!114 &2310942162637447955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 551363246081440776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 8309182194535745780}
+  sortYOffset: 0.04
+  worldBaseOrder: 10000
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 7998055677581351640}
+  spriteRenderers: []
 --- !u!1 &1661857201728567047
 GameObject:
   m_ObjectHideFlags: 0

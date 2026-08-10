@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 975884582858924058}
   - component: {fileID: 5359115201221284558}
   - component: {fileID: 504039503580808565}
+  - component: {fileID: 8529884067636172658}
+  - component: {fileID: 3841116027886544915}
   m_Layer: 0
   m_Name: bigstone-sheet (1)
   m_TagString: Untagged
@@ -147,3 +149,36 @@ MonoBehaviour:
   m_Area: 1
   m_IgnoreFromBuild: 0
   m_AffectedAgents: f2652fae
+--- !u!210 &8529884067636172658
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6266962961326219223}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -390
+  m_SortAtRoot: 0
+--- !u!114 &3841116027886544915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6266962961326219223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 8599143285856692187}
+  sortYOffset: 0
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 8529884067636172658}
+  spriteRenderers: []

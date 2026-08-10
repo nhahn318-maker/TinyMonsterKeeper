@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 4740913774713776534}
   - component: {fileID: 1013937319566955297}
   - component: {fileID: 1514101002596341411}
+  - component: {fileID: 2079340595901028896}
+  - component: {fileID: 4608276813033339659}
   m_Layer: 0
   m_Name: smallstone-sheet
   m_TagString: Untagged
@@ -147,3 +149,36 @@ MonoBehaviour:
   m_Area: 1
   m_IgnoreFromBuild: 0
   m_AffectedAgents: f2652fae
+--- !u!210 &2079340595901028896
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7877138256289480260}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -373
+  m_SortAtRoot: 0
+--- !u!114 &4608276813033339659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7877138256289480260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 4036162316952327656}
+  sortYOffset: 0
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 2079340595901028896}
+  spriteRenderers: []

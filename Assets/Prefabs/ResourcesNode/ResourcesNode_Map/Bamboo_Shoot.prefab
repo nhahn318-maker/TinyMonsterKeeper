@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 9187678581449055552}
   - component: {fileID: 6485037378738065984}
   - component: {fileID: 8403941477169351094}
+  - component: {fileID: 4763851720771302040}
+  - component: {fileID: 2400625002858590054}
   m_Layer: 0
   m_Name: Bamboo_Shoot
   m_TagString: Untagged
@@ -122,7 +124,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2, y: 2}
+    oldSize: {x: 1, y: 1}
     newSize: {x: 0.64, y: 0.64}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -159,3 +161,37 @@ MonoBehaviour:
   pickupLayer:
     serializedVersion: 2
     m_Bits: 8
+--- !u!210 &4763851720771302040
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2262251795476835744}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 10262
+  m_SortAtRoot: 0
+--- !u!114 &2400625002858590054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2262251795476835744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 5216893992589018}
+  sortYOffset: -0.1
+  worldBaseOrder: 10000
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 4763851720771302040}
+  spriteRenderers: []

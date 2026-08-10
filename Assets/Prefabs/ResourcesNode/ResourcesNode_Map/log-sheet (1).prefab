@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 4676457732544623814}
   - component: {fileID: 1362492226349466109}
   - component: {fileID: 1369806142887063253}
+  - component: {fileID: 7123810348574618417}
+  - component: {fileID: 8784062092375882149}
   m_Layer: 0
   m_Name: log-sheet (1)
   m_TagString: Untagged
@@ -118,7 +120,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.015523016, y: -0.0031046867}
+  m_Offset: {x: 0.015909731, y: 0.049283266}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -129,7 +131,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.6336571, y: 0.5839834}
+  m_Size: {x: 0.6965226, y: 0.6887593}
   m_EdgeRadius: 0
 --- !u!114 &1369806142887063253
 MonoBehaviour:
@@ -147,3 +149,36 @@ MonoBehaviour:
   m_Area: 1
   m_IgnoreFromBuild: 0
   m_AffectedAgents: f2652fae
+--- !u!210 &7123810348574618417
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7974074338704754442}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -250
+  m_SortAtRoot: 0
+--- !u!114 &8784062092375882149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7974074338704754442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 8133555180558811366}
+  sortYOffset: 0
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 7123810348574618417}
+  spriteRenderers: []

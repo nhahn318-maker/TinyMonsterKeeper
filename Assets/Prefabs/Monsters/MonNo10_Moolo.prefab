@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 4050858762988213088}
   - component: {fileID: 6160976938671397554}
   - component: {fileID: 8120998613548016147}
+  - component: {fileID: 4322583460840233940}
+  - component: {fileID: 606602879165629604}
   m_Layer: 0
   m_Name: MonNo10_Moolo
   m_TagString: Untagged
@@ -209,6 +211,39 @@ MonoBehaviour:
   coinBubbleObject: {fileID: 1244941160251965291}
   coinPopupAnchor: {fileID: 8071575717582402494}
   storedCoin: 0
+--- !u!210 &4322583460840233940
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 242072064891303551}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 390
+  m_SortAtRoot: 0
+--- !u!114 &606602879165629604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 242072064891303551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 4506335860680046927}
+  sortYOffset: 0
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 4322583460840233940}
+  spriteRenderers: []
 --- !u!1 &331886299291219546
 GameObject:
   m_ObjectHideFlags: 0

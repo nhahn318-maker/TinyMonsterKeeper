@@ -36,6 +36,19 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private Vector3 monsterFocusOffset = new Vector3(0f, 0.35f, 0f);
     [SerializeField] private float cameraFocusTransitionDuration = 0.45f;
 
+    [Header("Summon Path")]
+    [SerializeField] private bool useSummonPathSequence = true;
+    [SerializeField] private GameObject summonPathAreaRoot;
+    [SerializeField] private Transform summonPathStartPoint;
+    [SerializeField] private Transform summonPathEndPoint;
+    [SerializeField] private Transform gardenArrivalSpawnPoint;
+    [SerializeField] private float summonPathEdgePadding = 0.6f;
+    [SerializeField] private float summonPathWalkDuration = 2.8f;
+    [SerializeField] private float summonPathHoldDuration = 0.45f;
+    [SerializeField] private float summonTransitionFadeDuration = 0.45f;
+    [SerializeField] private float summonTransitionBlackHoldDuration = 0.15f;
+    [SerializeField] private Color summonTransitionFadeColor = Color.black;
+
     [Header("Notice")]
     [SerializeField] private GameObject noticeLayer;
     [SerializeField] private TextMeshProUGUI noticeText;
@@ -76,6 +89,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private CookingRecipeData.MonsterResultOption activeMonsterResult;
     private int lastHandledClickFrame = -1;
     private Button[] noticeButtons;
+    private bool didRunSummonPathSequence;
 
     private void Awake()
     {
@@ -97,6 +111,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         if (focusCamera == null)
             focusCamera = Camera.main;
 
+        AutoWireSummonPathReferences();
         CacheNoticeButtons();
         HideMonsterNotice();
         SetEmptyVisual();
@@ -320,16 +335,17 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private IEnumerator AttractMonsterRoutine()
     {
         isAttracting = true;
+        didRunSummonPathSequence = false;
 
         if (aromaAnimation != null)
             aromaAnimation.Play();
 
         yield return new WaitForSeconds(monsterSpawnDelay);
 
-        SpawnRandomMonster();
+        yield return SpawnRandomMonsterRoutine();
 
         float remainingAromaTime = aromaAnimation != null ? Mathf.Max(0f, aromaAnimation.Duration - monsterSpawnDelay) : 0f;
-        if (remainingAromaTime > 0f)
+        if (remainingAromaTime > 0f && !didRunSummonPathSequence)
             yield return new WaitForSeconds(remainingAromaTime);
 
         activeRecipe = null;
@@ -337,19 +353,19 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         isAttracting = false;
     }
 
-    private void SpawnRandomMonster()
+    private IEnumerator SpawnRandomMonsterRoutine()
     {
         if (activeRecipe == null)
         {
             Debug.LogWarning("No active cooking recipe to attract monster.");
-            return;
+            yield break;
         }
 
         GameObject prefab = activeMonsterResult.monsterPrefab;
         if (prefab == null)
         {
             Debug.LogWarning($"No monster result option assigned for recipe: {activeRecipe.resultName}");
-            return;
+            yield break;
         }
 
         if (IsDuplicateMonsterResult(prefab))
@@ -378,19 +394,404 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             }
 
             Debug.Log($"{existingName} is already in garden. Spawn skipped.");
-            return;
+            yield break;
         }
 
-        Vector3 spawnPosition = ResolveMonsterSpawnPosition(prefab);
+        if (CanUseSummonPath())
+        {
+            yield return SummonNewMonsterThroughPathRoutine(prefab);
+            yield break;
+        }
 
+        SpawnGardenMonster(prefab, ResolveMonsterSpawnPosition(prefab), true);
+    }
+
+    private bool CanUseSummonPath()
+    {
+        return useSummonPathSequence &&
+            focusCamera != null &&
+            (summonPathStartPoint != null || summonPathEndPoint != null || summonPathAreaRoot != null);
+    }
+
+    private void AutoWireSummonPathReferences()
+    {
+        if (summonPathAreaRoot == null)
+            summonPathAreaRoot = FindSceneObjectByName("SummonPathArea");
+
+        if (summonPathStartPoint == null)
+            summonPathStartPoint = FindSceneTransformByName("SummonPathStartPoint");
+
+        if (summonPathEndPoint == null)
+            summonPathEndPoint = FindSceneTransformByName("SummonPathEndPoint");
+
+        if (gardenArrivalSpawnPoint == null)
+            gardenArrivalSpawnPoint = FindSceneTransformByName("GardenArrivalSpawnPoint");
+    }
+
+    private GameObject FindSceneObjectByName(string objectName)
+    {
+        Transform transform = FindSceneTransformByName(objectName);
+        return transform != null ? transform.gameObject : null;
+    }
+
+    private Transform FindSceneTransformByName(string objectName)
+    {
+        if (string.IsNullOrEmpty(objectName))
+            return null;
+
+        Transform[] transforms = FindObjectsOfType<Transform>(true);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            if (transforms[i] != null && transforms[i].name == objectName)
+                return transforms[i];
+        }
+
+        return null;
+    }
+
+    private IEnumerator SummonNewMonsterThroughPathRoutine(GameObject prefab)
+    {
+        didRunSummonPathSequence = true;
+
+        bool hadPathRoot = summonPathAreaRoot != null;
+        bool pathRootWasActive = hadPathRoot && summonPathAreaRoot.activeSelf;
+        if (hadPathRoot)
+            summonPathAreaRoot.SetActive(true);
+
+        ResolveSummonPathPoints(out Vector3 pathStart, out Vector3 pathEnd);
+
+        GameObject previewMonster = Instantiate(prefab, pathStart, Quaternion.identity);
+        PrepareSummonPreviewMonster(previewMonster);
+
+        string monsterName = GetMonsterName(previewMonster);
+        string noticeMessage = GetText(monsterNoticeKey, monsterNoticeFormat, monsterName);
+
+        CameraMapDragController cameraDrag = focusCamera.GetComponent<CameraMapDragController>();
+        if (cameraDrag != null)
+            cameraDrag.SetInputLocked(true);
+
+        Vector3 originalPosition = focusCamera.transform.position;
+        float originalOrthographicSize = focusCamera.orthographicSize;
+
+        ShowNoticeMessage(noticeMessage);
+        yield return MoveCameraToTargetRoutine(previewMonster.transform);
+        yield return MoveSummonPreviewRoutine(previewMonster.transform, pathStart, pathEnd);
+        yield return new WaitForSeconds(Mathf.Max(0f, summonPathHoldDuration));
+
+        CanvasGroup fadeOverlay = CreateSummonFadeOverlay();
+        if (fadeOverlay != null)
+            yield return FadeCanvasGroupRoutine(fadeOverlay, 0f, 1f, summonTransitionFadeDuration);
+
+        Vector3 gardenSpawnPosition = ResolveGardenArrivalSpawnPosition(prefab);
+        Transform previewTransform = previewMonster != null ? previewMonster.transform : null;
+        Vector3 previewPosition = previewTransform != null ? previewTransform.position : pathEnd;
+
+        if (previewMonster != null)
+            Destroy(previewMonster);
+
+        GameObject gardenMonster = SpawnGardenMonster(prefab, gardenSpawnPosition, false);
+        if (gardenMonster != null)
+            SnapCameraToTarget(gardenMonster.transform);
+
+        if (summonTransitionBlackHoldDuration > 0f)
+            yield return new WaitForSeconds(summonTransitionBlackHoldDuration);
+
+        if (fadeOverlay != null)
+        {
+            yield return FadeCanvasGroupRoutine(fadeOverlay, 1f, 0f, summonTransitionFadeDuration);
+            Destroy(fadeOverlay.gameObject);
+        }
+        else if (gardenMonster != null)
+        {
+            focusCamera.transform.position = GetCameraTargetPosition(previewPosition);
+            yield return MoveCameraToTargetRoutine(gardenMonster.transform);
+        }
+
+        yield return new WaitForSeconds(monsterFocusDuration);
+        yield return MoveCameraRoutine(focusCamera.transform.position, originalPosition, focusCamera.orthographicSize, originalOrthographicSize);
+        HideMonsterNotice();
+
+        if (cameraDrag != null)
+        {
+            cameraDrag.SnapInsideBounds();
+            cameraDrag.SetInputLocked(false);
+        }
+
+        if (hadPathRoot && !pathRootWasActive)
+            summonPathAreaRoot.SetActive(false);
+    }
+
+    private GameObject SpawnGardenMonster(GameObject prefab, Vector3 spawnPosition, bool startCameraFocus)
+    {
         GameObject monster = Instantiate(prefab, spawnPosition, Quaternion.identity);
         ConfigureSpawnedMonster(monster);
         UnlockSpawnedMonster(monster);
         SaveSpawnedMonster(monster);
         string monsterName = GetMonsterName(monster);
-        FocusCameraOnMonster(monster.transform, monsterName);
+
+        if (startCameraFocus)
+            FocusCameraOnMonster(monster.transform, monsterName);
 
         Debug.Log($"Spawned attracted monster: {monster.name}");
+        return monster;
+    }
+
+    private void ResolveSummonPathPoints(out Vector3 pathStart, out Vector3 pathEnd)
+    {
+        if (summonPathStartPoint != null && summonPathEndPoint != null)
+        {
+            pathStart = summonPathStartPoint.position;
+            pathEnd = summonPathEndPoint.position;
+            return;
+        }
+
+        if (TryGetSummonPathBounds(out Bounds bounds))
+        {
+            float x = bounds.center.x;
+            float padding = Mathf.Max(0f, summonPathEdgePadding);
+            float startY = bounds.min.y + padding;
+            float endY = bounds.max.y - padding;
+
+            if (endY < startY)
+            {
+                startY = bounds.min.y;
+                endY = bounds.max.y;
+            }
+
+            pathStart = summonPathStartPoint != null ? summonPathStartPoint.position : new Vector3(x, startY, bounds.center.z);
+            pathEnd = summonPathEndPoint != null ? summonPathEndPoint.position : new Vector3(x, endY, bounds.center.z);
+            return;
+        }
+
+        pathStart = monsterSpawnPoint != null ? monsterSpawnPoint.position : transform.position + monsterSpawnOffset;
+        pathEnd = pathStart + Vector3.up * 3f;
+    }
+
+    private bool TryGetSummonPathBounds(out Bounds bounds)
+    {
+        bounds = default;
+        if (summonPathAreaRoot == null)
+            return false;
+
+        bool hasBounds = false;
+        Renderer[] renderers = summonPathAreaRoot.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer current = renderers[i];
+            if (current == null)
+                continue;
+
+            if (!hasBounds)
+            {
+                bounds = current.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(current.bounds);
+            }
+        }
+
+        if (hasBounds)
+            return true;
+
+        Collider2D[] colliders = summonPathAreaRoot.GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider2D current = colliders[i];
+            if (current == null)
+                continue;
+
+            if (!hasBounds)
+            {
+                bounds = current.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(current.bounds);
+            }
+        }
+
+        return hasBounds;
+    }
+
+    private void PrepareSummonPreviewMonster(GameObject monster)
+    {
+        if (monster == null)
+            return;
+
+        NavMeshAgent agent = monster.GetComponent<NavMeshAgent>();
+        if (agent != null)
+            agent.enabled = false;
+
+        TinyMonsterNavRoam navRoam = monster.GetComponent<TinyMonsterNavRoam>();
+        if (navRoam != null)
+            navRoam.enabled = false;
+
+        Collider2D[] colliders = monster.GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null)
+                colliders[i].enabled = false;
+        }
+
+        TinyMonsterTouch touch = monster.GetComponent<TinyMonsterTouch>();
+        if (touch != null)
+            touch.enabled = false;
+
+        TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
+        if (coinProducer != null)
+            coinProducer.enabled = false;
+    }
+
+    private IEnumerator MoveSummonPreviewRoutine(Transform previewTransform, Vector3 fromPosition, Vector3 toPosition)
+    {
+        if (previewTransform == null)
+            yield break;
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.01f, summonPathWalkDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            previewTransform.position = Vector3.Lerp(fromPosition, toPosition, t);
+
+            if (focusCamera != null)
+            {
+                Vector3 cameraPosition = previewTransform.position + monsterFocusOffset;
+                cameraPosition.z = focusCamera.transform.position.z;
+                focusCamera.transform.position = cameraPosition;
+                focusCamera.orthographicSize = monsterFocusOrthographicSize;
+            }
+
+            yield return null;
+        }
+
+        previewTransform.position = toPosition;
+    }
+
+    private IEnumerator MoveCameraToTargetRoutine(Transform target)
+    {
+        if (focusCamera == null || target == null)
+            yield break;
+
+        Vector3 fromPosition = focusCamera.transform.position;
+        float fromSize = focusCamera.orthographicSize;
+        Vector3 toPosition = target.position + monsterFocusOffset;
+        toPosition.z = fromPosition.z;
+
+        yield return MoveCameraRoutine(fromPosition, toPosition, fromSize, monsterFocusOrthographicSize);
+    }
+
+    private void SnapCameraToTarget(Transform target)
+    {
+        if (focusCamera == null || target == null)
+            return;
+
+        Vector3 targetPosition = target.position + monsterFocusOffset;
+        targetPosition.z = focusCamera.transform.position.z;
+        focusCamera.transform.position = targetPosition;
+        focusCamera.orthographicSize = monsterFocusOrthographicSize;
+    }
+
+    private Vector3 GetCameraTargetPosition(Vector3 worldPosition)
+    {
+        if (focusCamera == null)
+            return worldPosition;
+
+        Vector3 targetPosition = worldPosition + monsterFocusOffset;
+        targetPosition.z = focusCamera.transform.position.z;
+        return targetPosition;
+    }
+
+    private CanvasGroup CreateSummonFadeOverlay()
+    {
+        Canvas parentCanvas = noticeLayer != null ? noticeLayer.GetComponentInParent<Canvas>(true) : null;
+        if (parentCanvas == null)
+            parentCanvas = FindObjectOfType<Canvas>();
+
+        if (parentCanvas == null)
+            return null;
+
+        GameObject overlay = new GameObject("SummonTransitionFade");
+        overlay.transform.SetParent(parentCanvas.transform, false);
+        PlaceSummonFadeBehindNotice(overlay.transform);
+
+        RectTransform rectTransform = overlay.AddComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+
+        Image image = overlay.AddComponent<Image>();
+        image.color = summonTransitionFadeColor;
+        image.raycastTarget = true;
+
+        CanvasGroup canvasGroup = overlay.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = true;
+        canvasGroup.interactable = false;
+
+        return canvasGroup;
+    }
+
+    private void PlaceSummonFadeBehindNotice(Transform overlayTransform)
+    {
+        if (overlayTransform == null)
+            return;
+
+        if (noticeLayer == null || noticeLayer.transform.parent != overlayTransform.parent)
+        {
+            overlayTransform.SetAsLastSibling();
+            return;
+        }
+
+        int noticeIndex = noticeLayer.transform.GetSiblingIndex();
+        overlayTransform.SetSiblingIndex(Mathf.Max(0, noticeIndex));
+        noticeLayer.transform.SetAsLastSibling();
+    }
+
+    private IEnumerator FadeCanvasGroupRoutine(CanvasGroup canvasGroup, float fromAlpha, float toAlpha, float duration)
+    {
+        if (canvasGroup == null)
+            yield break;
+
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.01f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            float eased = t * t * (3f - 2f * t);
+            canvasGroup.alpha = Mathf.Lerp(fromAlpha, toAlpha, eased);
+            yield return null;
+        }
+
+        canvasGroup.alpha = toAlpha;
+    }
+
+    private Vector3 ResolveGardenArrivalSpawnPosition(GameObject monsterPrefab)
+    {
+        Transform spawnPoint = gardenArrivalSpawnPoint != null ? gardenArrivalSpawnPoint : summonPathEndPoint;
+        if (spawnPoint != null)
+        {
+            Vector3 desiredPosition = spawnPoint.position;
+            int areaMask = NavMesh.AllAreas;
+            TinyMonsterNavRoam prefabNavRoam = monsterPrefab != null ? monsterPrefab.GetComponent<TinyMonsterNavRoam>() : null;
+            if (prefabNavRoam != null)
+                areaMask = prefabNavRoam.AgentAreaMask;
+
+            if (NavMesh.SamplePosition(desiredPosition, out NavMeshHit hit, 2f, areaMask))
+                return hit.position;
+
+            return desiredPosition;
+        }
+
+        return ResolveMonsterSpawnPosition(monsterPrefab);
     }
 
     private TinyMonsterController FindExistingMonster(MonsterData monsterData, GameObject prefab)

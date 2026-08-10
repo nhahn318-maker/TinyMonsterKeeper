@@ -354,6 +354,8 @@ GameObject:
   - component: {fileID: 3569710500920000724}
   - component: {fileID: 160807112408208195}
   - component: {fileID: 2044124489177060379}
+  - component: {fileID: 4218764559021495817}
+  - component: {fileID: 2475931011426776679}
   m_Layer: 0
   m_Name: AppleTree
   m_TagString: Untagged
@@ -369,7 +371,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6627396380296250958}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.461, y: -2.521, z: 0.03082484}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -532,11 +534,6 @@ MonoBehaviour:
     m_Bits: 8
   readyBubbleObject: {fileID: 4400253260087208109}
   growthCountdownText: {fileID: 7167436806371797072}
-  createCountdownTextIfMissing: 1
-  countdownLocalOffset: {x: 0, y: 0.9, z: 0}
-  countdownFontSize: 2.5
-  countdownSortingOrder: 50
-  countdownTextColor: {r: 0, g: 0, b: 0, a: 1}
   countdownFormat: '{0}s'
 --- !u!114 &2044124489177060379
 MonoBehaviour:
@@ -554,6 +551,40 @@ MonoBehaviour:
   m_Area: 1
   m_IgnoreFromBuild: 0
   m_AffectedAgents: f2652fae
+--- !u!210 &4218764559021495817
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6627396380296250958}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 10302
+  m_SortAtRoot: 0
+--- !u!114 &2475931011426776679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6627396380296250958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 5891130746554334063}
+  sortYOffset: -0.5
+  worldBaseOrder: 10000
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 4218764559021495817}
+  spriteRenderers: []
 --- !u!1 &6780700419994262288
 GameObject:
   m_ObjectHideFlags: 0

@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2343396313359776250}
+  - component: {fileID: 8589272028122534224}
+  - component: {fileID: 1152955351275083859}
   m_Layer: 0
   m_Name: Flower_White
   m_TagString: Untagged
@@ -32,6 +34,40 @@ Transform:
   - {fileID: 5010007928083723721}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!210 &8589272028122534224
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3595401715601498001}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 10238
+  m_SortAtRoot: 0
+--- !u!114 &1152955351275083859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3595401715601498001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 2343396313359776250}
+  sortYOffset: 0
+  worldBaseOrder: 10000
+  baseOrder: 1
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 8589272028122534224}
+  spriteRenderers: []
 --- !u!1 &7155484351891609012
 GameObject:
   m_ObjectHideFlags: 0

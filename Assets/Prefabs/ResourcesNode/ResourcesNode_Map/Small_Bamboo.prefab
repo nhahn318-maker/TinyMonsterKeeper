@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 4092593827591328859}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.02, y: -0.18, z: -0.5}
+  m_LocalPosition: {x: 0, y: 0, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -79,7 +79,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 2, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -116,6 +116,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2115989876895212562}
   - component: {fileID: 4772337171929608244}
+  - component: {fileID: 2045323476684371111}
+  - component: {fileID: 4651768161758551455}
   m_Layer: 0
   m_Name: Small_Bamboo
   m_TagString: Untagged
@@ -184,3 +186,37 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.7545476, y: 0.821489}
   m_EdgeRadius: 0
+--- !u!210 &2045323476684371111
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7505844776136697499}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 10007
+  m_SortAtRoot: 0
+--- !u!114 &4651768161758551455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7505844776136697499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b98d8a7e547d49a38f031e4414c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortPoint: {fileID: 7397705641951469349}
+  sortYOffset: -0.2
+  worldBaseOrder: 10000
+  baseOrder: 0
+  unitsToOrder: 100
+  minOrder: -32768
+  maxOrder: 32767
+  preferSortingGroup: 1
+  sortingGroup: {fileID: 2045323476684371111}
+  spriteRenderers: []
