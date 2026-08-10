@@ -11,6 +11,59 @@ namespace TinyMonsterKeeper.EditorAutomation
 {
     public static class UnityCliTasks
     {
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Main Menu Title Intro")]
+        public static void SetupMainMenuTitleIntro()
+        {
+            RepairMainMenuTitleAnimation();
+
+            GameObject gameTitle = GameObject.Find("GameTitle");
+            if (gameTitle == null)
+            {
+                Debug.LogError("Main menu title intro setup failed: GameTitle is missing.");
+                return;
+            }
+
+            if (gameTitle.GetComponent<CanvasGroup>() == null)
+                gameTitle.AddComponent<CanvasGroup>();
+
+            MainMenuTitleIntro intro = gameTitle.GetComponent<MainMenuTitleIntro>();
+            if (intro == null)
+                intro = gameTitle.AddComponent<MainMenuTitleIntro>();
+
+            SerializedObject serializedIntro = new SerializedObject(intro);
+            serializedIntro.FindProperty("introDuration").floatValue = 2.2f;
+            serializedIntro.FindProperty("startOffsetY").floatValue = 140f;
+            serializedIntro.FindProperty("buttonStartDelay").floatValue = 2.2f;
+            GameObject guestButton = GameObject.Find("ButtonGuest");
+            GameObject googleButton = GameObject.Find("ButtonGoogle");
+            if (guestButton != null && googleButton != null)
+            {
+                CanvasGroup guestCanvasGroup = guestButton.GetComponent<CanvasGroup>();
+                if (guestCanvasGroup == null)
+                    guestCanvasGroup = guestButton.AddComponent<CanvasGroup>();
+
+                CanvasGroup googleCanvasGroup = googleButton.GetComponent<CanvasGroup>();
+                if (googleCanvasGroup == null)
+                    googleCanvasGroup = googleButton.AddComponent<CanvasGroup>();
+
+                SerializedProperty buttonRects = serializedIntro.FindProperty("buttonRects");
+                buttonRects.arraySize = 2;
+                buttonRects.GetArrayElementAtIndex(0).objectReferenceValue = guestButton.GetComponent<RectTransform>();
+                buttonRects.GetArrayElementAtIndex(1).objectReferenceValue = googleButton.GetComponent<RectTransform>();
+
+                SerializedProperty buttonGroups = serializedIntro.FindProperty("buttonCanvasGroups");
+                buttonGroups.arraySize = 2;
+                buttonGroups.GetArrayElementAtIndex(0).objectReferenceValue = guestCanvasGroup;
+                buttonGroups.GetArrayElementAtIndex(1).objectReferenceValue = googleCanvasGroup;
+            }
+            serializedIntro.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(gameTitle);
+            EditorSceneManager.MarkSceneDirty(gameTitle.scene);
+            EditorSceneManager.SaveScene(gameTitle.scene);
+            Debug.Log("Main menu title intro setup finished.");
+        }
+
         [MenuItem("TinyMonsterKeeper/Automation/Repair Main Menu Title Animation")]
         public static void RepairMainMenuTitleAnimation()
         {
