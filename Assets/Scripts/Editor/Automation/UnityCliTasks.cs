@@ -11,6 +11,156 @@ namespace TinyMonsterKeeper.EditorAutomation
 {
     public static class UnityCliTasks
     {
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Main Menu Settings UI")]
+        public static void SetupMainMenuSettingsUI()
+        {
+            GameObject settingsRoot = GameObject.Find("SettingUI");
+            if (settingsRoot == null)
+            {
+                Debug.LogError("Settings setup failed: SettingUI is missing.");
+                return;
+            }
+
+            Transform panel = FindDescendant(settingsRoot.transform, "PanelSetting");
+            Transform settingButton = FindSceneTransform("Button_Setting");
+            Transform backButton = FindDescendant(settingsRoot.transform, "BackButton");
+            Transform musicButton = FindDescendant(settingsRoot.transform, "Music_Button");
+            Transform sfxButton = FindDescendant(settingsRoot.transform, "SFX_Button");
+            Transform alertsRow = FindDescendant(settingsRoot.transform, "Notifications");
+            Transform alertsButton = FindDescendant(settingsRoot.transform, "Notifications_Button")
+                ?? FindVisibleButtonChild(alertsRow);
+
+            if (panel == null || settingButton == null || backButton == null || musicButton == null || sfxButton == null || alertsButton == null)
+            {
+                Debug.LogError("Settings setup failed: one or more required setting objects are missing.");
+                return;
+            }
+
+            Sprite settingNormal = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/SettingUI/setting_icon.png");
+            Sprite settingPressed = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/SettingUI/setting_icon_click.png");
+            Sprite backNormal = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/SettingUI/button_back.png");
+            Sprite backPressed = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/SettingUI/button_back_click.png");
+            Sprite onSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/SettingUI/button_on.png");
+            Sprite offSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/SettingUI/button_off.png");
+
+            Button open = ConfigureSpriteSwapButton(settingButton.gameObject, settingNormal, settingPressed);
+            Button back = ConfigureSpriteSwapButton(backButton.gameObject, backNormal, backPressed);
+            Image music = ConfigureToggleButton(musicButton.gameObject, onSprite);
+            Image sfx = ConfigureToggleButton(sfxButton.gameObject, onSprite);
+            Image alerts = ConfigureToggleButton(alertsButton.gameObject, onSprite);
+            GameObject dimBlocker = GetOrCreateSettingsDimBlocker(settingsRoot.transform, panel);
+
+            MainMenuSettingsUI controller = settingsRoot.GetComponent<MainMenuSettingsUI>();
+            if (controller == null)
+                controller = settingsRoot.AddComponent<MainMenuSettingsUI>();
+
+            SerializedObject serializedController = new SerializedObject(controller);
+            serializedController.FindProperty("panelSetting").objectReferenceValue = panel.gameObject;
+            serializedController.FindProperty("dimBlocker").objectReferenceValue = dimBlocker;
+            serializedController.FindProperty("openButton").objectReferenceValue = open;
+            serializedController.FindProperty("backButton").objectReferenceValue = back;
+            serializedController.FindProperty("musicImage").objectReferenceValue = music;
+            serializedController.FindProperty("sfxImage").objectReferenceValue = sfx;
+            serializedController.FindProperty("alertsImage").objectReferenceValue = alerts;
+            serializedController.FindProperty("onSprite").objectReferenceValue = onSprite;
+            serializedController.FindProperty("offSprite").objectReferenceValue = offSprite;
+            serializedController.ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(settingsRoot);
+            EditorSceneManager.MarkSceneDirty(settingsRoot.scene);
+            EditorSceneManager.SaveScene(settingsRoot.scene);
+            Debug.Log("Main menu settings UI setup finished.");
+        }
+
+        private static Button ConfigureSpriteSwapButton(GameObject target, Sprite normal, Sprite pressed)
+        {
+            Image image = target.GetComponent<Image>() ?? target.AddComponent<Image>();
+            image.sprite = normal;
+            Button button = target.GetComponent<Button>() ?? target.AddComponent<Button>();
+            button.transition = Selectable.Transition.SpriteSwap;
+            button.targetGraphic = image;
+            SpriteState state = button.spriteState;
+            state.pressedSprite = pressed;
+            state.selectedSprite = pressed;
+            button.spriteState = state;
+            return button;
+        }
+
+        private static Image ConfigureToggleButton(GameObject target, Sprite onSprite)
+        {
+            Image image = target.GetComponent<Image>() ?? target.AddComponent<Image>();
+            image.sprite = onSprite;
+            Button button = target.GetComponent<Button>() ?? target.AddComponent<Button>();
+            button.transition = Selectable.Transition.None;
+            button.targetGraphic = image;
+            return image;
+        }
+
+        private static GameObject GetOrCreateSettingsDimBlocker(Transform settingsRoot, Transform panel)
+        {
+            Transform existing = settingsRoot.Find("DimBlocker");
+            GameObject dimBlocker = existing != null ? existing.gameObject : new GameObject("DimBlocker", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            RectTransform rect = dimBlocker.GetComponent<RectTransform>();
+            rect.SetParent(settingsRoot, false);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+
+            Image image = dimBlocker.GetComponent<Image>();
+            image.sprite = null;
+            image.color = new Color(0f, 0f, 0f, 0.5f);
+            image.raycastTarget = true;
+
+            if (panel != null)
+            {
+                panel.SetAsLastSibling();
+                rect.SetSiblingIndex(Mathf.Max(0, panel.GetSiblingIndex() - 1));
+            }
+
+            dimBlocker.SetActive(false);
+            return dimBlocker;
+        }
+
+        private static Transform FindSceneTransform(string objectName)
+        {
+            GameObject gameObject = GameObject.Find(objectName);
+            return gameObject != null ? gameObject.transform : null;
+        }
+
+        private static Transform FindDescendant(Transform root, string objectName)
+        {
+            if (root == null)
+                return null;
+
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (child.name == objectName)
+                    return child;
+            }
+
+            return null;
+        }
+
+        private static Transform FindVisibleButtonChild(Transform root)
+        {
+            if (root == null)
+                return null;
+
+            foreach (Button button in root.GetComponentsInChildren<Button>(true))
+            {
+                if (button.transform == root)
+                    continue;
+
+                Image image = button.GetComponent<Image>();
+                if (image != null && image.color.a > 0f)
+                    return button.transform;
+            }
+
+            return null;
+        }
+
         [MenuItem("TinyMonsterKeeper/Automation/Setup Main Menu Title Intro")]
         public static void SetupMainMenuTitleIntro()
         {
