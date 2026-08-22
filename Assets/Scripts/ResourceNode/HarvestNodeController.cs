@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class HarvestNodeController : MonoBehaviour {
@@ -22,6 +23,8 @@ public class HarvestNodeController : MonoBehaviour {
     [Header("Respawn")]
     [SerializeField] private float respawnDuration = 10f;
     [SerializeField] private bool hideWhileRespawning = true;
+    [SerializeField] private TMP_Text growthCountdownText;
+    [SerializeField] private string countdownFormat = "{0}s";
 
     [Header("Click Priority")]
     [SerializeField] private LayerMask pickupLayer;
@@ -29,6 +32,7 @@ public class HarvestNodeController : MonoBehaviour {
     private bool isClicking;
     private bool isAvailable = true;
     private long respawnAtUnix;
+    private MeshRenderer countdownRenderer;
 
     private void Awake()
     {
@@ -43,6 +47,11 @@ public class HarvestNodeController : MonoBehaviour {
 
         if (idleSprite == null && spriteRenderer != null)
             idleSprite = spriteRenderer.sprite;
+
+        if (growthCountdownText != null)
+            countdownRenderer = growthCountdownText.GetComponent<MeshRenderer>();
+
+        UpdateCountdownDisplay();
     }
 
     private void Update()
@@ -51,6 +60,8 @@ public class HarvestNodeController : MonoBehaviour {
 
         if (!isAvailable && !isClicking && respawnAtUnix > 0L && TimedSaveUtility.NowUnix >= respawnAtUnix)
             Respawn();
+
+        UpdateCountdownDisplay();
     }
 
     private void HandleInput()
@@ -119,6 +130,7 @@ public class HarvestNodeController : MonoBehaviour {
             spriteRenderer.enabled = false;
 
         respawnAtUnix = TimedSaveUtility.SecondsFromNow(respawnDuration);
+        UpdateCountdownDisplay();
     }
 
     private void Respawn()
@@ -137,6 +149,27 @@ public class HarvestNodeController : MonoBehaviour {
             harvestCollider.enabled = true;
 
         respawnAtUnix = 0L;
+        UpdateCountdownDisplay();
+    }
+
+    private void UpdateCountdownDisplay()
+    {
+        if (growthCountdownText == null)
+            return;
+
+        bool shouldShow = !isAvailable && !isClicking && respawnAtUnix > TimedSaveUtility.NowUnix;
+        growthCountdownText.gameObject.SetActive(shouldShow);
+        if (!shouldShow)
+            return;
+
+        long remaining = respawnAtUnix - TimedSaveUtility.NowUnix;
+        growthCountdownText.text = string.Format(countdownFormat, Mathf.Max(1, (int)remaining));
+
+        if (countdownRenderer != null && spriteRenderer != null)
+        {
+            countdownRenderer.sortingLayerID = spriteRenderer.sortingLayerID;
+            countdownRenderer.sortingOrder = spriteRenderer.sortingOrder + 1;
+        }
     }
 
     private void SpawnDrop()
@@ -189,5 +222,7 @@ public class HarvestNodeController : MonoBehaviour {
 
         if (isAvailable)
             respawnAtUnix = 0L;
+
+        UpdateCountdownDisplay();
     }
 }
