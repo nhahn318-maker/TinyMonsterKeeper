@@ -185,6 +185,7 @@ public class BerryDropController : MonoBehaviour {
 
         if (animator != null && !string.IsNullOrEmpty(pickupAnim))
         {
+            animator.enabled = true;
             animator.Play(pickupAnim, 0, 0f);
         }
         else if (spriteRenderer != null && pickupClickSprite != null)

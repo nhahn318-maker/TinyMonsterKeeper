@@ -32,10 +32,15 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
     [SerializeField] private Vector3 readyBubbleLocalOffset = new Vector3(0f, 0.55f, 0f);
     [SerializeField] private float readyBubbleIconScale = 0.45f;
 
+    [Header("Production Animation")]
+    [SerializeField] private bool animateWhileGrowing;
+    [SerializeField] private Animator productionAnimator;
+    [SerializeField] private Sprite idleSprite;
+
     [Header("Click Priority")]
     [SerializeField] private LayerMask pickupLayer;
 
-    private float elapsed;
+    private long readyAtUnix;
     private bool isReady;
     private MeshRenderer countdownRenderer;
     private SpriteRenderer readyBubbleRenderer;
@@ -52,11 +57,26 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>();
 
+        if (productionAnimator == null)
+            productionAnimator = GetComponent<Animator>();
+
+        if (idleSprite == null && spriteRenderer != null)
+            idleSprite = spriteRenderer.sprite;
+
+        if (growthCountdownText == null)
+            growthCountdownText = FindChildComponent<TMP_Text>("GrowthTimerText");
+
         if (growthCountdownText == null && createCountdownTextIfMissing)
             growthCountdownText = CreateCountdownText();
 
         if (growthCountdownText != null)
             countdownRenderer = growthCountdownText.GetComponent<MeshRenderer>();
+
+        if (readyBubbleObject == null)
+        {
+            Transform existingBubble = FindChildTransform("ReadyBubble");
+            readyBubbleObject = existingBubble != null ? existingBubble.gameObject : null;
+        }
 
         if (readyBubbleObject == null && createReadyBubbleIfMissing)
             readyBubbleObject = CreateReadyBubble();
@@ -66,14 +86,37 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
         SetReady(false);
     }
 
+    private T FindChildComponent<T>(string childName) where T : Component
+    {
+        T[] components = GetComponentsInChildren<T>(true);
+        for (int i = 0; i < components.Length; i++)
+        {
+            if (components[i].name == childName)
+                return components[i];
+        }
+
+        return null;
+    }
+
+    private Transform FindChildTransform(string childName)
+    {
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            if (children[i] != transform && children[i].name == childName)
+                return children[i];
+        }
+
+        return null;
+    }
+
     private void Update()
     {
         HandleInput();
 
         if (!isReady)
         {
-            elapsed += Time.deltaTime;
-            if (elapsed >= respawnDuration)
+            if (TimedSaveUtility.NowUnix >= readyAtUnix)
                 SetReady(true);
             else
                 RefreshCountdown();
@@ -109,7 +152,6 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
             return;
 
         SpawnDrop();
-        elapsed = 0f;
         SetReady(false);
     }
 
@@ -131,16 +173,38 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
             drop.Init(itemData, amount);
     }
 
-    private void SetReady(bool ready)
+    private void SetReady(bool ready, bool resetTimer = true)
     {
         isReady = ready;
+        if (ready)
+            readyAtUnix = 0L;
+        else if (resetTimer)
+            readyAtUnix = TimedSaveUtility.SecondsFromNow(respawnDuration);
         if (growthCountdownText != null)
             growthCountdownText.gameObject.SetActive(!ready);
 
         if (readyBubbleObject != null)
             readyBubbleObject.SetActive(ready);
 
+        RefreshProductionAnimation(ready);
+
         RefreshCountdown();
+    }
+
+    private void RefreshProductionAnimation(bool ready)
+    {
+        if (!animateWhileGrowing || productionAnimator == null)
+            return;
+
+        productionAnimator.enabled = !ready;
+        if (!ready)
+        {
+            productionAnimator.Play(0, 0, 0f);
+            return;
+        }
+
+        if (spriteRenderer != null && idleSprite != null)
+            spriteRenderer.sprite = idleSprite;
     }
 
     private void RefreshCountdown()
@@ -148,7 +212,7 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
         if (growthCountdownText == null || isReady)
             return;
 
-        int seconds = Mathf.CeilToInt(Mathf.Max(0f, respawnDuration - elapsed));
+        int seconds = Mathf.Max(0, Mathf.CeilToInt(readyAtUnix - TimedSaveUtility.NowUnix));
         growthCountdownText.text = string.Format(countdownFormat, seconds);
     }
 
@@ -217,5 +281,25 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
 
         if (readyBubbleIconRenderer != null)
             readyBubbleIconRenderer.sortingOrder = spriteRenderer.sortingOrder + 3;
+    }
+
+    public ResourceNodeTimerSave ExportTimedState()
+    {
+        return new ResourceNodeTimerSave
+        {
+            nodeId = TimedSaveUtility.GetStableSceneKey(this, "staticHarvest"),
+            isReady = isReady,
+            readyAtUnix = readyAtUnix
+        };
+    }
+
+    public void ApplyTimedState(ResourceNodeTimerSave state)
+    {
+        if (state == null)
+            return;
+
+        readyAtUnix = state.readyAtUnix;
+        bool ready = state.isReady || (readyAtUnix > 0L && TimedSaveUtility.NowUnix >= readyAtUnix);
+        SetReady(ready, false);
     }
 }

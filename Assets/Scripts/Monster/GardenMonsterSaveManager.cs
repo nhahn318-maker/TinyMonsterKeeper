@@ -18,6 +18,7 @@ public class GardenMonsterSaveManager : MonoBehaviour
     private readonly HashSet<string> spawnedMonsterIds = new HashSet<string>();
     private readonly Dictionary<string, TinyMonsterController> trackedMonsters = new Dictionary<string, TinyMonsterController>();
     private readonly HashSet<TinyMonsterCoinProducer> trackedCoinProducers = new HashSet<TinyMonsterCoinProducer>();
+    private readonly HashSet<TinyMonsterController> trackedControllers = new HashSet<TinyMonsterController>();
     private bool cloudSaveControlsLoading;
 
     private void Awake()
@@ -43,6 +44,12 @@ public class GardenMonsterSaveManager : MonoBehaviour
         {
             if (coinProducer != null)
                 coinProducer.StoredCoinChanged -= HandleMonsterStoredCoinChanged;
+        }
+
+        foreach (TinyMonsterController controller in trackedControllers)
+        {
+            if (controller != null)
+                controller.PersistentStateChanged -= HandleMonsterPersistentStateChanged;
         }
 
         trackedCoinProducers.Clear();
@@ -148,7 +155,12 @@ public class GardenMonsterSaveManager : MonoBehaviour
 
             TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
             int storedCoin = coinProducer != null ? coinProducer.StoredCoin : 0;
-            instances.Add(new GardenMonsterInstanceSave(entry.Key, monster.transform.position, storedCoin));
+            instances.Add(new GardenMonsterInstanceSave(entry.Key, monster.transform.position, storedCoin)
+            {
+                friendship = monster.Friendship,
+                nextPlayAtUnix = monster.NextPlayAtUnix,
+                nextCoinAtUnix = coinProducer != null ? coinProducer.NextCoinAtUnix : 0L
+            });
         }
 
         return instances;
@@ -303,7 +315,9 @@ public class GardenMonsterSaveManager : MonoBehaviour
 
         TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
         if (coinProducer != null)
-            coinProducer.SetStoredCoin(instance.storedCoin);
+            coinProducer.SetPersistentState(instance.storedCoin, instance.nextCoinAtUnix);
+
+        monster.SetPersistentState(instance.friendship, instance.nextPlayAtUnix);
     }
 
     private void TrackMonster(TinyMonsterController monster)
@@ -317,6 +331,12 @@ public class GardenMonsterSaveManager : MonoBehaviour
 
         trackedMonsters[id] = monster;
 
+        if (!trackedControllers.Contains(monster))
+        {
+            trackedControllers.Add(monster);
+            monster.PersistentStateChanged += HandleMonsterPersistentStateChanged;
+        }
+
         TinyMonsterCoinProducer coinProducer = monster.GetComponent<TinyMonsterCoinProducer>();
         if (coinProducer != null && !trackedCoinProducers.Contains(coinProducer))
         {
@@ -326,6 +346,11 @@ public class GardenMonsterSaveManager : MonoBehaviour
     }
 
     private void HandleMonsterStoredCoinChanged()
+    {
+        GardenMonstersChanged?.Invoke();
+    }
+
+    private void HandleMonsterPersistentStateChanged()
     {
         GardenMonstersChanged?.Invoke();
     }

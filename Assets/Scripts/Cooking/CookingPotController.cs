@@ -92,6 +92,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private Vector3 progressFillInitialLocalPosition;
     private MeshRenderer cookTimerRenderer;
     private float currentCookDuration;
+    private long cookCompleteAtUnix;
     private bool isAttracting;
     private Coroutine cameraFocusRoutine;
     private Coroutine noticeRoutine;
@@ -257,19 +258,20 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         activeRecipe = recipe;
         activeMonsterResult = selectedResult;
         currentCookDuration = Mathf.Max(0.1f, recipe.ResolveCookDuration(activeMonsterResult));
+        cookCompleteAtUnix = TimedSaveUtility.SecondsFromNow(currentCookDuration);
 
         SetCookingVisual();
 
-        float elapsed = 0f;
         UpdateProgressBar(0f);
         UpdateCookTimer(currentCookDuration);
 
-        while (elapsed < currentCookDuration)
+        while (TimedSaveUtility.NowUnix < cookCompleteAtUnix)
         {
-            elapsed += Time.deltaTime;
+            float remaining = Mathf.Max(0f, cookCompleteAtUnix - TimedSaveUtility.NowUnix);
+            float elapsed = Mathf.Max(0f, currentCookDuration - remaining);
             UpdateCookingAnimation(elapsed);
             UpdateProgressBar(elapsed / currentCookDuration);
-            UpdateCookTimer(currentCookDuration - elapsed);
+            UpdateCookTimer(remaining);
             yield return null;
         }
 
@@ -340,6 +342,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     {
         isDone = false;
         currentCookDuration = 0f;
+        cookCompleteAtUnix = 0L;
 
         SetEmptyVisual();
         StartCoroutine(AttractMonsterRoutine());
@@ -363,6 +366,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         activeRecipe = null;
         activeMonsterResult = default;
+        cookCompleteAtUnix = 0L;
         isAttracting = false;
     }
 
@@ -1397,6 +1401,112 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         float offsetX = (progressFillInitialScale.x - scale.x) * 0.5f;
         position.x -= offsetX;
         progressFillTransform.localPosition = position;
+    }
+
+    public CookingSaveState ExportTimedState()
+    {
+        return new CookingSaveState
+        {
+            isCooking = isCooking,
+            isDone = isDone,
+            recipeId = activeRecipe != null ? activeRecipe.recipeId : string.Empty,
+            monsterId = GetPrefabMonsterData(activeMonsterResult.monsterPrefab) != null
+                ? MonsterCollectionManager.GetMonsterId(GetPrefabMonsterData(activeMonsterResult.monsterPrefab))
+                : string.Empty,
+            completeAtUnix = cookCompleteAtUnix
+        };
+    }
+
+    public void ApplyTimedState(CookingSaveState state)
+    {
+        if (state == null || (!state.isCooking && !state.isDone))
+            return;
+
+        CookingRecipeData recipe = FindRecipeById(state.recipeId);
+        if (recipe == null || !TryFindMonsterResult(recipe, state.monsterId, out CookingRecipeData.MonsterResultOption result))
+        {
+            Debug.LogWarning("Saved cooking state could not resolve its recipe result. Clearing pot state.");
+            SetEmptyVisual();
+            return;
+        }
+
+        activeRecipe = recipe;
+        activeMonsterResult = result;
+        currentCookDuration = Mathf.Max(0.1f, recipe.ResolveCookDuration(result));
+        cookCompleteAtUnix = state.completeAtUnix;
+        isAttracting = false;
+
+        bool finished = state.isDone || cookCompleteAtUnix <= TimedSaveUtility.NowUnix;
+        isCooking = !finished;
+        isDone = finished;
+
+        if (finished)
+        {
+            SetDoneVisual();
+            return;
+        }
+
+        float remaining = Mathf.Max(0f, cookCompleteAtUnix - TimedSaveUtility.NowUnix);
+        SetCookingVisual();
+        UpdateProgressBar(1f - (remaining / currentCookDuration));
+        UpdateCookTimer(remaining);
+        StartCoroutine(ResumeCookingRoutine());
+    }
+
+    private IEnumerator ResumeCookingRoutine()
+    {
+        while (isCooking && TimedSaveUtility.NowUnix < cookCompleteAtUnix)
+        {
+            float remaining = Mathf.Max(0f, cookCompleteAtUnix - TimedSaveUtility.NowUnix);
+            float elapsed = Mathf.Max(0f, currentCookDuration - remaining);
+            UpdateCookingAnimation(elapsed);
+            UpdateProgressBar(elapsed / currentCookDuration);
+            UpdateCookTimer(remaining);
+            yield return null;
+        }
+
+        if (!isCooking)
+            yield break;
+
+        isCooking = false;
+        isDone = true;
+        UpdateProgressBar(1f);
+        UpdateCookTimer(0f);
+        SetDoneVisual();
+    }
+
+    private CookingRecipeData FindRecipeById(string recipeId)
+    {
+        if (recipes == null || string.IsNullOrWhiteSpace(recipeId))
+            return null;
+
+        for (int i = 0; i < recipes.Length; i++)
+        {
+            if (recipes[i] != null && string.Equals(recipes[i].recipeId, recipeId, System.StringComparison.OrdinalIgnoreCase))
+                return recipes[i];
+        }
+
+        return null;
+    }
+
+    private bool TryFindMonsterResult(CookingRecipeData recipe, string monsterId, out CookingRecipeData.MonsterResultOption result)
+    {
+        result = default;
+        if (recipe == null || recipe.monsterResultOptions == null)
+            return false;
+
+        for (int i = 0; i < recipe.monsterResultOptions.Length; i++)
+        {
+            CookingRecipeData.MonsterResultOption option = recipe.monsterResultOptions[i];
+            MonsterData optionData = GetPrefabMonsterData(option.monsterPrefab);
+            if (optionData != null && string.Equals(MonsterCollectionManager.GetMonsterId(optionData), monsterId, System.StringComparison.OrdinalIgnoreCase))
+            {
+                result = option;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void ShowCookTimer()

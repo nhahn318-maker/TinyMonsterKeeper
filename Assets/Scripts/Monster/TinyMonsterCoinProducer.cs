@@ -10,11 +10,12 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
     [Header("Debug")]
     [SerializeField] private int storedCoin;
 
-    private float timer;
+    private long nextCoinAtUnix;
 
     public event Action StoredCoinChanged;
     public int StoredCoin => storedCoin;
     public bool HasCoinToCollect => storedCoin > 0;
+    public long NextCoinAtUnix => nextCoinAtUnix;
 
     private void Awake()
     {
@@ -26,22 +27,7 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
 
     private void Update()
     {
-        if (controller == null || controller.Data == null) return;
-
-        if (storedCoin >= controller.Data.maxStoredCoin)
-        {
-            storedCoin = controller.Data.maxStoredCoin;
-            UpdateCoinBubble();
-            return;
-        }
-
-        timer += Time.deltaTime;
-
-        if (timer >= controller.Data.coinTickInterval)
-        {
-            timer -= controller.Data.coinTickInterval;
-            AddStoredCoin(controller.Data.coinPerTick);
-        }
+        ReconcileCoinProduction();
     }
 
     private void AddStoredCoin(int amount)
@@ -62,7 +48,17 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
     {
         int maxCoin = controller != null && controller.Data != null ? controller.Data.maxStoredCoin : int.MaxValue;
         storedCoin = Mathf.Clamp(amount, 0, maxCoin);
-        timer = 0f;
+        EnsureNextCoinTime();
+        UpdateCoinBubble();
+        StoredCoinChanged?.Invoke();
+    }
+
+    public void SetPersistentState(int amount, long savedNextCoinAtUnix)
+    {
+        int maxCoin = controller != null && controller.Data != null ? controller.Data.maxStoredCoin : int.MaxValue;
+        storedCoin = Mathf.Clamp(amount, 0, maxCoin);
+        nextCoinAtUnix = System.Math.Max(0L, savedNextCoinAtUnix);
+        ReconcileCoinProduction();
         UpdateCoinBubble();
         StoredCoinChanged?.Invoke();
     }
@@ -73,7 +69,7 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
 
         int collectAmount = storedCoin;
         storedCoin = 0;
-        timer = 0f;
+        nextCoinAtUnix = TimedSaveUtility.SecondsFromNow(controller != null && controller.Data != null ? controller.Data.coinTickInterval : 1f);
 
         if (CurrencyManager.Instance != null)
         {
@@ -103,5 +99,38 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
     {
         if (coinBubbleObject != null)
             coinBubbleObject.SetActive(storedCoin > 0);
+    }
+
+    private void ReconcileCoinProduction()
+    {
+        if (controller == null || controller.Data == null)
+            return;
+
+        int maxCoin = controller.Data.maxStoredCoin;
+        if (storedCoin >= maxCoin)
+        {
+            storedCoin = maxCoin;
+            EnsureNextCoinTime();
+            UpdateCoinBubble();
+            return;
+        }
+
+        EnsureNextCoinTime();
+        long now = TimedSaveUtility.NowUnix;
+        if (now < nextCoinAtUnix)
+            return;
+
+        long interval = Mathf.Max(1, Mathf.CeilToInt(controller.Data.coinTickInterval));
+        long ticks = 1 + ((now - nextCoinAtUnix) / interval);
+        long potentialGain = ticks * controller.Data.coinPerTick;
+        int gain = potentialGain >= int.MaxValue ? int.MaxValue : (int)potentialGain;
+        nextCoinAtUnix += ticks * interval;
+        AddStoredCoin(gain);
+    }
+
+    private void EnsureNextCoinTime()
+    {
+        if (nextCoinAtUnix <= 0L)
+            nextCoinAtUnix = TimedSaveUtility.SecondsFromNow(controller != null && controller.Data != null ? controller.Data.coinTickInterval : 1f);
     }
 }

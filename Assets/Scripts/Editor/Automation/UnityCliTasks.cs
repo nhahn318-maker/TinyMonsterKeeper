@@ -4,6 +4,7 @@ using UnityEditor.Animations;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -435,6 +436,316 @@ namespace TinyMonsterKeeper.EditorAutomation
             AssetDatabase.SaveAssets();
 
             Debug.Log("Fog unlock visuals setup finished.");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Zones 06-13 Fog Unlock")]
+        public static void SetupZones06To13FogUnlock()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            if (!scene.isLoaded || scene.path != "Assets/Scenes/GameplayScene.unity")
+            {
+                Debug.LogError("Open GameplayScene before running the Zone 06-13 fog setup.");
+                return;
+            }
+
+            FogZoneManager manager = Object.FindObjectOfType<FogZoneManager>();
+            if (manager == null)
+            {
+                Debug.LogError("FogZoneManager is missing in GameplayScene.");
+                return;
+            }
+
+            SerializedObject serializedManager = new SerializedObject(manager);
+            SerializedProperty zones = serializedManager.FindProperty("zones");
+            Sprite unlockedSprite = zones.arraySize > 0
+                ? zones.GetArrayElementAtIndex(0).FindPropertyRelative("unlockedButtonSprite").objectReferenceValue as Sprite
+                : AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/UI/padlock_unlock.png");
+
+            int configured = 0;
+            for (int zoneNumber = 6; zoneNumber <= 13; zoneNumber++)
+            {
+                string fogName = $"Zone{zoneNumber:D2}_Fog";
+                GameObject fogObject = GameObject.Find(fogName);
+                if (fogObject == null)
+                {
+                    Debug.LogWarning($"Skipped Zone {zoneNumber:D2}: {fogName} is missing.");
+                    continue;
+                }
+
+                FogTilemapRevealController reveal = fogObject.GetComponent<FogTilemapRevealController>();
+                FogAreaBlocker[] blockers = fogObject.GetComponents<FogAreaBlocker>();
+                Transform unlockTransform = FindDescendant(fogObject.transform, "Button_Unlock");
+                Collider2D unlockCollider = unlockTransform != null
+                    ? unlockTransform.GetComponent<Collider2D>()
+                    : null;
+
+                if (reveal == null || unlockCollider == null)
+                {
+                    Debug.LogWarning($"Skipped Zone {zoneNumber:D2}: missing FogTilemapRevealController or Button_Unlock Collider2D.");
+                    continue;
+                }
+
+                string zoneId = $"zone_{zoneNumber:D2}";
+                SerializedProperty zoneProperty = FindFogZoneById(zones, zoneId);
+                if (zoneProperty == null)
+                {
+                    int index = zones.arraySize;
+                    zones.InsertArrayElementAtIndex(index);
+                    zoneProperty = zones.GetArrayElementAtIndex(index);
+                }
+
+                zoneProperty.FindPropertyRelative("zoneName").stringValue = zoneId;
+                zoneProperty.FindPropertyRelative("unlockCost").intValue = 0;
+                zoneProperty.FindPropertyRelative("uiButton").objectReferenceValue = null;
+                zoneProperty.FindPropertyRelative("mapButtonCollider").objectReferenceValue = unlockCollider;
+                zoneProperty.FindPropertyRelative("unlockedButtonSprite").objectReferenceValue = unlockedSprite;
+                zoneProperty.FindPropertyRelative("unlockVisualDuration").floatValue = 0.45f;
+                zoneProperty.FindPropertyRelative("fogReveal").objectReferenceValue = reveal;
+                zoneProperty.FindPropertyRelative("revealBounds").objectReferenceValue = null;
+                zoneProperty.FindPropertyRelative("revealWholeTilemap").boolValue = true;
+                zoneProperty.FindPropertyRelative("revealDirection").enumValueIndex = GetRevealDirection(zoneNumber);
+                zoneProperty.FindPropertyRelative("revealDistance").floatValue = 0.75f;
+                zoneProperty.FindPropertyRelative("customRevealDriftOffset").vector3Value = Vector3.zero;
+                zoneProperty.FindPropertyRelative("hideButtonOnUnlock").boolValue = true;
+
+                SerializedProperty blockerProperty = zoneProperty.FindPropertyRelative("monsterBlockers");
+                blockerProperty.arraySize = blockers.Length;
+                for (int blockerIndex = 0; blockerIndex < blockers.Length; blockerIndex++)
+                    blockerProperty.GetArrayElementAtIndex(blockerIndex).objectReferenceValue = blockers[blockerIndex];
+
+                configured++;
+            }
+
+            serializedManager.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(manager);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Fog unlock setup finished: configured {configured} zones (Zone06-Zone13).");
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Repair Zone 05 Fog Unlock")]
+        public static void RepairZone05FogUnlock()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            if (!scene.isLoaded || scene.path != "Assets/Scenes/GameplayScene.unity")
+            {
+                Debug.LogError("Open GameplayScene before repairing Zone 05.");
+                return;
+            }
+
+            FogZoneManager manager = Object.FindObjectOfType<FogZoneManager>();
+            GameObject fogObject = GameObject.Find("Zone05_Fog");
+            if (manager == null || fogObject == null)
+            {
+                Debug.LogError("FogZoneManager or Zone05_Fog is missing in GameplayScene.");
+                return;
+            }
+
+            FogTilemapRevealController reveal = fogObject.GetComponent<FogTilemapRevealController>();
+            FogAreaBlocker[] blockers = fogObject.GetComponents<FogAreaBlocker>();
+            Transform unlockTransform = FindDescendant(fogObject.transform, "Button_Unlock");
+            Collider2D unlockCollider = unlockTransform != null
+                ? unlockTransform.GetComponent<Collider2D>()
+                : null;
+
+            if (reveal == null || blockers.Length == 0 || unlockCollider == null)
+            {
+                Debug.LogError("Zone05_Fog needs FogTilemapRevealController, FogAreaBlocker, and a Button_Unlock Collider2D.");
+                return;
+            }
+
+            Undo.RecordObject(manager, "Repair Zone 05 Fog Unlock");
+            SerializedObject serializedManager = new SerializedObject(manager);
+            SerializedProperty zones = serializedManager.FindProperty("zones");
+            SerializedProperty zone = FindFogZoneById(zones, "zone_05");
+            if (zone == null)
+            {
+                Debug.LogError("FogZoneManager does not contain the zone_05 entry.");
+                return;
+            }
+
+            zone.FindPropertyRelative("uiButton").objectReferenceValue = null;
+            zone.FindPropertyRelative("mapButtonCollider").objectReferenceValue = unlockCollider;
+            zone.FindPropertyRelative("fogReveal").objectReferenceValue = reveal;
+            zone.FindPropertyRelative("revealBounds").objectReferenceValue = null;
+            zone.FindPropertyRelative("revealWholeTilemap").boolValue = true;
+            zone.FindPropertyRelative("revealDirection").enumValueIndex = 1; // Left
+            zone.FindPropertyRelative("revealDistance").floatValue = 0.75f;
+            zone.FindPropertyRelative("customRevealDriftOffset").vector3Value = Vector3.zero;
+            zone.FindPropertyRelative("hideButtonOnUnlock").boolValue = true;
+
+            SerializedProperty blockerProperty = zone.FindPropertyRelative("monsterBlockers");
+            blockerProperty.arraySize = blockers.Length;
+            for (int index = 0; index < blockers.Length; index++)
+                blockerProperty.GetArrayElementAtIndex(index).objectReferenceValue = blockers[index];
+
+            serializedManager.ApplyModifiedProperties();
+            EditorUtility.SetDirty(manager);
+            EditorSceneManager.MarkSceneDirty(scene);
+            Selection.activeGameObject = fogObject;
+            Debug.Log("Zone 05 fog unlock references repaired. Test in Play Mode, then save GameplayScene if correct.");
+        }
+
+        private static SerializedProperty FindFogZoneById(SerializedProperty zones, string zoneId)
+        {
+            for (int index = 0; index < zones.arraySize; index++)
+            {
+                SerializedProperty candidate = zones.GetArrayElementAtIndex(index);
+                if (candidate.FindPropertyRelative("zoneName").stringValue == zoneId)
+                    return candidate;
+            }
+
+            return null;
+        }
+
+        private static int GetRevealDirection(int zoneNumber)
+        {
+            // Fog drifts outward from the hub: left, right, or north for each new branch.
+            if (zoneNumber == 9)
+                return 2; // Up
+
+            return zoneNumber == 6 || zoneNumber == 12 || zoneNumber == 13
+                ? 1 // Left
+                : 0; // Right
+        }
+
+        [MenuItem("TinyMonsterKeeper/Automation/Setup Selected Fence Y Sorting")]
+        public static void SetupSelectedFenceYSorting()
+        {
+            GameObject selected = Selection.activeGameObject;
+            if (selected == null)
+            {
+                Debug.LogError("Select the fence object in the Hierarchy before running this setup.");
+                return;
+            }
+
+            Transform fenceRoot = selected.transform;
+            string selectedName = selected.name.ToLowerInvariant();
+            if ((selectedName.Contains("top") || selectedName.Contains("down") || selectedName.Contains("bottom"))
+                && fenceRoot.parent != null
+                && fenceRoot.parent.name.ToLowerInvariant().Contains("fence"))
+            {
+                fenceRoot = fenceRoot.parent;
+            }
+
+            if (!fenceRoot.name.ToLowerInvariant().Contains("fence"))
+            {
+                Debug.LogError($"Selected object '{fenceRoot.name}' is not a fence. Select the fence root and run the setup again.");
+                return;
+            }
+
+            Sprite topSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/ResourcesNode/Enviroment/fence_top.png");
+            Sprite downSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Arts/ResourcesNode/Enviroment/fencedown.png");
+            if (topSprite == null || downSprite == null)
+            {
+                Debug.LogError("Fence setup failed: fence_top.png or fencedown.png could not be loaded.");
+                return;
+            }
+
+            SpriteRenderer sourceRenderer = fenceRoot.GetComponent<SpriteRenderer>();
+            Transform top = GetOrCreateFenceLayer(fenceRoot, "Fence_Top");
+            Transform down = GetOrCreateFenceLayer(fenceRoot, "Fence_Down");
+
+            ConfigureFenceLayer(top, topSprite, sourceRenderer, 0.2f);
+            ConfigureFenceLayer(down, downSprite, sourceRenderer, -0.2f);
+
+            if (sourceRenderer != null && sourceRenderer.enabled)
+            {
+                Undo.RecordObject(sourceRenderer, "Disable original fence renderer");
+                sourceRenderer.enabled = false;
+                EditorUtility.SetDirty(sourceRenderer);
+            }
+
+            YSortByPosition rootYSort = fenceRoot.GetComponent<YSortByPosition>();
+            if (rootYSort != null && rootYSort.enabled)
+            {
+                Undo.RecordObject(rootYSort, "Disable fence root Y sort");
+                rootYSort.enabled = false;
+                EditorUtility.SetDirty(rootYSort);
+            }
+
+            SortingGroup rootSortingGroup = fenceRoot.GetComponent<SortingGroup>();
+            if (rootSortingGroup != null && rootSortingGroup.enabled)
+            {
+                Undo.RecordObject(rootSortingGroup, "Disable fence root sorting group");
+                rootSortingGroup.enabled = false;
+                EditorUtility.SetDirty(rootSortingGroup);
+            }
+
+            EditorSceneManager.MarkSceneDirty(fenceRoot.gameObject.scene);
+            Selection.activeGameObject = fenceRoot.gameObject;
+            Debug.Log($"Fence Y sorting configured on '{fenceRoot.name}'. Verify the overlap, then save the scene. Ctrl+Z will undo the setup.");
+        }
+
+        private static Transform GetOrCreateFenceLayer(Transform root, string layerName)
+        {
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform child = root.GetChild(i);
+                if (child.name.Equals(layerName, System.StringComparison.OrdinalIgnoreCase))
+                    return child;
+            }
+
+            GameObject layer = new GameObject(layerName);
+            Undo.RegisterCreatedObjectUndo(layer, "Create " + layerName);
+            layer.transform.SetParent(root, false);
+            layer.transform.localPosition = Vector3.zero;
+            layer.transform.localRotation = Quaternion.identity;
+            layer.transform.localScale = Vector3.one;
+            return layer.transform;
+        }
+
+        private static void ConfigureFenceLayer(Transform layer, Sprite sprite, SpriteRenderer sourceRenderer, float sortYOffset)
+        {
+            SpriteRenderer renderer = layer.GetComponent<SpriteRenderer>();
+            if (renderer == null)
+                renderer = Undo.AddComponent<SpriteRenderer>(layer.gameObject);
+
+            Undo.RecordObject(renderer, "Configure fence renderer");
+            renderer.sprite = sprite;
+            if (sourceRenderer != null)
+            {
+                renderer.sharedMaterial = sourceRenderer.sharedMaterial;
+                renderer.color = sourceRenderer.color;
+                renderer.flipX = sourceRenderer.flipX;
+                renderer.flipY = sourceRenderer.flipY;
+                renderer.sortingLayerID = sourceRenderer.sortingLayerID;
+            }
+
+            renderer.enabled = true;
+
+            SortingGroup childSortingGroup = layer.GetComponent<SortingGroup>();
+            if (childSortingGroup != null && childSortingGroup.enabled)
+            {
+                Undo.RecordObject(childSortingGroup, "Disable fence layer sorting group");
+                childSortingGroup.enabled = false;
+            }
+
+            YSortByPosition ySort = layer.GetComponent<YSortByPosition>();
+            if (ySort == null)
+                ySort = Undo.AddComponent<YSortByPosition>(layer.gameObject);
+
+            Undo.RecordObject(ySort, "Configure fence Y sort");
+            SerializedObject serializedYSort = new SerializedObject(ySort);
+            serializedYSort.FindProperty("sortPoint").objectReferenceValue = layer;
+            serializedYSort.FindProperty("sortYOffset").floatValue = sortYOffset;
+            serializedYSort.FindProperty("worldBaseOrder").intValue = 10000;
+            serializedYSort.FindProperty("baseOrder").intValue = 0;
+            serializedYSort.FindProperty("unitsToOrder").floatValue = 100f;
+            serializedYSort.FindProperty("minOrder").intValue = -32768;
+            serializedYSort.FindProperty("maxOrder").intValue = 32767;
+            serializedYSort.FindProperty("preferSortingGroup").boolValue = false;
+            serializedYSort.FindProperty("sortingGroup").objectReferenceValue = null;
+
+            SerializedProperty renderers = serializedYSort.FindProperty("spriteRenderers");
+            renderers.arraySize = 1;
+            renderers.GetArrayElementAtIndex(0).objectReferenceValue = renderer;
+            serializedYSort.ApplyModifiedProperties();
+
+            EditorUtility.SetDirty(renderer);
+            EditorUtility.SetDirty(ySort);
+            EditorUtility.SetDirty(layer.gameObject);
         }
 
         [MenuItem("TinyMonsterKeeper/Automation/Setup Mobile Screen Layout")]

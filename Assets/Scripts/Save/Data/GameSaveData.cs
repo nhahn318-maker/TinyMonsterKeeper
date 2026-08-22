@@ -4,7 +4,7 @@ using System.Collections.Generic;
 [Serializable]
 public class GameSaveData
 {
-    public int version = 1;
+    public int version = 2;
     public int coin;
     public List<ItemAmountSave> inventory = new List<ItemAmountSave>();
     public List<MonsterCollectionSave> monsterCollection = new List<MonsterCollectionSave>();
@@ -13,6 +13,8 @@ public class GameSaveData
     public List<string> unlockedFogZones = new List<string>();
     public List<string> discoveredRecipes = new List<string>();
     public List<string> failedMixes = new List<string>();
+    public CookingSaveState cooking = new CookingSaveState();
+    public List<ResourceNodeTimerSave> resourceNodeTimers = new List<ResourceNodeTimerSave>();
     public long lastSavedAtUnix;
     public bool forceApplyEmptyState;
 
@@ -20,7 +22,7 @@ public class GameSaveData
     {
         return new GameSaveData
         {
-            version = 1,
+            version = 2,
             lastSavedAtUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
     }
@@ -34,13 +36,33 @@ public class GameSaveData
             || HasEntries(gardenMonsterInstances)
             || HasEntries(unlockedFogZones)
             || HasEntries(discoveredRecipes)
-            || HasEntries(failedMixes);
+            || HasEntries(failedMixes)
+            || (cooking != null && (cooking.isCooking || cooking.isDone))
+            || HasEntries(resourceNodeTimers);
     }
 
     private static bool HasEntries<T>(List<T> values)
     {
         return values != null && values.Count > 0;
     }
+}
+
+[Serializable]
+public class CookingSaveState
+{
+    public bool isCooking;
+    public bool isDone;
+    public string recipeId;
+    public string monsterId;
+    public long completeAtUnix;
+}
+
+[Serializable]
+public class ResourceNodeTimerSave
+{
+    public string nodeId;
+    public bool isReady;
+    public long readyAtUnix;
 }
 
 [Serializable]
@@ -86,6 +108,9 @@ public class GardenMonsterInstanceSave
     public float z;
     public int storedCoin;
     public bool hasPosition;
+    public int friendship;
+    public long nextPlayAtUnix;
+    public long nextCoinAtUnix;
 
     public GardenMonsterInstanceSave()
     {

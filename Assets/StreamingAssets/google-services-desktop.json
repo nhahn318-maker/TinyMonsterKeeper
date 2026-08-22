@@ -12,7 +12,20 @@
           "package_name": "com.nhahn.tinymonsterkeeper"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "944486294606-85su8bg117t6q3bt2is5jn7kuo0hkiqs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nhahn.tinymonsterkeeper",
+            "certificate_hash": "c41a1353747858e5364295bd6a6e522f2bd68b79"
+          }
+        },
+        {
+          "client_id": "944486294606-0fn7g7golsgqlonbipknc6t7ft11ebfe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBrBCNgTroMqMGGFAGDlFZSPLLz4QkNhuU"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "944486294606-0fn7g7golsgqlonbipknc6t7ft11ebfe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

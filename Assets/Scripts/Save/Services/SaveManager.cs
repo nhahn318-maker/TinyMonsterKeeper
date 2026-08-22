@@ -44,6 +44,7 @@ public class SaveManager
 
         HasExistingSave = localSave != null || cloudSave != null;
         CurrentSave = ChooseNewestSave(localSave, cloudSave) ?? GameSaveData.CreateNew();
+        UpgradeSaveIfNeeded(CurrentSave);
         IsReady = true;
 
         await SaveAsync();
@@ -103,5 +104,25 @@ public class SaveManager
             return localSave;
 
         return cloudSave.lastSavedAtUnix >= localSave.lastSavedAtUnix ? cloudSave : localSave;
+    }
+
+    private static void UpgradeSaveIfNeeded(GameSaveData saveData)
+    {
+        if (saveData == null || saveData.version >= 2)
+            return;
+
+        if (saveData.gardenMonsterInstances != null)
+        {
+            for (int i = 0; i < saveData.gardenMonsterInstances.Count; i++)
+            {
+                GardenMonsterInstanceSave instance = saveData.gardenMonsterInstances[i];
+                if (instance != null)
+                    instance.friendship = 50;
+            }
+        }
+
+        saveData.cooking ??= new CookingSaveState();
+        saveData.resourceNodeTimers ??= new System.Collections.Generic.List<ResourceNodeTimerSave>();
+        saveData.version = 2;
     }
 }

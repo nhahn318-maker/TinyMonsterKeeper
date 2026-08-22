@@ -26,6 +26,8 @@ public class TinyMonsterController : MonoBehaviour {
     private MonsterState currentState;
     private float stateTimer;
 
+    public event System.Action PersistentStateChanged;
+
     public MonsterState CurrentState => currentState;
     public MonsterData Data => monsterData;
     public string MonsterName => monsterData != null ? monsterData.monsterName : "Unknown";
@@ -35,6 +37,7 @@ public class TinyMonsterController : MonoBehaviour {
     public int MaxFriendship => maxFriendship;
     public int BerryCostPerFeed => monsterData != null ? monsterData.berryCostPerFeed : 1;
     public int FeedFriendshipGain => monsterData != null ? monsterData.feedFriendshipGain : 10;
+    public long NextPlayAtUnix { get; private set; }
 
     private void Start()
     {
@@ -63,8 +66,22 @@ public class TinyMonsterController : MonoBehaviour {
     public void AddFriendship(int amount)
     {
         friendship = Mathf.Clamp(friendship + amount, 0, maxFriendship);
+        PersistentStateChanged?.Invoke();
 
         Debug.Log($"{MonsterName} friendship: {friendship}/{maxFriendship}");
+    }
+
+    public void SetPersistentState(int savedFriendship, long savedNextPlayAtUnix)
+    {
+        friendship = Mathf.Clamp(savedFriendship, 0, maxFriendship);
+        NextPlayAtUnix = System.Math.Max(0L, savedNextPlayAtUnix);
+        PersistentStateChanged?.Invoke();
+    }
+
+    public void SetNextPlayAtUnix(long nextPlayAtUnix)
+    {
+        NextPlayAtUnix = System.Math.Max(0L, nextPlayAtUnix);
+        PersistentStateChanged?.Invoke();
     }
 
     public void EnterIdle()

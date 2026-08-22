@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1500" viewBox="0 0 1080 1500">
+  <defs>
+    <pattern id="grass" width="30" height="30" patternUnits="userSpaceOnUse">
+      <rect width="30" height="30" fill="#bde08c"/>
+      <path d="M6 22l2-5 2 5M22 10l2-4 2 4" stroke="#8fbe70" stroke-width="2" fill="none"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="3" flood-color="#486136" flood-opacity=".3"/>
+    </filter>
+    <style>
+      .zone { stroke-width: 7; filter: url(#shadow); }
+      .title { font: 700 28px sans-serif; fill: #24361f; text-anchor: middle; }
+      .body { font: 18px sans-serif; fill: #34512d; text-anchor: middle; }
+      .note { font: 16px sans-serif; fill: #41533b; text-anchor: middle; }
+      .path { stroke: #d7ad67; stroke-width: 42; stroke-linecap: round; fill: none; }
+      .pathEdge { stroke: #9a753f; stroke-width: 4; stroke-linecap: round; fill: none; }
+      .node { stroke: #4c6638; stroke-width: 4; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1500" fill="#a9cf79"/>
+  <rect x="34" y="34" width="1012" height="1432" rx="30" fill="url(#grass)" stroke="#58733e" stroke-width="8"/>
+
+  <!-- Actual scene route: south summon path, central hub, east/west branches, north cave. -->
+  <path class="path" d="M540 1400 L540 1125 L540 920 M540 920 L820 920 L820 680 M540 920 L260 920 L260 680 M540 920 L540 420"/>
+  <path class="pathEdge" d="M540 1400 L540 1125 L540 920 M540 920 L820 920 L820 680 M540 920 L260 920 L260 680 M540 920 L540 420"/>
+
+  <rect class="zone" x="366" y="1045" width="348" height="190" rx="26" fill="#d4efaa" stroke="#6a934c"/>
+  <text class="title" x="540" y="1095">Zone00_Start</text>
+  <text class="body" x="540" y="1130">Cooking Hub</text>
+  <text class="note" x="540" y="1162">Cooking Pot · Apple Tree · Red Berry Bushes</text>
+  <circle class="node" cx="540" cy="1188" r="25" fill="#3e3a34"/>
+  <path d="M527 1188h26M540 1175v26" stroke="#efb858" stroke-width="5"/>
+
+  <rect class="zone" x="708" y="775" width="278" height="210" rx="26" fill="#dfd4f3" stroke="#7b649e"/>
+  <text class="title" x="847" y="825">Zone01</text>
+  <text class="body" x="847" y="860">Purple Berry Grove</text>
+  <text class="note" x="847" y="892">Purple Berries · Green Mushroom</text>
+  <circle class="node" cx="795" cy="925" r="20" fill="#7a4bb4"/>
+  <circle class="node" cx="865" cy="925" r="20" fill="#7a4bb4"/>
+
+  <rect class="zone" x="708" y="490" width="278" height="210" rx="26" fill="#f7d9a9" stroke="#b88238"/>
+  <text class="title" x="847" y="540">Zone02</text>
+  <text class="body" x="847" y="575">Harvest Garden</text>
+  <text class="note" x="847" y="607">Pumpkin · Eggplant</text>
+  <circle class="node" cx="795" cy="640" r="20" fill="#ea8b28"/>
+  <circle class="node" cx="865" cy="640" r="20" fill="#68346f"/>
+
+  <rect class="zone" x="94" y="775" width="278" height="210" rx="26" fill="#cce7bf" stroke="#568c58"/>
+  <text class="title" x="233" y="825">Zone03</text>
+  <text class="body" x="233" y="860">Bamboo Clearing</text>
+  <text class="note" x="233" y="892">Bamboo Shoot · Stone</text>
+  <path d="M200 938v-62M225 938v-78M250 938v-55" stroke="#4e854b" stroke-width="13" stroke-linecap="round"/>
+
+  <rect class="zone" x="94" y="490" width="278" height="210" rx="26" fill="#c0ddbd" stroke="#477a55"/>
+  <text class="title" x="233" y="540">Zone04</text>
+  <text class="body" x="233" y="575">Mossy Bamboo</text>
+  <text class="note" x="233" y="607">Bamboo · Mushroom</text>
+  <path d="M190 654v-62M225 654v-78M260 654v-55" stroke="#3e7948" stroke-width="13" stroke-linecap="round"/>
+
+  <rect class="zone" x="350" y="135" width="380" height="240" rx="30" fill="#b8e1d3" stroke="#3e7980"/>
+  <text class="title" x="540" y="188">Zone05</text>
+  <text class="body" x="540" y="223">Crystal Cave</text>
+  <text class="note" x="540" y="255">Crystal · Glowing Mushroom · Stalagmites</text>
+  <polygon class="node" points="500,320 522,280 544,320 522,350" fill="#75e6dd"/>
+  <polygon class="node" points="552,322 574,278 596,322 574,354" fill="#75e6dd"/>
+
+  <rect class="zone" x="390" y="1275" width="300" height="145" rx="25" fill="#e8c281" stroke="#9d7444"/>
+  <text class="title" x="540" y="1325">Summon Path Area</text>
+  <text class="note" x="540" y="1358">Monster arrival start → end → Zone00</text>
+
+  <g fill="#dca264" stroke="#6d4c2e" stroke-width="4">
+    <rect x="500" y="1000" width="80" height="28" rx="7"/>
+    <rect x="780" y="735" width="80" height="28" rx="7"/>
+    <rect x="220" y="735" width="80" height="28" rx="7"/>
+    <rect x="500" y="395" width="80" height="28" rx="7"/>
+  </g>
+  <text class="note" x="540" y="1040">Arrival Gate</text>
+  <text class="note" x="820" y="720">Fog Gate</text>
+  <text class="note" x="260" y="720">Fog Gate</text>
+  <text class="note" x="540" y="385">Fog Gate</text>
+
+  <text class="body" x="540" y="78">CURRENT GAMEPLAY MAP · TILEMAP AND OBJECT LAYOUT</text>
+  <text class="note" x="540" y="1450">Diagram only: positioned from the current scene's real zone relationship and placed objects.</text>
+</svg>

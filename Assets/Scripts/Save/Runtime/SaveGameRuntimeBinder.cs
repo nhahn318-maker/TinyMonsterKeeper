@@ -82,6 +82,8 @@ public class SaveGameRuntimeBinder : MonoBehaviour
                 GardenMonsterSaveManager.Instance.ApplySavedGardenMonsters(saveManager.CurrentSave.gardenMonsters, true);
         }
 
+        ApplyTimedGameState();
+
         isApplyingSave = false;
     }
 
@@ -133,6 +135,8 @@ public class SaveGameRuntimeBinder : MonoBehaviour
             saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
             saveManager.CurrentSave.gardenMonsterInstances = GardenMonsterSaveManager.Instance.ExportGardenMonsterInstances();
         }
+
+        CaptureTimedGameState();
     }
 
     private void HandleCoinChanged(int coin)
@@ -197,6 +201,7 @@ public class SaveGameRuntimeBinder : MonoBehaviour
 
             saveManager.CurrentSave.gardenMonsters = GardenMonsterSaveManager.Instance.ExportGardenMonsterIds();
             saveManager.CurrentSave.gardenMonsterInstances = GardenMonsterSaveManager.Instance.ExportGardenMonsterInstances();
+            CaptureTimedGameState();
             saveManager.SaveSoon();
         }
     }
@@ -219,5 +224,66 @@ public class SaveGameRuntimeBinder : MonoBehaviour
 
         CaptureCurrentGameState();
         saveManager.SaveSoon();
+    }
+
+    private void ApplyTimedGameState()
+    {
+        if (saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        CookingPotController cookingPot = FindObjectOfType<CookingPotController>();
+        if (cookingPot != null)
+            cookingPot.ApplyTimedState(saveManager.CurrentSave.cooking);
+
+        System.Collections.Generic.Dictionary<string, ResourceNodeTimerSave> timers = new System.Collections.Generic.Dictionary<string, ResourceNodeTimerSave>();
+        if (saveManager.CurrentSave.resourceNodeTimers != null)
+        {
+            for (int i = 0; i < saveManager.CurrentSave.resourceNodeTimers.Count; i++)
+            {
+                ResourceNodeTimerSave timer = saveManager.CurrentSave.resourceNodeTimers[i];
+                if (timer != null && !string.IsNullOrWhiteSpace(timer.nodeId))
+                    timers[timer.nodeId] = timer;
+            }
+        }
+
+        foreach (BushController bush in FindObjectsOfType<BushController>())
+        {
+            string id = TimedSaveUtility.GetStableSceneKey(bush, "bush");
+            if (timers.TryGetValue(id, out ResourceNodeTimerSave state))
+                bush.ApplyTimedState(state);
+        }
+
+        foreach (HarvestNodeController node in FindObjectsOfType<HarvestNodeController>())
+        {
+            string id = TimedSaveUtility.GetStableSceneKey(node, "harvest");
+            if (timers.TryGetValue(id, out ResourceNodeTimerSave state))
+                node.ApplyTimedState(state);
+        }
+
+        foreach (StaticTimedHarvestNodeController node in FindObjectsOfType<StaticTimedHarvestNodeController>())
+        {
+            string id = TimedSaveUtility.GetStableSceneKey(node, "staticHarvest");
+            if (timers.TryGetValue(id, out ResourceNodeTimerSave state))
+                node.ApplyTimedState(state);
+        }
+    }
+
+    private void CaptureTimedGameState()
+    {
+        if (saveManager == null || saveManager.CurrentSave == null)
+            return;
+
+        CookingPotController cookingPot = FindObjectOfType<CookingPotController>();
+        saveManager.CurrentSave.cooking = cookingPot != null ? cookingPot.ExportTimedState() : new CookingSaveState();
+
+        System.Collections.Generic.List<ResourceNodeTimerSave> timers = new System.Collections.Generic.List<ResourceNodeTimerSave>();
+        foreach (BushController bush in FindObjectsOfType<BushController>())
+            timers.Add(bush.ExportTimedState());
+        foreach (HarvestNodeController node in FindObjectsOfType<HarvestNodeController>())
+            timers.Add(node.ExportTimedState());
+        foreach (StaticTimedHarvestNodeController node in FindObjectsOfType<StaticTimedHarvestNodeController>())
+            timers.Add(node.ExportTimedState());
+
+        saveManager.CurrentSave.resourceNodeTimers = timers;
     }
 }

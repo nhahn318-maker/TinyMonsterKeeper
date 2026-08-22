@@ -61,6 +61,8 @@ public class FirebaseCloudSaveService : ISaveService
             { "unlockedFogZones", CleanStringList(saveData.unlockedFogZones) },
             { "discoveredRecipes", CleanStringList(saveData.discoveredRecipes) },
             { "failedMixes", CleanStringList(saveData.failedMixes) },
+            { "cooking", CookingStateToMap(saveData.cooking) },
+            { "resourceNodeTimers", ResourceTimersToList(saveData.resourceNodeTimers) },
             { "lastSavedAtUnix", saveData.lastSavedAtUnix },
             { "forceApplyEmptyState", saveData.forceApplyEmptyState }
         };
@@ -78,6 +80,8 @@ public class FirebaseCloudSaveService : ISaveService
         saveData.unlockedFogZones = ReadStringList(data, "unlockedFogZones");
         saveData.discoveredRecipes = ReadStringList(data, "discoveredRecipes");
         saveData.failedMixes = ReadStringList(data, "failedMixes");
+        saveData.cooking = ReadCookingState(ReadDictionary(data, "cooking"));
+        saveData.resourceNodeTimers = ReadResourceTimers(data, "resourceNodeTimers");
         saveData.lastSavedAtUnix = ReadLong(data, "lastSavedAtUnix", 0);
         saveData.forceApplyEmptyState = ReadBool(data, "forceApplyEmptyState", false);
         return saveData;
@@ -156,7 +160,10 @@ public class FirebaseCloudSaveService : ISaveService
                 { "y", instance.y },
                 { "z", instance.z },
                 { "storedCoin", Mathf.Max(0, instance.storedCoin) },
-                { "hasPosition", instance.hasPosition }
+                { "hasPosition", instance.hasPosition },
+                { "friendship", Mathf.Max(0, instance.friendship) },
+                { "nextPlayAtUnix", instance.nextPlayAtUnix },
+                { "nextCoinAtUnix", instance.nextCoinAtUnix }
             });
         }
 
@@ -222,11 +229,86 @@ public class FirebaseCloudSaveService : ISaveService
                 y = ReadFloat(map, "y", 0f),
                 z = ReadFloat(map, "z", 0f),
                 storedCoin = ReadInt(map, "storedCoin", 0),
-                hasPosition = ReadBool(map, "hasPosition", true)
+                hasPosition = ReadBool(map, "hasPosition", true),
+                friendship = ReadInt(map, "friendship", 50),
+                nextPlayAtUnix = ReadLong(map, "nextPlayAtUnix", 0),
+                nextCoinAtUnix = ReadLong(map, "nextCoinAtUnix", 0)
             });
         }
 
         return instances;
+    }
+
+    private static Dictionary<string, object> CookingStateToMap(CookingSaveState state)
+    {
+        state ??= new CookingSaveState();
+        return new Dictionary<string, object>
+        {
+            { "isCooking", state.isCooking },
+            { "isDone", state.isDone },
+            { "recipeId", state.recipeId ?? string.Empty },
+            { "monsterId", state.monsterId ?? string.Empty },
+            { "completeAtUnix", state.completeAtUnix }
+        };
+    }
+
+    private static CookingSaveState ReadCookingState(Dictionary<string, object> map)
+    {
+        return new CookingSaveState
+        {
+            isCooking = ReadBool(map, "isCooking", false),
+            isDone = ReadBool(map, "isDone", false),
+            recipeId = ReadString(map, "recipeId", string.Empty),
+            monsterId = ReadString(map, "monsterId", string.Empty),
+            completeAtUnix = ReadLong(map, "completeAtUnix", 0)
+        };
+    }
+
+    private static List<Dictionary<string, object>> ResourceTimersToList(List<ResourceNodeTimerSave> timers)
+    {
+        List<Dictionary<string, object>> result = new List<Dictionary<string, object>>();
+        if (timers == null)
+            return result;
+
+        for (int i = 0; i < timers.Count; i++)
+        {
+            ResourceNodeTimerSave timer = timers[i];
+            if (timer == null || string.IsNullOrWhiteSpace(timer.nodeId))
+                continue;
+
+            result.Add(new Dictionary<string, object>
+            {
+                { "nodeId", timer.nodeId },
+                { "isReady", timer.isReady },
+                { "readyAtUnix", timer.readyAtUnix }
+            });
+        }
+
+        return result;
+    }
+
+    private static List<ResourceNodeTimerSave> ReadResourceTimers(Dictionary<string, object> data, string key)
+    {
+        List<ResourceNodeTimerSave> result = new List<ResourceNodeTimerSave>();
+        if (!data.TryGetValue(key, out object raw) || !(raw is IEnumerable enumerable))
+            return result;
+
+        foreach (object item in enumerable)
+        {
+            Dictionary<string, object> map = ToObjectDictionary(item);
+            string nodeId = ReadString(map, "nodeId", string.Empty);
+            if (string.IsNullOrWhiteSpace(nodeId))
+                continue;
+
+            result.Add(new ResourceNodeTimerSave
+            {
+                nodeId = nodeId,
+                isReady = ReadBool(map, "isReady", false),
+                readyAtUnix = ReadLong(map, "readyAtUnix", 0)
+            });
+        }
+
+        return result;
     }
 
     private static Dictionary<string, object> ToObjectDictionary(object raw)

@@ -28,6 +28,7 @@ public class HarvestNodeController : MonoBehaviour {
 
     private bool isClicking;
     private bool isAvailable = true;
+    private long respawnAtUnix;
 
     private void Awake()
     {
@@ -47,6 +48,9 @@ public class HarvestNodeController : MonoBehaviour {
     private void Update()
     {
         HandleInput();
+
+        if (!isAvailable && !isClicking && respawnAtUnix > 0L && TimedSaveUtility.NowUnix >= respawnAtUnix)
+            Respawn();
     }
 
     private void HandleInput()
@@ -114,9 +118,7 @@ public class HarvestNodeController : MonoBehaviour {
         if (hideWhileRespawning && spriteRenderer != null)
             spriteRenderer.enabled = false;
 
-        yield return new WaitForSeconds(respawnDuration);
-
-        Respawn();
+        respawnAtUnix = TimedSaveUtility.SecondsFromNow(respawnDuration);
     }
 
     private void Respawn()
@@ -133,6 +135,8 @@ public class HarvestNodeController : MonoBehaviour {
 
         if (harvestCollider != null)
             harvestCollider.enabled = true;
+
+        respawnAtUnix = 0L;
     }
 
     private void SpawnDrop()
@@ -152,5 +156,38 @@ public class HarvestNodeController : MonoBehaviour {
 
         if (drop != null)
             drop.Init(itemData, amount);
+    }
+
+    public ResourceNodeTimerSave ExportTimedState()
+    {
+        return new ResourceNodeTimerSave
+        {
+            nodeId = TimedSaveUtility.GetStableSceneKey(this, "harvest"),
+            isReady = isAvailable,
+            readyAtUnix = respawnAtUnix
+        };
+    }
+
+    public void ApplyTimedState(ResourceNodeTimerSave state)
+    {
+        if (state == null)
+            return;
+
+        respawnAtUnix = state.readyAtUnix;
+        isClicking = false;
+        isAvailable = state.isReady || (respawnAtUnix > 0L && TimedSaveUtility.NowUnix >= respawnAtUnix);
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = isAvailable || !hideWhileRespawning;
+            if (idleSprite != null)
+                spriteRenderer.sprite = idleSprite;
+        }
+
+        if (harvestCollider != null)
+            harvestCollider.enabled = isAvailable;
+
+        if (isAvailable)
+            respawnAtUnix = 0L;
     }
 }

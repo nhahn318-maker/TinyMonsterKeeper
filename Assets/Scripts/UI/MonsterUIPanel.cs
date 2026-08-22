@@ -216,6 +216,20 @@ public class MonsterUIPanel : MonoBehaviour
 
     private double GetPlayCooldownRemaining(TinyMonsterTouch monster)
     {
+        if (monster != null && monster.Controller != null)
+        {
+            long controllerNextPlayUnixSeconds = monster.Controller.NextPlayAtUnix;
+            if (controllerNextPlayUnixSeconds <= 0L)
+            {
+                string legacyTicks = PlayerPrefs.GetString(GetPlayCooldownKey(monster), string.Empty);
+                long.TryParse(legacyTicks, out controllerNextPlayUnixSeconds);
+                if (controllerNextPlayUnixSeconds > 0L)
+                    monster.Controller.SetNextPlayAtUnix(controllerNextPlayUnixSeconds);
+            }
+
+            return Math.Max(0d, controllerNextPlayUnixSeconds - DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        }
+
         string key = GetPlayCooldownKey(monster);
         if (string.IsNullOrEmpty(key))
             return 0d;
@@ -230,13 +244,20 @@ public class MonsterUIPanel : MonoBehaviour
 
     private void SaveNextPlayTime(TinyMonsterTouch monster)
     {
+        long nextPlayAtUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            + Mathf.Max(0, Mathf.RoundToInt(playCooldownSeconds));
+
+        if (monster != null && monster.Controller != null)
+        {
+            monster.Controller.SetNextPlayAtUnix(nextPlayAtUnixSeconds);
+            return;
+        }
+
         string key = GetPlayCooldownKey(monster);
         if (string.IsNullOrEmpty(key))
             return;
 
-        long nowUnixSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        long nextPlayUnixSeconds = nowUnixSeconds + Mathf.Max(0, Mathf.RoundToInt(playCooldownSeconds));
-        PlayerPrefs.SetString(key, nextPlayUnixSeconds.ToString());
+        PlayerPrefs.SetString(key, nextPlayAtUnixSeconds.ToString());
         PlayerPrefs.Save();
     }
 

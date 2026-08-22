@@ -52,7 +52,7 @@ public class BushController : MonoBehaviour {
     [SerializeField] private string countdownFormat = "{0}s";
 
     private BushState currentState = BushState.Normal;
-    private float timer;
+    private long fruitReadyAtUnix;
     private bool isPlayingClickAnimation;
 
     private void Awake()
@@ -84,10 +84,9 @@ public class BushController : MonoBehaviour {
         if (isPlayingClickAnimation) return;
         if (currentState == BushState.Fruiting) return;
 
-        timer += Time.deltaTime;
         UpdateGrowthCountdown();
 
-        if (currentState == BushState.Normal && timer >= timeToFruit)
+        if (currentState == BushState.Normal && TimedSaveUtility.NowUnix >= fruitReadyAtUnix)
         {
             SetState(BushState.Fruiting);
         }
@@ -220,10 +219,11 @@ public class BushController : MonoBehaviour {
         }
     }
 
-    private void SetState(BushState newState)
+    private void SetState(BushState newState, bool resetGrowthTimer = true)
     {
         currentState = newState;
-        timer = 0f;
+        if (newState == BushState.Normal && resetGrowthTimer)
+            fruitReadyAtUnix = TimedSaveUtility.SecondsFromNow(timeToFruit);
 
         ReturnToStaticSprite();
         UpdateReadyBubble();
@@ -251,8 +251,7 @@ public class BushController : MonoBehaviour {
         if (!shouldShow)
             return;
 
-        float remainingTime = Mathf.Max(0f, timeToFruit - timer);
-        int remainingSeconds = Mathf.CeilToInt(remainingTime);
+        int remainingSeconds = Mathf.Max(0, Mathf.CeilToInt(fruitReadyAtUnix - TimedSaveUtility.NowUnix));
         growthCountdownText.text = string.Format(countdownFormat, remainingSeconds);
     }
 
@@ -306,5 +305,25 @@ public class BushController : MonoBehaviour {
             default:
                 return 0.25f;
         }
+    }
+
+    public ResourceNodeTimerSave ExportTimedState()
+    {
+        return new ResourceNodeTimerSave
+        {
+            nodeId = TimedSaveUtility.GetStableSceneKey(this, "bush"),
+            isReady = currentState == BushState.Fruiting,
+            readyAtUnix = fruitReadyAtUnix
+        };
+    }
+
+    public void ApplyTimedState(ResourceNodeTimerSave state)
+    {
+        if (state == null)
+            return;
+
+        fruitReadyAtUnix = state.readyAtUnix;
+        bool isReady = state.isReady || (fruitReadyAtUnix > 0L && TimedSaveUtility.NowUnix >= fruitReadyAtUnix);
+        SetState(isReady ? BushState.Fruiting : BushState.Normal, false);
     }
 }
