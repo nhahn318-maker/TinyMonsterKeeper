@@ -215,7 +215,7 @@ namespace TinyMonsterKeeper.EditorAutomation
             textObject.transform.localPosition = template.transform.localPosition;
             textObject.transform.localRotation = template.transform.localRotation;
             textObject.transform.localScale = template.transform.localScale;
-            textObject.SetActive(false);
+            textObject.SetActive(true);
             return textObject.GetComponent<TMP_Text>();
         }
 
@@ -238,7 +238,7 @@ namespace TinyMonsterKeeper.EditorAutomation
             if (templateRenderer != null && targetRenderer != null)
                 EditorUtility.CopySerialized(templateRenderer, targetRenderer);
 
-            target.gameObject.SetActive(false);
+            target.gameObject.SetActive(true);
             EditorUtility.SetDirty(target);
             EditorUtility.SetDirty(targetRect);
             if (targetRenderer != null)
