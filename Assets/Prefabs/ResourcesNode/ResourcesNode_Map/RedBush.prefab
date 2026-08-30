@@ -527,7 +527,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d63760dcd16c1d43ad4a95fbaecb0ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeToFruit: 2
+  timeToFruit: 45
   spriteNormal: {fileID: 1950605182, guid: dde9205caa0dde24f8c7fb8b2845bec1, type: 3}
   spriteFruiting: {fileID: 109298461, guid: b033d9be6c843d94cae313b1e4090cd6, type: 3}
   animator: {fileID: 4727914220074610465}
@@ -561,7 +561,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 130
+  m_SortingOrder: 10130
   m_SortAtRoot: 0
 --- !u!114 &6555090545092937682
 MonoBehaviour:
@@ -577,6 +577,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 2428308958079770235}
   sortYOffset: 0
+  worldBaseOrder: 10000
   baseOrder: 0
   unitsToOrder: 100
   minOrder: -32768

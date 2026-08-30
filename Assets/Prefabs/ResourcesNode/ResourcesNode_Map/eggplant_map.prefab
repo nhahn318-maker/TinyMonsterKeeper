@@ -157,7 +157,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: 8f8b3f64d5914ca5a8fc9d95b5f3c781, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 240
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 6423932805472367939}
   countdownFormat: '{0}s'
@@ -367,5 +367,5 @@ MonoBehaviour:
   _SortingLayerID: 0
   _SortingOrder: 0
   m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 0}
+  m_renderer: {fileID: 3531750449410005400}
   m_maskType: 0

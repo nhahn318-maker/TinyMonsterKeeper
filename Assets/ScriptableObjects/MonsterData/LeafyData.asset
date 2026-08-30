@@ -21,8 +21,8 @@ MonoBehaviour:
   berryCostPerFeed: 1
   feedFriendshipGain: 10
   coinPerTick: 1
-  coinTickInterval: 5
-  maxStoredCoin: 3
+  coinTickInterval: 180
+  maxStoredCoin: 5
   unlockAppealCost: 0
   unlockFriendshipCost: 0
   unlockRequiredItemId: 

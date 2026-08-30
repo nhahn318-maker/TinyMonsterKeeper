@@ -1625,6 +1625,71 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 85866597}
   m_CullTransparentMesh: 1
+--- !u!1001 &89978002
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 217136560}
+    m_Modifications:
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 9.193188
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.7331288
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.06164968
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2262251795476835744, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      propertyPath: m_Name
+      value: Tomato_Map_Release
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3780930140418904571, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+  m_SourcePrefab: {fileID: 100100000, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+--- !u!4 &89978003 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+  m_PrefabInstance: {fileID: 89978002}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &93467744
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5493,6 +5558,7 @@ Transform:
   - {fileID: 688530119}
   - {fileID: 1766656851}
   - {fileID: 266756757}
+  - {fileID: 89978003}
   m_Father: {fileID: 315373395}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &222159955
@@ -6958,7 +7024,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: 5ccadd1e2ad646998e8c7cbebbc74523, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 300
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'
@@ -9846,6 +9912,9 @@ MonoBehaviour:
   cookingAnimationFps: 6
   cookingBubblesObject: {fileID: 0}
   readyBubbleObject: {fileID: 744947120}
+  failedRecipeBubbleSprite: {fileID: 21300000, guid: a1770ff62f2265d4cb3ecd09d8565fc5, type: 3}
+  failedRecipeCookDuration: 3
+  failedRecipeFeedbackDuration: 2.5
   progressBarObject: {fileID: 300000100}
   progressFillTransform: {fileID: 300000111}
   cookTimerText: {fileID: 1452113026}
@@ -9879,9 +9948,11 @@ MonoBehaviour:
   monsterNoticeKey: 2
   monsterAlreadyInGardenKey: 3
   monsterStarIncreasedKey: 4
+  failedRecipeNoticeKey: 6
   monsterNoticeFormat: '{0} joined your garden!'
   monsterAlreadyInGardenFallback: '{0} is already in your garden!'
   monsterStarIncreasedFallback: '{0} gained a {1} star!'
+  failedRecipeNoticeFallback: This mix did not attract any monster. Try another recipe!
   bronzeStarSprite: {fileID: 21300000, guid: 654b1affd6feb5d48b73e5ca88509247, type: 3}
   silverStarSprite: {fileID: 21300000, guid: c22ec4d8b078dc644ac75cb683f6e9d0, type: 3}
   goldStarSprite: {fileID: 21300000, guid: 4af092810e1d907438275380c4fa30ce, type: 3}
@@ -14522,7 +14593,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: b4d01ec2e8db4df8a1eed0524d28d60e, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 120
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'
@@ -16031,7 +16102,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: 5ccadd1e2ad646998e8c7cbebbc74523, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 300
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'
@@ -22028,7 +22099,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: b4d01ec2e8db4df8a1eed0524d28d60e, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 120
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'
@@ -24552,7 +24623,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: 9507279cfce54eac8a4b059c262f0732, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 180
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'
@@ -31768,7 +31839,7 @@ MonoBehaviour:
   notEnoughCoinFallback: Not enough coins.
   zones:
   - zoneName: 1
-    unlockCost: 0
+    unlockCost: 15
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 932929626}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31783,7 +31854,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: 2
-    unlockCost: 0
+    unlockCost: 35
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 806572358}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31798,7 +31869,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_01_b
-    unlockCost: 0
+    unlockCost: 60
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1296829594}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31813,7 +31884,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_04
-    unlockCost: 0
+    unlockCost: 90
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1103554013}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31828,7 +31899,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_05
-    unlockCost: 0
+    unlockCost: 130
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1451974278}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31843,7 +31914,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_06
-    unlockCost: 0
+    unlockCost: 180
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1177655927}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31858,7 +31929,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_07
-    unlockCost: 0
+    unlockCost: 240
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1265152356}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31873,7 +31944,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_08
-    unlockCost: 0
+    unlockCost: 310
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1230152865}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31888,7 +31959,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_09
-    unlockCost: 0
+    unlockCost: 390
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1344080522}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31903,7 +31974,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_10
-    unlockCost: 0
+    unlockCost: 480
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 671461057}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31918,7 +31989,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_11
-    unlockCost: 0
+    unlockCost: 580
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 139634670}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31933,7 +32004,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_12
-    unlockCost: 0
+    unlockCost: 700
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 1857612832}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -31948,7 +32019,7 @@ MonoBehaviour:
     customRevealDriftOffset: {x: 0, y: 0, z: 0}
     hideButtonOnUnlock: 1
   - zoneName: zone_13
-    unlockCost: 0
+    unlockCost: 850
     uiButton: {fileID: 0}
     mapButtonCollider: {fileID: 548959742}
     unlockedButtonSprite: {fileID: 21300000, guid: a020aa40695b0ab49898546d07d35f83, type: 3}
@@ -37282,7 +37353,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: b4d01ec2e8db4df8a1eed0524d28d60e, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 120
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'
@@ -48297,7 +48368,7 @@ MonoBehaviour:
   fallbackDropOffset: {x: 0, y: -0.2}
   itemData: {fileID: 11400000, guid: b4d01ec2e8db4df8a1eed0524d28d60e, type: 2}
   amount: 1
-  respawnDuration: 10
+  respawnDuration: 120
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
   countdownFormat: '{0}s'

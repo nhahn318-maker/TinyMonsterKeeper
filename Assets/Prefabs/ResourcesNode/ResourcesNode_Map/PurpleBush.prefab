@@ -187,7 +187,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d63760dcd16c1d43ad4a95fbaecb0ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeToFruit: 2
+  timeToFruit: 120
   spriteNormal: {fileID: 1950605182, guid: dde9205caa0dde24f8c7fb8b2845bec1, type: 3}
   spriteFruiting: {fileID: -561800636, guid: af3201b5067c7b64b88cefd08a75a219, type: 3}
   animator: {fileID: 7325273638146040021}

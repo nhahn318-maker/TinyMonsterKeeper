@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60b733cd470f4b1eabf4a9a762e9fa6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  respawnDuration: 60
+  respawnDuration: 480
   countdownFormat: '{0}s'
   dropPrefab: {fileID: 6961177154507404566, guid: 23256948e05eeda45b1f2c3e0c4292ee, type: 3}
   dropPoint: {fileID: 0}
