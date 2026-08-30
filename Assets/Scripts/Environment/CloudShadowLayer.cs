@@ -21,6 +21,9 @@ public class CloudShadowLayer : MonoBehaviour
     [SerializeField] private float speed = 0.22f;
     [SerializeField] private float worldTileSize = 14f;
     [SerializeField, Min(1)] private int tileCount = 3;
+    [SerializeField, Min(1)] private int crossTileCount = 3;
+    [SerializeField, Min(0.5f)] private float crossTileSpacing = 8f;
+    [SerializeField] private Vector2 coverageCenterOffset = new Vector2(0f, 3f);
 
     [Header("Generated Texture")]
     [SerializeField, Min(32)] private int textureSize = 256;
@@ -63,6 +66,8 @@ public class CloudShadowLayer : MonoBehaviour
         normalizedDirection = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
         textureSize = Mathf.Max(32, textureSize);
         tileCount = Mathf.Max(1, tileCount);
+        crossTileCount = Mathf.Max(1, crossTileCount);
+        crossTileSpacing = Mathf.Max(0.5f, crossTileSpacing);
         worldTileSize = Mathf.Max(1f, worldTileSize);
 
         if (!HasCloudSprites())
@@ -154,14 +159,15 @@ public class CloudShadowLayer : MonoBehaviour
                 tileRenderers.RemoveAt(i);
         }
 
-        while (tileRenderers.Count < tileCount)
+        int requiredTileCount = tileCount * crossTileCount;
+        while (tileRenderers.Count < requiredTileCount)
         {
             GameObject tile = new GameObject($"CloudShadowTile_{tileRenderers.Count + 1}");
             tile.transform.SetParent(transform, false);
             tileRenderers.Add(tile.AddComponent<SpriteRenderer>());
         }
 
-        for (int i = tileRenderers.Count - 1; i >= tileCount; i--)
+        for (int i = tileRenderers.Count - 1; i >= requiredTileCount; i--)
         {
             if (tileRenderers[i] != null)
                 DestroyCloudResource(tileRenderers[i].gameObject);
@@ -204,7 +210,9 @@ public class CloudShadowLayer : MonoBehaviour
             center = new Vector3(cameraPosition.x, cameraPosition.y, transform.position.z);
         }
 
-        float middle = (tileRenderers.Count - 1) * 0.5f;
+        center += new Vector3(coverageCenterOffset.x, coverageCenterOffset.y, 0f);
+        float travelMiddle = (tileCount - 1) * 0.5f;
+        float crossMiddle = (crossTileCount - 1) * 0.5f;
         Vector3 travel = new Vector3(normalizedDirection.x, normalizedDirection.y, 0f);
         Vector3 cross = new Vector3(-normalizedDirection.y, normalizedDirection.x, 0f);
 
@@ -214,8 +222,12 @@ public class CloudShadowLayer : MonoBehaviour
             if (tileRenderer == null)
                 continue;
 
-            float distance = (i - middle) * worldTileSize + scrollOffset;
-            float crossOffset = Mathf.Lerp(crossOffsetRange.x, crossOffsetRange.y, GetStable01(i, 17));
+            int travelIndex = i % tileCount;
+            int crossIndex = i / tileCount;
+            float distance = (travelIndex - travelMiddle) * worldTileSize + scrollOffset;
+            float rowOffset = (crossIndex - crossMiddle) * crossTileSpacing;
+            float jitter = Mathf.Lerp(crossOffsetRange.x, crossOffsetRange.y, GetStable01(i, 17));
+            float crossOffset = rowOffset + jitter;
             float scale = Mathf.Lerp(cloudScaleRange.x, cloudScaleRange.y, GetStable01(i, 53));
 
             tileRenderer.transform.position = center + travel * distance + cross * crossOffset;

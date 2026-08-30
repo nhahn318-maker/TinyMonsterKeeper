@@ -53,13 +53,16 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 34fd509e762f7024087ec4fd05fcb744, type: 3}
   - {fileID: 21300000, guid: 5cf02e35106815140b507c004a5890c2, type: 3}
   - {fileID: 21300000, guid: 4d9ff012e9e9fea43a94416118a3ddab, type: 3}
-  cloudScaleRange: {x: 3.5, y: 6}
-  crossOffsetRange: {x: -3.5, y: 3.5}
+  cloudScaleRange: {x: 1.5, y: 2.2}
+  crossOffsetRange: {x: 0, y: 0}
   followCamera: 0
   direction: {x: 1, y: -0.25}
   speed: 0.22
-  worldTileSize: 12
-  tileCount: 7
+  worldTileSize: 9
+  tileCount: 5
+  crossTileCount: 3
+  crossTileSpacing: 10
+  coverageCenterOffset: {x: 0, y: 3}
   textureSize: 256
   cloudBlobCount: 36
   blobRadiusRange: {x: 0.1, y: 0.28}

@@ -24,7 +24,6 @@ public class HarvestNodeController : MonoBehaviour {
     [SerializeField] private float respawnDuration = 10f;
     [SerializeField] private bool hideWhileRespawning = true;
     [SerializeField] private TMP_Text growthCountdownText;
-    [SerializeField] private string countdownFormat = "{0}s";
 
     [Header("Click Priority")]
     [SerializeField] private LayerMask pickupLayer;
@@ -163,7 +162,7 @@ public class HarvestNodeController : MonoBehaviour {
             return;
 
         long remaining = respawnAtUnix - TimedSaveUtility.NowUnix;
-        growthCountdownText.text = string.Format(countdownFormat, Mathf.Max(1, (int)remaining));
+        growthCountdownText.text = CountdownTextFormatter.Format(Mathf.Max(1, (int)remaining));
 
         if (countdownRenderer != null && spriteRenderer != null)
         {

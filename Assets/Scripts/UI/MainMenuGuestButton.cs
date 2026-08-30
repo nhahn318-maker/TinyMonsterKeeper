@@ -5,7 +5,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button))]
 public sealed class MainMenuGuestButton : MonoBehaviour
 {
-    private const string GameplaySceneName = "GameplayScene";
+    private const string LoadingSceneName = "LoadingScene";
 
     private void Awake()
     {
@@ -19,6 +19,6 @@ public sealed class MainMenuGuestButton : MonoBehaviour
 
     public void PlayAsGuest()
     {
-        SceneManager.LoadScene(GameplaySceneName);
+        SceneManager.LoadScene(LoadingSceneName);
     }
 }

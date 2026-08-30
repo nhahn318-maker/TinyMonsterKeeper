@@ -8,7 +8,6 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
 {
     [Header("Growth")]
     [SerializeField] private float respawnDuration = 30f;
-    [SerializeField] private string countdownFormat = "{0}s";
 
     [Header("Harvest")]
     [SerializeField] private GameObject dropPrefab;
@@ -213,7 +212,7 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
             return;
 
         int seconds = Mathf.Max(0, Mathf.CeilToInt(readyAtUnix - TimedSaveUtility.NowUnix));
-        growthCountdownText.text = string.Format(countdownFormat, seconds);
+        growthCountdownText.text = CountdownTextFormatter.Format(seconds);
     }
 
     private TMP_Text CreateCountdownText()

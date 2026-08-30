@@ -49,7 +49,6 @@ public class BushController : MonoBehaviour {
 
     [Header("Growth Countdown")]
     [SerializeField] private TMP_Text growthCountdownText;
-    [SerializeField] private string countdownFormat = "{0}s";
 
     private BushState currentState = BushState.Normal;
     private long fruitReadyAtUnix;
@@ -252,7 +251,7 @@ public class BushController : MonoBehaviour {
             return;
 
         int remainingSeconds = Mathf.Max(0, Mathf.CeilToInt(fruitReadyAtUnix - TimedSaveUtility.NowUnix));
-        growthCountdownText.text = string.Format(countdownFormat, remainingSeconds);
+        growthCountdownText.text = CountdownTextFormatter.Format(remainingSeconds);
     }
 
     private void HideGrowthCountdown()
