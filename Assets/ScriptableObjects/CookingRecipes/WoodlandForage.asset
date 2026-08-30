@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f45e4c3f4b74494bb8908e9fc984f9a, type: 3}
+  m_Name: WoodlandForage
+  m_EditorClassIdentifier:
+  recipeId: woodland_forage
+  resultName: Woodland Forage
+  cookDuration: 15
+  ingredients:
+  - itemData: {fileID: 11400000, guid: a37547412a384ea3aace2f28728c0a03, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 902707e628a9ab941a10adff3fedc1a7, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 5ccadd1e2ad646998e8c7cbebbc74523, type: 2}
+    count: 1
+  monsterResultOptions:
+  - monsterPrefab: {fileID: 242072064891303551, guid: 7a5a4faaf4804914af29ad61b4d987df, type: 3}
+    cookDuration: 14
+    weight: 3
+  - monsterPrefab: {fileID: 242072064891303551, guid: e221f035ac09a374d9160c1ba392364c, type: 3}
+    cookDuration: 17
+    weight: 2
+  - monsterPrefab: {fileID: 242072064891303551, guid: aac661ac52859924aae7d823b0dc5446, type: 3}
+    cookDuration: 20
+    weight: 1
+  allowDuplicateMonsters: 0

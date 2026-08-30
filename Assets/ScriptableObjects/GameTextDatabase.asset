@@ -25,3 +25,5 @@ MonoBehaviour:
     text: '{0} gained a {1} star!'
   - key: 5
     text: You can play with this monster again in {0}.
+  - key: 6
+    text: This mix did not attract any monster. Try another recipe!

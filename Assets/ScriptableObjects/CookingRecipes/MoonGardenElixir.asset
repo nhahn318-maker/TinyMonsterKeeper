@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f45e4c3f4b74494bb8908e9fc984f9a, type: 3}
+  m_Name: MoonGardenElixir
+  m_EditorClassIdentifier:
+  recipeId: moon_garden_elixir
+  resultName: Moon Garden Elixir
+  cookDuration: 30
+  ingredients:
+  - itemData: {fileID: 11400000, guid: 1b6a0bd3619c40a095e40439382a9e89, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 71a33a8f25e848c689bc9ba6b5fe23a1, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 2e09325111b14588b6bd7ffc606edcba, type: 2}
+    count: 1
+  monsterResultOptions:
+  - monsterPrefab: {fileID: 242072064891303551, guid: 5fb8811383ad7d6468dfc803209d2011, type: 3}
+    cookDuration: 28
+    weight: 3
+  - monsterPrefab: {fileID: 242072064891303551, guid: fbe86c7a43632894fa97a336637bc3b3, type: 3}
+    cookDuration: 31
+    weight: 2
+  - monsterPrefab: {fileID: 242072064891303551, guid: 03307cb4a7f9dd24d849196df6b78aab, type: 3}
+    cookDuration: 34
+    weight: 1
+  allowDuplicateMonsters: 0

@@ -9946,6 +9946,13 @@ MonoBehaviour:
   recipes:
   - {fileID: 11400000, guid: 023140beee67fda4c99c9de9e7f57eeb, type: 2}
   - {fileID: 11400000, guid: 9e2f20a332210164ea2f100cbb6e97ce, type: 2}
+  - {fileID: 11400000, guid: 1ab6a84421374e28b5f51bb3e96792ec, type: 2}
+  - {fileID: 11400000, guid: 91ff1aa470b64187a2081983b906a75d, type: 2}
+  - {fileID: 11400000, guid: ad6c32863d4b49f5ad86425f242ea36f, type: 2}
+  - {fileID: 11400000, guid: e3bf7d1a972e4729b934d7f5fce06216, type: 2}
+  - {fileID: 11400000, guid: 735861384334408a847fab6169f8eef1, type: 2}
+  - {fileID: 11400000, guid: 27578039ca354ad4bf2730eb7bd119ba, type: 2}
+  - {fileID: 11400000, guid: 2b6c6228782a4c9881b1829916784911, type: 2}
   clickCollider: {fileID: 0}
 --- !u!114 &331509550
 MonoBehaviour:
@@ -11492,7 +11499,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 20000
   m_Sprite: {fileID: 21300000, guid: f719b02aa2548ab4b860d7e12b72f1f1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -32033,7 +32040,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2794653498645174267, guid: 0e56dcacd9dbf9843bd1da11f02d2f47, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 0e56dcacd9dbf9843bd1da11f02d2f47, type: 3}
 --- !u!4 &1092490484 stripped
 Transform:
@@ -46549,7 +46559,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
       insertIndex: -1
       addedObject: {fileID: 785042652}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3780930140418904571, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
 --- !u!4 &1577700407 stripped
 Transform:
@@ -51901,7 +51914,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7650149433499811311, guid: d86a7cdf8e590084fa9282da13023292, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: d86a7cdf8e590084fa9282da13023292, type: 3}
 --- !u!4 &1766656851 stripped
 Transform:
@@ -53561,7 +53577,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5216893992589018, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1935307982}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3780930140418904571, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 0a34ed80be3443e597dfd6e300ae7218, type: 3}
 --- !u!4 &1820287290 stripped
 Transform:
@@ -56055,7 +56074,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 100
+  m_SortingOrder: 20000
   m_Sprite: {fileID: 21300000, guid: f719b02aa2548ab4b860d7e12b72f1f1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -65164,7 +65183,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2794653498645174267, guid: 0e56dcacd9dbf9843bd1da11f02d2f47, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 0e56dcacd9dbf9843bd1da11f02d2f47, type: 3}
 --- !u!1001 &2974368140967661250
 PrefabInstance:
@@ -65791,7 +65813,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7650149433499811311, guid: d86a7cdf8e590084fa9282da13023292, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: d86a7cdf8e590084fa9282da13023292, type: 3}
 --- !u!1001 &8622050696985311227
 PrefabInstance:

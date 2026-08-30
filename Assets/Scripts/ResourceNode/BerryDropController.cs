@@ -18,6 +18,9 @@ public class BerryDropController : MonoBehaviour {
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Camera mainCamera;
 
+    [Header("Rendering")]
+    [SerializeField] private int dropSortingOrder = 32000;
+
     [Header("Pickup Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] private string pickupAnim = "Berry_Pickup";
@@ -44,6 +47,8 @@ public class BerryDropController : MonoBehaviour {
 
         if (mainCamera == null)
             mainCamera = Camera.main;
+
+        KeepDropOnTop();
     }
 
     private void Start()
@@ -53,7 +58,14 @@ public class BerryDropController : MonoBehaviour {
 
     private void Update()
     {
+        KeepDropOnTop();
         HandleInput();
+    }
+
+    private void KeepDropOnTop()
+    {
+        if (spriteRenderer != null && spriteRenderer.sortingOrder != dropSortingOrder)
+            spriteRenderer.sortingOrder = dropSortingOrder;
     }
 
     public void Init(ItemData newItemData, int newAmount)

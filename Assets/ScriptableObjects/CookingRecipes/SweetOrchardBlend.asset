@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f45e4c3f4b74494bb8908e9fc984f9a, type: 3}
+  m_Name: SweetOrchardBlend
+  m_EditorClassIdentifier:
+  recipeId: sweet_orchard_blend
+  resultName: Sweet Orchard Blend
+  cookDuration: 20
+  ingredients:
+  - itemData: {fileID: 11400000, guid: a37547412a384ea3aace2f28728c0a03, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 636a48f82a304244e8bd4e46d523fd78, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 902707e628a9ab941a10adff3fedc1a7, type: 2}
+    count: 1
+  monsterResultOptions:
+  - monsterPrefab: {fileID: 242072064891303551, guid: 1fe9835e26b2c5c499029f1955cd12ee, type: 3}
+    cookDuration: 18
+    weight: 3
+  - monsterPrefab: {fileID: 242072064891303551, guid: 0eaf38f1bd2d0614992fc02ffae2c54c, type: 3}
+    cookDuration: 21
+    weight: 2
+  - monsterPrefab: {fileID: 242072064891303551, guid: 61c0b2af7728751499f0dc4469d52fea, type: 3}
+    cookDuration: 24
+    weight: 1
+  allowDuplicateMonsters: 0

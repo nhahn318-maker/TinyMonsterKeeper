@@ -18,6 +18,9 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [Header("Effects")]
     [SerializeField] private GameObject cookingBubblesObject;
     [SerializeField] private GameObject readyBubbleObject;
+    [SerializeField] private Sprite failedRecipeBubbleSprite;
+    [SerializeField] private float failedRecipeCookDuration = 3f;
+    [SerializeField] private float failedRecipeFeedbackDuration = 2.5f;
     [SerializeField] private GameObject progressBarObject;
     [SerializeField] private Transform progressFillTransform;
     [SerializeField] private TMP_Text cookTimerText;
@@ -59,9 +62,11 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private GameTextKey monsterNoticeKey = GameTextKey.MonsterJoined;
     [SerializeField] private GameTextKey monsterAlreadyInGardenKey = GameTextKey.MonsterAlreadyInGarden;
     [SerializeField] private GameTextKey monsterStarIncreasedKey = GameTextKey.MonsterStarIncreased;
+    [SerializeField] private GameTextKey failedRecipeNoticeKey = GameTextKey.CookingRecipeFailed;
     [SerializeField] private string monsterNoticeFormat = "{0} joined your garden!";
     [SerializeField] private string monsterAlreadyInGardenFallback = "{0} is already in your garden!";
     [SerializeField] private string monsterStarIncreasedFallback = "{0} gained a {1} star!";
+    [SerializeField] private string failedRecipeNoticeFallback = "This mix did not attract any monster. Try another recipe!";
 
     [Header("Star Gain Feedback")]
     [SerializeField] private Sprite bronzeStarSprite;
@@ -96,6 +101,9 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
     private bool isAttracting;
     private Coroutine cameraFocusRoutine;
     private Coroutine noticeRoutine;
+    private Coroutine failedRecipeRoutine;
+    private SpriteRenderer readyBubbleRenderer;
+    private Sprite readyBubbleDefaultSprite;
     private CookingRecipeData activeRecipe;
     private CookingRecipeData.MonsterResultOption activeMonsterResult;
     private int lastHandledClickFrame = -1;
@@ -125,10 +133,22 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             focusCamera = Camera.main;
 
         AutoWireSummonPathReferences();
+        CacheReadyBubbleVisual();
         CacheNoticeButtons();
         HideMonsterNotice();
         SetEmptyVisual();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (failedRecipeBubbleSprite == null)
+        {
+            failedRecipeBubbleSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/Arts/ResourcesNode/CookingPot/Bubble_Food_Fail.png");
+        }
+    }
+#endif
 
     private void Update()
     {
@@ -226,16 +246,18 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             return false;
         }
 
-        if (!TryResolveRecipe(ingredients, out CookingRecipeData recipe))
-        {
-            Debug.LogWarning($"No cooking recipe matched these ingredients. Ingredients: {FormatIngredients(ingredients)}. Recipes: {FormatKnownRecipes()}");
-            return false;
-        }
-
         if (!CanConsumeIngredients(ingredients))
         {
             Debug.LogWarning("Not enough food!");
             return false;
+        }
+
+        if (!TryResolveRecipe(ingredients, out CookingRecipeData recipe))
+        {
+            Debug.LogWarning($"No cooking recipe matched these ingredients. Ingredients: {FormatIngredients(ingredients)}. Recipes: {FormatKnownRecipes()}");
+            ConsumeIngredients(ingredients);
+            StartCoroutine(FailedCookingRoutine());
+            return true;
         }
 
         CookingRecipeData.MonsterResultOption selectedResult = recipe.GetRandomMonsterResultOption();
@@ -249,6 +271,36 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         StartCoroutine(CookingRoutine(recipe, selectedResult));
 
         return true;
+    }
+
+    private IEnumerator FailedCookingRoutine()
+    {
+        isCooking = true;
+        isDone = false;
+        activeRecipe = null;
+        activeMonsterResult = default;
+        currentCookDuration = Mathf.Max(0.5f, failedRecipeCookDuration);
+        cookCompleteAtUnix = TimedSaveUtility.SecondsFromNow(currentCookDuration);
+
+        SetCookingVisual();
+        UpdateProgressBar(0f);
+        UpdateCookTimer(currentCookDuration);
+
+        while (TimedSaveUtility.NowUnix < cookCompleteAtUnix)
+        {
+            float remaining = Mathf.Max(0f, cookCompleteAtUnix - TimedSaveUtility.NowUnix);
+            float elapsed = Mathf.Max(0f, currentCookDuration - remaining);
+            UpdateCookingAnimation(elapsed);
+            UpdateProgressBar(elapsed / currentCookDuration);
+            UpdateCookTimer(remaining);
+            yield return null;
+        }
+
+        isCooking = false;
+        currentCookDuration = 0f;
+        cookCompleteAtUnix = 0L;
+        SetEmptyVisual();
+        ShowFailedRecipeFeedback();
     }
 
     private IEnumerator CookingRoutine(CookingRecipeData recipe, CookingRecipeData.MonsterResultOption selectedResult)
@@ -1166,6 +1218,50 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (noticeLayer != null)
             noticeLayer.SetActive(true);
+    }
+
+    private void CacheReadyBubbleVisual()
+    {
+        if (readyBubbleObject == null)
+            return;
+
+        readyBubbleRenderer = readyBubbleObject.GetComponent<SpriteRenderer>();
+        if (readyBubbleRenderer != null)
+            readyBubbleDefaultSprite = readyBubbleRenderer.sprite;
+    }
+
+    private void ShowFailedRecipeFeedback()
+    {
+        if (CookingPotPanelUI.Instance != null)
+            CookingPotPanelUI.Instance.Hide();
+
+        ShowTemporaryNotice(
+            GetText(failedRecipeNoticeKey, failedRecipeNoticeFallback),
+            failedRecipeFeedbackDuration);
+
+        if (failedRecipeRoutine != null)
+            StopCoroutine(failedRecipeRoutine);
+
+        failedRecipeRoutine = StartCoroutine(FailedRecipeBubbleRoutine());
+    }
+
+    private IEnumerator FailedRecipeBubbleRoutine()
+    {
+        if (readyBubbleObject != null && readyBubbleRenderer != null && failedRecipeBubbleSprite != null)
+        {
+            readyBubbleRenderer.sprite = failedRecipeBubbleSprite;
+            readyBubbleObject.SetActive(true);
+        }
+
+        yield return new WaitForSeconds(failedRecipeFeedbackDuration);
+
+        if (readyBubbleRenderer != null)
+            readyBubbleRenderer.sprite = readyBubbleDefaultSprite;
+
+        if (readyBubbleObject != null && !isDone)
+            readyBubbleObject.SetActive(false);
+
+        failedRecipeRoutine = null;
     }
 
     private void ShowTemporaryNotice(string message, float duration)
