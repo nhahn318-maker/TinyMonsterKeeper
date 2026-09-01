@@ -159,7 +159,6 @@ MonoBehaviour:
   respawnDuration: 360
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
-  countdownFormat: '{0}s'
   pickupLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -173,7 +172,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10078
+  m_SortingOrder: 525
   m_SortAtRoot: 0
 --- !u!114 &2400625002858590054
 MonoBehaviour:
@@ -189,11 +188,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 5216893992589018}
   sortYOffset: -0.1
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 1
   sortingGroup: {fileID: 4763851720771302040}
   spriteRenderers: []

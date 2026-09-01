@@ -44,7 +44,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10280
+  m_SortingOrder: 490
   m_SortAtRoot: 0
 --- !u!114 &2310942162637447955
 MonoBehaviour:
@@ -60,11 +60,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 8309182194535745780}
   sortYOffset: 0.04
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 1
   sortingGroup: {fileID: 7998055677581351640}
   spriteRenderers: []

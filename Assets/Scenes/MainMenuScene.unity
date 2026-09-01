@@ -2011,6 +2011,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   panelSetting: {fileID: 1091106133}
+  dimBlocker: {fileID: 0}
   openButton: {fileID: 676391820}
   backButton: {fileID: 1801704644}
   musicImage: {fileID: 269897537}

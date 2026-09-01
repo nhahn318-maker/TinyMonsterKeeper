@@ -118,8 +118,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.071, y: 1.59}
-  m_SizeDelta: {x: 0.3746, y: 0.428}
+  m_AnchoredPosition: {x: -0.067, y: 1.59}
+  m_SizeDelta: {x: 0.7863, y: 0.428}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &5432526019462243702
 MeshRenderer:
@@ -534,7 +534,6 @@ MonoBehaviour:
     m_Bits: 8
   readyBubbleObject: {fileID: 4400253260087208109}
   growthCountdownText: {fileID: 7167436806371797072}
-  countdownFormat: '{0}s'
 --- !u!114 &2044124489177060379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -561,7 +560,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10302
+  m_SortingOrder: 597
   m_SortAtRoot: 0
 --- !u!114 &2475931011426776679
 MonoBehaviour:
@@ -577,11 +576,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 5891130746554334063}
   sortYOffset: -0.5
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 1
   sortingGroup: {fileID: 4218764559021495817}
   spriteRenderers: []

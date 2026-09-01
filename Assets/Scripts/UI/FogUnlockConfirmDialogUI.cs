@@ -50,6 +50,7 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
     {
         StopMessageRoutine();
         confirmAction = onConfirm;
+        FitPanelToSafeArea();
 
         if (messageText != null)
             messageText.text = message;
@@ -76,6 +77,7 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
     {
         StopMessageRoutine();
         confirmAction = null;
+        FitPanelToSafeArea();
 
         if (messageText != null)
             messageText.text = message;
@@ -133,5 +135,36 @@ public class FogUnlockConfirmDialogUI : MonoBehaviour
 
         StopCoroutine(messageRoutine);
         messageRoutine = null;
+    }
+
+    private void FitPanelToSafeArea()
+    {
+        if (panelRoot == null)
+            return;
+
+        RectTransform panelRect = panelRoot.GetComponent<RectTransform>();
+        Canvas canvas = panelRoot.GetComponentInParent<Canvas>();
+        RectTransform canvasRect = canvas != null ? canvas.transform as RectTransform : null;
+        if (panelRect == null || canvasRect == null || Screen.width <= 0 || Screen.height <= 0)
+            return;
+
+        Rect safeArea = Screen.safeArea;
+        Vector2 canvasSize = canvasRect.rect.size;
+        float maxWidth = safeArea.width * canvasSize.x / Screen.width * 0.9f;
+        float maxHeight = safeArea.height * canvasSize.y / Screen.height * 0.55f;
+        Vector2 size = panelRect.sizeDelta;
+        size.x = Mathf.Min(size.x, maxWidth);
+        size.y = Mathf.Min(size.y, maxHeight);
+        panelRect.sizeDelta = size;
+
+        float safeCenterOffsetX = (safeArea.center.x - Screen.width * 0.5f)
+            * canvasSize.x / Screen.width;
+        float safeBottom = safeArea.yMin * canvasSize.y / Screen.height;
+        float bottomMargin = Mathf.Max(24f, canvasSize.y * 0.02f);
+
+        panelRect.anchorMin = new Vector2(0.5f, 0f);
+        panelRect.anchorMax = new Vector2(0.5f, 0f);
+        panelRect.pivot = new Vector2(0.5f, 0f);
+        panelRect.anchoredPosition = new Vector2(safeCenterOffsetX, safeBottom + bottomMargin);
     }
 }

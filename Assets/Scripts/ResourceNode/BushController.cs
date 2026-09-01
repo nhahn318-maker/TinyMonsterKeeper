@@ -3,6 +3,9 @@ using System.Collections;
 using TMPro;
 
 public class BushController : MonoBehaviour {
+    public string FruitItemId => fruitData != null ? fruitData.itemId : string.Empty;
+    public bool IsReadyToHarvest => currentState == BushState.Fruiting;
+
     public enum BushState {
         Normal,
         Fruiting
@@ -133,6 +136,9 @@ public class BushController : MonoBehaviour {
         Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
         Vector2 clickPoint = new Vector2(worldPosition.x, worldPosition.y);
 
+        if (FogAreaBlocker.BlocksPoint(clickPoint))
+            return;
+
         // Ưu tiên item/berry trước.
         // Nếu click trúng BerryDrop thì Bush không nhận click.
         Collider2D pickupHit = Physics2D.OverlapPoint(clickPoint, pickupLayer);
@@ -185,6 +191,8 @@ public class BushController : MonoBehaviour {
 
     private void Harvest()
     {
+        TutorialSignal.Raise(TutorialAction.HarvestResource);
+        GameAudioManager.PlayHarvest();
         Debug.Log("Bush harvested, berry dropped!");
 
         SpawnBerryDrop();

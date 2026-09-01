@@ -75,7 +75,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 9343
+  m_SortingOrder: 290
   m_Sprite: {fileID: 21300000, guid: 5c5ab5d351845694aacfb6034d71579e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -101,11 +101,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 5275014728385825522}
   sortYOffset: 0
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 0
   sortingGroup: {fileID: 0}
   spriteRenderers:
@@ -181,7 +181,6 @@ MonoBehaviour:
   respawnDuration: 720
   hideWhileRespawning: 1
   growthCountdownText: {fileID: 0}
-  countdownFormat: '{0}s'
   pickupLayer:
     serializedVersion: 2
     m_Bits: 8

@@ -96,6 +96,9 @@ public class HarvestNodeController : MonoBehaviour {
         Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
         Vector2 clickPoint = new Vector2(worldPosition.x, worldPosition.y);
 
+        if (FogAreaBlocker.BlocksPoint(clickPoint))
+            return;
+
         if (pickupLayer.value != 0 && Physics2D.OverlapPoint(clickPoint, pickupLayer) != null)
             return;
 
@@ -107,6 +110,8 @@ public class HarvestNodeController : MonoBehaviour {
 
     private IEnumerator ClickRoutine()
     {
+        TutorialSignal.Raise(TutorialAction.HarvestResource);
+        GameAudioManager.PlayHarvest();
         isClicking = true;
         isAvailable = false;
 

@@ -730,7 +730,7 @@ namespace TinyMonsterKeeper.EditorAutomation
             SerializedObject serializedYSort = new SerializedObject(ySort);
             serializedYSort.FindProperty("sortPoint").objectReferenceValue = layer;
             serializedYSort.FindProperty("sortYOffset").floatValue = sortYOffset;
-            serializedYSort.FindProperty("worldBaseOrder").intValue = 10000;
+            serializedYSort.FindProperty("worldBaseOrder").intValue = 500;
             serializedYSort.FindProperty("baseOrder").intValue = 0;
             serializedYSort.FindProperty("unitsToOrder").floatValue = 100f;
             serializedYSort.FindProperty("minOrder").intValue = -32768;

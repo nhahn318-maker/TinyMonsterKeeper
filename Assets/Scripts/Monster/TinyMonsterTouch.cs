@@ -45,6 +45,9 @@ public class TinyMonsterTouch : MonoBehaviour, IPointerClickHandler {
         if (BookOpenUI.IsOpen)
             return;
 
+        TutorialSignal.Raise(TutorialAction.InteractMonster);
+        GameAudioManager.PlayPop();
+
         if (coinProducer != null && coinProducer.HasCoinToCollect)
         {
             coinProducer.CollectCoin();

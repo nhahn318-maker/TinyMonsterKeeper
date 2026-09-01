@@ -210,7 +210,6 @@ MonoBehaviour:
     m_Bits: 8
   readyBubbleObject: {fileID: 3095850314873998314}
   growthCountdownText: {fileID: 6477137359166962391}
-  countdownFormat: '{0}s'
 --- !u!210 &8687223361146913238
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -221,7 +220,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 9707
+  m_SortingOrder: 406
   m_SortAtRoot: 0
 --- !u!114 &1268127275571986057
 MonoBehaviour:
@@ -237,11 +236,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 4002697613074525934}
   sortYOffset: 0
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 1
   sortingGroup: {fileID: 8687223361146913238}
   spriteRenderers: []
@@ -271,7 +270,7 @@ Transform:
   m_GameObject: {fileID: 3095850314873998314}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.034, y: 0.565, z: 0}
+  m_LocalPosition: {x: -0.001, y: 0.565, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -431,7 +430,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3419469397149274518
 RectTransform:
   m_ObjectHideFlags: 0
@@ -448,8 +447,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.59}
-  m_SizeDelta: {x: 0.3746, y: 0.428}
+  m_AnchoredPosition: {x: -0.01, y: 0.585}
+  m_SizeDelta: {x: 0.5819, y: 0.428}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &7363083451684174835
 MeshRenderer:

@@ -67,6 +67,9 @@ public class TinyMonsterCoinProducer : MonoBehaviour {
     {
         if (storedCoin <= 0) return;
 
+        TutorialSignal.Raise(TutorialAction.CollectCoin);
+        GameAudioManager.PlayCollect();
+
         int collectAmount = storedCoin;
         storedCoin = 0;
         nextCoinAtUnix = TimedSaveUtility.SecondsFromNow(controller != null && controller.Data != null ? controller.Data.coinTickInterval : 1f);

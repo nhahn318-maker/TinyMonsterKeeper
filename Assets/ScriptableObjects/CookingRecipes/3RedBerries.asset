@@ -19,13 +19,7 @@ MonoBehaviour:
   - itemData: {fileID: 11400000, guid: 902707e628a9ab941a10adff3fedc1a7, type: 2}
     count: 3
   monsterResultOptions:
-  - monsterPrefab: {fileID: 242072064891303551, guid: 667035bd026757d47b4981280ba4ea2b, type: 3}
-    cookDuration: 10
-    weight: 3
   - monsterPrefab: {fileID: 242072064891303551, guid: a9f45997d79cb0f42bc25471c0f3a401, type: 3}
-    cookDuration: 12
-    weight: 2
-  - monsterPrefab: {fileID: 242072064891303551, guid: 2a65046400da49c2ac127c4d34121aee, type: 3}
     cookDuration: 15
     weight: 1
   allowDuplicateMonsters: 0

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 890e65bd38cd766468ace64a307c7837, type: 3}
+  m_Name: TutorialObjectiveSequence
+  m_EditorClassIdentifier: 
+  objectives:
+  - action: 0
+    displayText: Harvest a Red Berry
+    coinReward: 1
+  - action: 1
+    displayText: Collect the Red Berry
+    coinReward: 1
+  - action: 2
+    displayText: Open the Cooking Pot
+    coinReward: 1
+  - action: 3
+    displayText: Start cooking
+    coinReward: 1
+  - action: 4
+    displayText: Collect your result
+    coinReward: 1
+  - action: 5
+    displayText: Welcome your monster
+    coinReward: 1
+  - action: 6
+    displayText: Tap a monster
+    coinReward: 1
+  - action: 7
+    displayText: Collect a coin
+    coinReward: 1
+  - action: 8
+    displayText: Unlock Zone01
+    coinReward: 1

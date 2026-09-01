@@ -203,8 +203,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.55}
-  m_SizeDelta: {x: 0.3746, y: 0.428}
+  m_AnchoredPosition: {x: -0.028, y: 0.543}
+  m_SizeDelta: {x: 0.6932, y: 0.428}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &7256052752582954670
 MeshRenderer:
@@ -418,7 +418,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 9279
+  m_SortingOrder: 269
   m_Sprite: {fileID: 21300000, guid: ea7360fd77db4f04286f088c8b683bae, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -444,11 +444,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 5248472546162667007}
   sortYOffset: 0
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 0
   sortingGroup: {fileID: 0}
   spriteRenderers:
@@ -511,7 +511,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   respawnDuration: 900
-  countdownFormat: '{0}s'
   dropPrefab: {fileID: 6201000000000000001, guid: bd83bc9f7f8846689ddbcb591732a32b, type: 3}
   dropPoint: {fileID: 0}
   fallbackDropOffset: {x: 0, y: -0.2}

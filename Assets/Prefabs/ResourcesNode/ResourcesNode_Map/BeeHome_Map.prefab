@@ -79,7 +79,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10246
+  m_SortingOrder: 579
   m_Sprite: {fileID: 21300000, guid: fa93d3eecee69e34db01eb12d5608148, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -170,7 +170,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   respawnDuration: 480
-  countdownFormat: '{0}s'
   dropPrefab: {fileID: 6961177154507404566, guid: 23256948e05eeda45b1f2c3e0c4292ee, type: 3}
   dropPoint: {fileID: 0}
   fallbackDropOffset: {x: 0, y: -0.3}
@@ -207,11 +206,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sortPoint: {fileID: 6715021386000252}
   sortYOffset: -0.25
-  worldBaseOrder: 10000
+  worldBaseOrder: 500
   baseOrder: 0
-  unitsToOrder: 100
-  minOrder: -32768
-  maxOrder: 32767
+  unitsToOrder: 32
+  minOrder: -900
+  maxOrder: 900
   preferSortingGroup: 0
   sortingGroup: {fileID: 0}
   spriteRenderers:

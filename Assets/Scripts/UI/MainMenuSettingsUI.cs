@@ -13,12 +13,14 @@ public sealed class MainMenuSettingsUI : MonoBehaviour
     [SerializeField] private Sprite onSprite;
     [SerializeField] private Sprite offSprite;
 
-    private bool musicEnabled = true;
-    private bool sfxEnabled = true;
+    private bool musicEnabled;
+    private bool sfxEnabled;
     private bool alertsEnabled = true;
 
     private void Awake()
     {
+        musicEnabled = GameAudioManager.MusicEnabled;
+        sfxEnabled = GameAudioManager.SfxEnabled;
         if (openButton != null)
             openButton.onClick.AddListener(Open);
         if (backButton != null)
@@ -61,12 +63,15 @@ public sealed class MainMenuSettingsUI : MonoBehaviour
     private void ToggleMusic()
     {
         musicEnabled = !musicEnabled;
+        GameAudioManager.SetMusicEnabled(musicEnabled);
         ApplyToggleSprite(musicImage, musicEnabled);
     }
 
     private void ToggleSfx()
     {
+        GameAudioManager.PlayPop();
         sfxEnabled = !sfxEnabled;
+        GameAudioManager.SetSfxEnabled(sfxEnabled);
         ApplyToggleSprite(sfxImage, sfxEnabled);
     }
 

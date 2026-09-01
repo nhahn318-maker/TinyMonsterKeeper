@@ -19,7 +19,7 @@ public class BerryDropController : MonoBehaviour {
     [SerializeField] private Camera mainCamera;
 
     [Header("Rendering")]
-    [SerializeField] private int dropSortingOrder = 32000;
+    [SerializeField] private int dropSortingOrder = 1100;
 
     [Header("Pickup Animation")]
     [SerializeField] private Animator animator;
@@ -170,6 +170,9 @@ public class BerryDropController : MonoBehaviour {
     private void PickUp()
     {
         if (pickedUp) return;
+
+        TutorialSignal.Raise(TutorialAction.CollectDrop);
+        GameAudioManager.PlayCollect();
 
         pickedUp = true;
         canPickUp = false;

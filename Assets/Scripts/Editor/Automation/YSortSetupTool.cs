@@ -201,11 +201,11 @@ public static class YSortSetupTool
         SerializedObject serialized = new SerializedObject(ySort);
         changed |= SetObject(serialized, "sortPoint", sortPoint);
         changed |= SetFloat(serialized, "sortYOffset", sortYOffset);
-        changed |= SetInt(serialized, "worldBaseOrder", 10000);
+        changed |= SetInt(serialized, "worldBaseOrder", 500);
         changed |= SetInt(serialized, "baseOrder", 0);
-        changed |= SetFloat(serialized, "unitsToOrder", 100f);
-        changed |= SetInt(serialized, "minOrder", -32768);
-        changed |= SetInt(serialized, "maxOrder", 32767);
+        changed |= SetFloat(serialized, "unitsToOrder", 32f);
+        changed |= SetInt(serialized, "minOrder", -900);
+        changed |= SetInt(serialized, "maxOrder", 900);
         changed |= SetBool(serialized, "preferSortingGroup", preferSortingGroup);
         changed |= SetObject(serialized, "sortingGroup", sortingGroup);
         serialized.ApplyModifiedPropertiesWithoutUndo();

@@ -13,11 +13,11 @@ public sealed class YSortByPosition : MonoBehaviour
     [SerializeField] private float sortYOffset;
 
     [Header("Sorting")]
-    [SerializeField] private int worldBaseOrder = 10000;
+    [SerializeField] private int worldBaseOrder = 500;
     [SerializeField] private int baseOrder;
-    [SerializeField] private float unitsToOrder = 100f;
-    [SerializeField] private int minOrder = -32768;
-    [SerializeField] private int maxOrder = 32767;
+    [SerializeField] private float unitsToOrder = 32f;
+    [SerializeField] private int minOrder = -900;
+    [SerializeField] private int maxOrder = 900;
 
     [Header("Targets")]
     [SerializeField] private bool preferSortingGroup = true;

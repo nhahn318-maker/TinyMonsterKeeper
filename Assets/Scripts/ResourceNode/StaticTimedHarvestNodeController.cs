@@ -144,12 +144,17 @@ public sealed class StaticTimedHarvestNodeController : MonoBehaviour
             return;
 
         Vector2 worldPoint = mainCamera.ScreenToWorldPoint(screenPosition);
+        if (FogAreaBlocker.BlocksPoint(worldPoint))
+            return;
+
         if (pickupLayer.value != 0 && Physics2D.OverlapPoint(worldPoint, pickupLayer) != null)
             return;
 
         if (!harvestCollider.OverlapPoint(worldPoint))
             return;
 
+        TutorialSignal.Raise(TutorialAction.HarvestResource);
+        GameAudioManager.PlayHarvest();
         SpawnDrop();
         SetReady(false);
     }

@@ -227,6 +227,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
         if (CookingPotPanelUI.Instance != null)
         {
+            TutorialSignal.Raise(TutorialAction.OpenCooking);
             CookingPotPanelUI.Instance.Show(this);
         }
         else
@@ -268,6 +269,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         }
 
         ConsumeIngredients(ingredients);
+        TutorialSignal.Raise(TutorialAction.StartCooking);
         StartCoroutine(CookingRoutine(recipe, selectedResult));
 
         return true;
@@ -333,6 +335,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
         UpdateCookTimer(0f);
 
         SetDoneVisual();
+        GameAudioManager.PlayCookingComplete();
 
         Debug.Log($"{recipe.resultName} is done! Tap pot to attract visitor.");
     }
@@ -392,6 +395,8 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
 
     private void CollectCookResult()
     {
+        TutorialSignal.Raise(TutorialAction.CollectCookedResult);
+        GameAudioManager.PlayCookedItemCollect();
         isDone = false;
         currentCookDuration = 0f;
         cookCompleteAtUnix = 0L;
@@ -482,6 +487,7 @@ public class CookingPotController : MonoBehaviour, IPointerClickHandler {
             {
                 unlockCount = MonsterCollectionManager.GetUnlockCount(existingData);
                 Debug.Log($"Increased monster card stars: {existingName}");
+                GameAudioManager.PlayLevelUp();
             }
 
             TinyMonsterController existingMonster = FindExistingMonster(existingData, prefab);

@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4368c22556ceea941a79e9d092b8466d, type: 3}
+  m_Name: DailyQuestSequence
+  m_EditorClassIdentifier: 
+  quests:
+  - title: Garden Routine
+    coinReward: 5
+    goals:
+    - action: 0
+      displayText: Harvest
+      target: 5
+    - action: 3
+      displayText: Cook
+      target: 2
+    - action: 7
+      displayText: Collect coins
+      target: 3
+  - title: Cooking Day
+    coinReward: 6
+    goals:
+    - action: 3
+      displayText: Start cooks
+      target: 2
+    - action: 4
+      displayText: Collect dishes
+      target: 2
+    - action: 6
+      displayText: Visit monsters
+      target: 2
+  - title: Monster Care
+    coinReward: 7
+    goals:
+    - action: 6
+      displayText: Visit monsters
+      target: 3
+    - action: 5
+      displayText: Summon
+      target: 1
+    - action: 7
+      displayText: Collect coins
+      target: 3
+  - title: Forager's Day
+    coinReward: 8
+    goals:
+    - action: 0
+      displayText: Gather items
+      target: 5
+    - action: 1
+      displayText: Collect drops
+      target: 2
+    - action: 0
+      displayText: Gather more
+      target: 5
+  - title: Coin Keeper
+    coinReward: 9
+    goals:
+    - action: 7
+      displayText: Collect coins
+      target: 3
+    - action: 7
+      displayText: Collect more
+      target: 5
+    - action: 6
+      displayText: Visit monsters
+      target: 2
+  - title: Recipe Hunt
+    coinReward: 10
+    goals:
+    - action: 3
+      displayText: Start cooks
+      target: 2
+    - action: 3
+      displayText: Cook again
+      target: 2
+    - action: 4
+      displayText: Collect dishes
+      target: 2
+  - title: Weekly Garden
+    coinReward: 11
+    goals:
+    - action: 0
+      displayText: Gather items
+      target: 5
+    - action: 3
+      displayText: Cook
+      target: 2
+    - action: 4
+      displayText: Collect dishes
+      target: 2
+    - action: 7
+      displayText: Collect coins
+      target: 3

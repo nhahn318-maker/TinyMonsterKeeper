@@ -36,7 +36,7 @@ from the result pool. Weight `3` is common, `2` is uncommon, and `1` is rare.
 
 | Recipe | Required ingredients | Common result | Uncommon result | Rare result | Current cook times |
 | --- | --- | --- | --- | --- | --- |
-| 3 Red Berries | Red Berry x3 | Cooconi, weight 3 | Leafy, weight 2 | Cotty, weight 1 | 10s / 12s / 15s |
+| 3 Red Berries | Red Berry x3 | Leafy, guaranteed | - | - | 15s |
 | 3 Purple Berries | Purple Berry x3 | Mushy, weight 3 | Dewli, weight 2 | Moolo, weight 1 | 10s / 12s / 15s |
 | Woodland Forage | Apple x1 + Red Berry x1 + Normal Mushroom x1 | Pebby, weight 3 | Woody, weight 2 | Rooty, weight 1 | 14s / 17s / 20s |
 | Mushroom Medley | Normal Mushroom x1 + Red Mushroom x1 + Green Mushroom x1 | MushRibbit, weight 3 | Molli, weight 2 | Moss, weight 1 | 16s / 19s / 22s |
@@ -47,7 +47,9 @@ from the result pool. Weight `3` is common, `2` is uncommon, and `1` is rare.
 | Moon Garden Elixir | Purple Berry x1 + Glowing Mushroom x1 + Crystal x1 | Lotus, weight 3 | LilyPadle, weight 2 | Pipcher, weight 1 | 28s / 31s / 34s |
 | Failed mixture | Any unmatched three ingredients | No monster | - | - | 3s, ingredients consumed |
 
-With weights `3 / 2 / 1`, the theoretical result chances are:
+For the starter recipe, Leafy is guaranteed so every new player can complete
+the tutorial and receive the intended first monster. Other recipes use weights
+`3 / 2 / 1`, with the theoretical result chances:
 
 - Common: `50%`.
 - Uncommon: `33.3%`.

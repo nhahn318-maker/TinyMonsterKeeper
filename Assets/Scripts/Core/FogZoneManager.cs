@@ -208,7 +208,7 @@ public class FogZoneManager : MonoBehaviour
         ClearOrRevealFog(zone, false);
 
         if (notify)
-            FogZoneUnlocked?.Invoke(GetZoneId(zone));
+            NotifyZoneUnlocked(zone);
     }
 
     private IEnumerator UnlockZoneRoutine(FogZone zone, bool notify)
@@ -230,7 +230,17 @@ public class FogZoneManager : MonoBehaviour
         zone.isUnlocking = false;
 
         if (notify)
-            FogZoneUnlocked?.Invoke(GetZoneId(zone));
+            NotifyZoneUnlocked(zone);
+    }
+
+    private void NotifyZoneUnlocked(FogZone zone)
+    {
+        string zoneId = GetZoneId(zone);
+        FogZoneUnlocked?.Invoke(zoneId);
+        // Existing scenes may identify Zone01 as "1" or "zone_01".
+        if (string.Equals(zoneId, "zone_01", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(zoneId, "1", StringComparison.OrdinalIgnoreCase))
+            TutorialSignal.Raise(TutorialAction.UnlockZone01);
     }
 
     private void ShowUnlockedVisual(FogZone zone)

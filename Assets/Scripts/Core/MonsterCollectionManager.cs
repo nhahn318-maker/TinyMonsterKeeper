@@ -5,7 +5,8 @@ using UnityEngine;
 public static class MonsterCollectionManager
 {
     private const string SavePrefix = "TinyMonsterKeeper.MonsterCollection.";
-    private static readonly string[] DefaultUnlockedMonsterIds = { "001" };
+    // The first monster is earned from the starter cooking tutorial.
+    private static readonly string[] DefaultUnlockedMonsterIds = { };
 
     public static event Action<MonsterData> MonsterUnlocked;
     public static event Action<MonsterData, int> MonsterCollectionChanged;
@@ -36,6 +37,7 @@ public static class MonsterCollectionManager
         PlayerPrefs.Save();
 
         MonsterUnlocked?.Invoke(monsterData);
+        TutorialSignal.Raise(TutorialAction.SummonMonster);
         MonsterCollectionChanged?.Invoke(monsterData, count);
         return true;
     }
